@@ -1,6 +1,6 @@
-# Chat UI
+# Readiness Calculator UI
 
-A chat interface built with modern web technologies.
+A readiness calculator interface built with modern web technologies.
 
 ## Tech Stack
 
