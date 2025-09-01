@@ -2,6 +2,11 @@
 
 A readiness calculator interface built with modern web technologies.
 
+## Documentation
+
+- 📋 **[Technical Specification](./docs/TECHNICAL_SPECIFICATION.md)** - Comprehensive technical planning document defining what the readiness calculator is, what it does, how it works, and what it produces
+- 🔍 **[Problem Analysis](./docs/PROBLEM_ANALYSIS.md)** - Problem breakdown and solution proposals for the readiness calculator implementation
+
 ## Tech Stack
 
 - **[Next.js](https://nextjs.org)** - React framework with App Router
