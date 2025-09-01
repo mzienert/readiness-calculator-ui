@@ -28,6 +28,25 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Integrate system prompt framework for AI readiness assessment
 - ⏳ Design hybrid conversational/structured assessment flow within existing chat interface
 
+**Infrastructure & Architecture:**
+- ⏳ Upgrade to Vercel AI SDK v5
+- ⏳ Remove Groq and Grok inference providers
+- ⏳ Update inference provider to OpenAI
+- ⏳ Implement proper staging/production environment separation (environment-based configuration)
+- ⏳ Set up cost tracking and metrics separation between environments
+- ⏳ Implement usage tracking at service level for AI API costs per user/assessment
+- ⏳ Ensure telemetry is working properly for production environment
+- ⏳ Refactor current lib structure to follow best practices for application design
+- ⏳ Implement clean service boundaries (authentication, assessment, data analytics, AI inference)
+- ⏳ Create solid foundation for small-scale app without over-engineering
+
+**Database & ORM:**
+- ⏳ Implement proper usage of Drizzle ORM throughout application
+- ⏳ Eliminate raw MySQL queries (avoid golden hammer scenario)
+- ⏳ Set up proper staging and production database environments
+- ⏳ Ensure proper database migration strategy between environments
+- ⏳ Implement type-safe database operations using Drizzle schemas
+
 **Assessment Design:**
 - ⏳ Define assessment methodology and scoring system
 - ⏳ Design user experience flow for diverse tech readiness levels (non-existent to advanced)
