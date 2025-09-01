@@ -188,6 +188,8 @@ The AI Readiness Calculator serves as the primary user-facing deliverable, provi
 
 **Multi-Agent Architecture Implementation**
 
+*Reference: [AI SDK Multi-Agent Patterns](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling#multi-step-tool-usage) for implementation guidance*
+
 ```typescript
 const assessmentOrchestrator = {
   agents: {
