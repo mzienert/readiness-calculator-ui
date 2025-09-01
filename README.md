@@ -6,6 +6,7 @@ A readiness calculator interface built with modern web technologies.
 
 - 📋 **[Technical Specification](./docs/TECHNICAL_SPECIFICATION.md)** - Comprehensive technical planning document defining what the readiness calculator is, what it does, how it works, and what it produces
 - 🔍 **[Problem Analysis](./docs/PROBLEM_ANALYSIS.md)** - Problem breakdown and solution proposals for the readiness calculator implementation
+- 🤖 **[System Prompt Framework](./docs/SYSTEM_PROMPT.md)** - AI assessment framework for SMB readiness evaluation with 6-category scoring system
 - 🚀 **[Implementation Steps](./docs/IMPLEMENTATION_STEPS.md)** - Active tracking of development tasks, milestones, and implementation progress
 
 ## Tech Stack

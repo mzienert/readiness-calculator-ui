@@ -178,14 +178,85 @@ The AI Readiness Calculator serves as the primary user-facing deliverable, provi
 
 **Assessment Approach:**
 - Hybrid conversational/structured approach
-- Leverages existing system prompt framework
+- Leverages existing system prompt framework (see **[System Prompt Framework](./SYSTEM_PROMPT.md)**)
 - Natural chat interaction with structured elements when needed
-
-*[Additional calculator features to be defined based on system prompt framework review]*
+- 6-category assessment: Market Strategy, Business Understanding, Workforce Acumen, Company Culture, Role of Technology, Data
+- Dynamic weighting based on SMB qualifiers (employee count, revenue, business type)
+- 5-tier AI strategy recommendations: Efficiency → Productivity → Effectiveness → Growth → Expert
 
 #### Assessment Framework
 
-*[Assessment methodology and scoring system will be documented here]*
+**Multi-Agent Architecture Implementation**
+
+```typescript
+const assessmentOrchestrator = {
+  agents: {
+    qualifier: new QualifierAgent(),      // Handles employee count, revenue, business type
+    assessor: new AssessmentAgent(),      // Manages 6-category questions 1-by-1  
+    analyzer: new AnalysisAgent(),        // Post-processing scoring & strategy determination
+    reporter: new ReportingAgent()        // Beautiful.ai integration
+  }
+}
+```
+
+**Agent Responsibilities:**
+
+1. **QualifierAgent**: 
+   - Collects SMB context (employee count, revenue band, business type)
+   - Establishes dynamic weighting parameters
+   - Sets conversation tone and expectations
+
+2. **AssessmentAgent**:
+   - Manages 6-category assessment flow (one question at a time)
+   - Maintains conversation context and empathetic responses
+   - Handles clarifications (e.g., "What's a KPI?")
+   - Uses structured outputs for consistent data capture
+
+3. **AnalysisAgent**:
+   - Post-processing scoring with dynamic weighting applied
+   - Strategy determination based on scoring matrices
+   - Concern analysis and mitigation strategies
+   - Roadmap generation (Phase 1, 2, 3)
+
+4. **ReportingAgent**:
+   - Beautiful.ai MCP integration for professional report generation
+   - Modular section assembly (Executive Summary, Scoring, etc.)
+   - Multiple format outputs (PDF, presentation, dashboard)
+
+**Technical Showcase Elements:**
+- AI SDK v5 multi-agent patterns with state management
+- OpenAI Structured Outputs for consistent data capture
+- Function Calling for real-time data insertion and analysis
+- Stream Management for smooth conversational UX
+- MCP Integration with Beautiful.ai for professional reporting
+- Clean Architecture with proper separation of concerns
+
+**Second-Pass Refinement Questions (For Future Consideration):**
+
+*Agent Architecture:*
+- Should the Assessor agent maintain conversation context, or should the Orchestrator handle state?
+- How do we handle agent handoffs seamlessly in the user experience?
+- What's the optimal way to share context between agents?
+
+*Processing & Timing:*
+- Trigger analysis after question 12, or allow early exit if patterns emerge?
+- Should scoring happen incrementally or batch process at completion?
+- How do we handle incomplete assessments or user drop-offs?
+
+*Integration Patterns:*
+- Generate Beautiful.ai reports server-side and return URLs, or client-side integration?
+- Should we use background processing for report generation while showing immediate results?
+- How do we handle Beautiful.ai API failures gracefully?
+
+*Data Collection:*
+- Insert anonymized data after each response, or batch at completion?
+- Should insight collection run as background agent or triggered events?
+- How do we balance real-time insights with privacy considerations?
+
+*UX & Performance:*
+- How do we maintain conversation flow during agent transitions?
+- Should we preload next agent context for faster responses?
+- How do we handle concurrent users with agent resource management?
 
 #### User Experience Design
 

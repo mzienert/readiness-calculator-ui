@@ -25,8 +25,16 @@ This document tracks the specific implementation steps, action items, and develo
 **Technical Implementation:**
 - ⏳ Remove unauthenticated access to chat UI (require authentication before accessing any chat functionality)
 - ⏳ Implement controlled access rollout strategy (URL distribution to selected 5 SMBs initially)
-- ⏳ Integrate system prompt framework for AI readiness assessment
-- ⏳ Design hybrid conversational/structured assessment flow within existing chat interface
+
+**Multi-Agent Architecture Implementation:**
+- ⏳ Design and implement QualifierAgent for SMB context collection
+- ⏳ Build AssessmentAgent for 6-category question management (one-by-one flow)
+- ⏳ Create AnalysisAgent for post-processing scoring and strategy determination
+- ⏳ Develop ReportingAgent with Beautiful.ai MCP integration
+- ⏳ Implement Agent Orchestrator for seamless handoffs and state management
+- ⏳ Set up OpenAI Structured Outputs for consistent data capture across agents
+- ⏳ Implement Function Calling for real-time data insertion and analysis
+- ⏳ Design Stream Management system for smooth conversational UX
 
 **Infrastructure & Architecture:**
 - ⏳ Upgrade to Vercel AI SDK v5
