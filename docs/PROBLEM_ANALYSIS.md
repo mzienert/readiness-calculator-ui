@@ -164,7 +164,24 @@ The AI Readiness Calculator serves as the primary user-facing deliverable, provi
 
 #### Core Calculator Features
 
-*[Calculator-specific solutions and implementation approaches will be documented here]*
+**Access Control & Rollout Strategy:**
+- Self-serve registration system (already implemented)
+- Authentication required before accessing chat interface (no unauthenticated access)
+- Controlled access via URL distribution to selected users
+- Initial cohort: 5 La Plata County SMBs
+- Gradual expansion based on performance monitoring and cost control
+
+**User Interface Integration:**
+- Calculator operates within existing chat interface
+- Minimal UI changes - leverages current chat framework
+- AI integration already established via existing system
+
+**Assessment Approach:**
+- Hybrid conversational/structured approach
+- Leverages existing system prompt framework
+- Natural chat interaction with structured elements when needed
+
+*[Additional calculator features to be defined based on system prompt framework review]*
 
 #### Assessment Framework
 
