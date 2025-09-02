@@ -228,6 +228,7 @@ const assessmentOrchestrator = {
 **Technical Showcase Elements:**
 - AI SDK v5 multi-agent patterns with state management
 - OpenAI Structured Outputs for consistent data capture
+- Zod/JSON Schema definitions for agent responses and data validation
 - Function Calling for real-time data insertion and analysis
 - Stream Management for smooth conversational UX
 - MCP Integration with Beautiful.ai for professional reporting

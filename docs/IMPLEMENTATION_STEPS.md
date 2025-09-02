@@ -27,6 +27,7 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Implement controlled access rollout strategy (URL distribution to selected 5 SMBs initially)
 
 **Multi-Agent Architecture Implementation:**
+- ⏳ Define Zod/JSON schemas for agent responses and data validation
 - ⏳ Design and implement QualifierAgent for SMB context collection
 - ⏳ Build AssessmentAgent for 6-category question management (one-by-one flow)
 - ⏳ Create AnalysisAgent for post-processing scoring and strategy determination
