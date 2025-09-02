@@ -63,6 +63,12 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Create assessment framework for La Plata County SMB context
 
 **Data & Analytics (Event-Driven System):**
+- ⏳ **BRAINSTORMING SESSION REQUIRED**: Data capture strategy decisions
+  - Response storage format (raw vs structured vs hybrid)
+  - Response normalization approach for aggregation
+  - Data processing timing (post-response vs post-survey)
+  - Keyword extraction and text analysis level
+  - Aggregation strategy for meaningful insights
 - ⏳ Design event-driven data collection architecture with configurable hooks
 - ⏳ Implement AssessmentEvent interface and data anonymization layer
 - ⏳ Build privacy-first data capture system (no PII, no business identity)

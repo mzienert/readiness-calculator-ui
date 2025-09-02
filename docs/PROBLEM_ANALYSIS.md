@@ -306,6 +306,37 @@ const dataCollectionHooks = {
 - Geographic/demographic correlations (anonymized)
 - AI strategy recommendation outcomes
 
+**Data Capture Strategy (Brainstorming Required):**
+*Key decisions needed for implementation:*
+
+- **Response Storage Format**: Raw responses vs structured data vs both?
+  - Store complete conversational responses as strings?
+  - Extract and store structured JSON data only?
+  - Hybrid approach with both raw and normalized data?
+
+- **Response Normalization**: How to standardize varied responses for aggregation?
+  - Normalize responses into predefined buckets/categories?
+  - Use AI-powered semantic analysis to group similar responses?
+  - Manual categorization vs automated classification?
+
+- **Data Processing Timing**: When to process and analyze responses?
+  - Real-time processing during conversation (post-response)?
+  - Batch processing after complete assessment (post-survey)?
+  - Delayed processing for better anonymization?
+
+- **Keyword Extraction**: Level of text analysis for insights?
+  - Extract key phrases and terminology for trend analysis?
+  - Full NLP processing for sentiment and theme detection?
+  - Simple keyword matching vs advanced semantic analysis?
+
+- **Aggregation Strategy**: How to group responses for meaningful insights?
+  - By business size/revenue bands?
+  - By industry sectors (health, retail, food service)?
+  - By readiness levels and strategy recommendations?
+  - Geographic clustering within La Plata County region?
+
+*These decisions will impact database schema design, processing architecture, and analytical capabilities.*
+
 #### Privacy & Security Framework
 
 **Anonymization Requirements:**
