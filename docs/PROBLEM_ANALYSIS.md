@@ -278,19 +278,83 @@ The data gathering system operates behind the scenes to capture anonymized insig
 
 #### Data Collection Architecture
 
-*[Technical approach for anonymous data capture will be documented here]*
+**Event-Driven System Design:**
+```typescript
+// Assessment data collection via hooks
+interface AssessmentEvent {
+  eventType: 'qualifier_complete' | 'question_answered' | 'assessment_complete' | 'report_generated';
+  timestamp: Date;
+  sessionId: string; // Anonymous session identifier
+  data: AssessmentEventData;
+}
 
-#### Analytics & Insights Engine
+// Hook integration points (timing adaptable based on student resource decision)
+const dataCollectionHooks = {
+  onQualifierComplete: (data) => emit('qualifier_complete', data),
+  onQuestionAnswered: (data) => emit('question_answered', data),
+  onAssessmentComplete: (data) => emit('assessment_complete', data),
+  onReportGenerated: (data) => emit('report_generated', data)
+};
+```
 
-*[Data processing and pattern recognition system will be documented here]*
+**Collection Points:**
+- Assessment responses (all categories and scores)
+- Conversation patterns and drop-off points  
+- Time spent on different questions/categories
+- Common clarification requests and follow-ups
+- Industry-specific response patterns
+- Geographic/demographic correlations (anonymized)
+- AI strategy recommendation outcomes
 
 #### Privacy & Security Framework
 
-*[Implementation of anonymization and ethical data practices will be documented here]*
+**Anonymization Requirements:**
+- **No PII**: No personally identifiable information captured
+- **No Business Identity**: Company names, contact info, or identifying details excluded
+- **Session-based tracking**: Anonymous session IDs only
+- **Aggregated insights**: Individual assessment data never exposed in reports
+
+**Data Retention Policy:**
+- **Indefinite retention** for aggregated analytics and insights
+- **Permanent removal on request** - complete data purge capability
+- **Audit trail** for data removal requests
+
+**Compliance Measures:**
+- Data encryption at rest and in transit
+- Secure database access controls
+- Regular anonymization validation
+- Clear data usage policies
+
+#### Analytics & Insights Engine
+
+**Target Insights:**
+- Common pain points across La Plata County SMBs
+- Technology adoption patterns by industry/business size
+- Readiness score distributions and trending
+- Most effective AI strategy recommendations by business type
+- Regional vs national business focus patterns
+- Assessment completion rates and drop-off analysis
+
+**Processing Architecture:**
+- Event stream processing for real-time pattern detection
+- Batch analytics for trend analysis and reporting
+- Dashboard generation for internal business intelligence
+- Automated insight reporting for strategy development
 
 #### Business Intelligence Integration
 
-*[How insights inform strategy and development decisions will be documented here]*
+**Strategic Applications:**
+- Inform future service offerings and business development strategies
+- Create regional technology adoption reports and insights  
+- Identify partnership opportunities with local organizations
+- Support grant applications and economic development initiatives
+- Build proprietary knowledge base of rural SMB AI readiness patterns
+
+**Reporting Outputs:**
+- Monthly trend reports for internal strategy
+- Quarterly regional insights for Economic Development Alliance
+- Annual SMB technology adoption analysis
+- Ad-hoc analysis for business development opportunities
 
 ## Decision Log
 
