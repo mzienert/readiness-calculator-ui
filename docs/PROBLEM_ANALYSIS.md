@@ -347,8 +347,8 @@ const dataCollectionHooks = {
 
 **Data Retention Policy:**
 - **Indefinite retention** for aggregated analytics and insights
-- **Permanent removal on request** - complete data purge capability
-- **Audit trail** for data removal requests
+- **No removal capability post-anonymization** - properly anonymized data cannot be traced back to individuals/businesses for targeted removal
+- **Pre-anonymization removal window** - users can request data deletion during session or before anonymization process completes
 
 **Compliance Measures:**
 - Data encryption at rest and in transit

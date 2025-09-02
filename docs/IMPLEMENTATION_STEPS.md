@@ -74,7 +74,7 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Build privacy-first data capture system (no PII, no business identity)
 - ⏳ Create event stream processing for real-time pattern detection
 - ⏳ Implement batch analytics pipeline for trend analysis and reporting
-- ⏳ Build data purge capability for permanent removal on request
+- ⏳ Implement pre-anonymization removal window (session-based deletion before data anonymization)
 - ⏳ Create internal business intelligence dashboard for insights
 
 **Planning:**
