@@ -90,6 +90,16 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Implement database migration scripts for schema updates
 - ⏳ Design data retention and anonymization processing tables
 
+**Evaluation & Fine-Tuning (Post-Implementation):**
+- ⏳ Design synthetic SMB assessment scenarios for comprehensive test coverage
+- ⏳ Create evaluation framework for assessment accuracy (manual review initially)
+- ⏳ Implement evaluation pipeline for scoring consistency and strategy recommendation alignment
+- ⏳ Generate synthetic training data for La Plata County SMB profiles
+- ⏳ Set up OpenAI fine-tuning pipeline for Assessment Agent (question asking, scoring consistency)
+- ⏳ Set up OpenAI fine-tuning pipeline for Analysis Agent (strategy recommendations, roadmap generation)
+- ⏳ Transition from manual evaluation to automated metrics as system matures
+- ⏳ Integrate real anonymized assessment data for fine-tuning refinement
+
 **Planning:**
 - ⏳ Create development roadmap and milestone timeline
 

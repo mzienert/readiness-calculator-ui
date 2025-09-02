@@ -233,6 +233,9 @@ const assessmentOrchestrator = {
 - Stream Management for smooth conversational UX
 - MCP Integration with Beautiful.ai for professional reporting
 - Clean Architecture with proper separation of concerns
+- OpenAI Fine-tuning for domain-specific SMB assessment optimization
+- Evaluation pipelines with synthetic data generation and automated metrics
+- ML ops with assessment accuracy optimization and continuous improvement
 
 **Second-Pass Refinement Questions (For Future Consideration):**
 
@@ -260,6 +263,13 @@ const assessmentOrchestrator = {
 - How do we maintain conversation flow during agent transitions?
 - Should we preload next agent context for faster responses?
 - How do we handle concurrent users with agent resource management?
+
+*Evaluation & Fine-tuning:*
+- What synthetic SMB scenarios best represent La Plata County business diversity?
+- How do we measure assessment accuracy - scoring consistency vs strategy alignment?
+- Should we fine-tune Assessment Agent and Analysis Agent separately or together?
+- What's the optimal transition point from manual evaluation to automated metrics?
+- How do we balance synthetic training data with real anonymized assessment data?
 
 #### User Experience Design
 
@@ -380,6 +390,8 @@ const dataCollectionHooks = {
 - Identify partnership opportunities with local organizations
 - Support grant applications and economic development initiatives
 - Build proprietary knowledge base of rural SMB AI readiness patterns
+- Generate evaluation data for continuous assessment accuracy improvement
+- Support fine-tuning initiatives with real-world SMB response patterns
 
 **Reporting Outputs:**
 - Monthly trend reports for internal strategy
