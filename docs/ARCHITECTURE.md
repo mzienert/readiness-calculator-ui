@@ -27,26 +27,23 @@ The application uses **NextAuth.js** with **JWT-based session management** for a
 
 #### 1. NextAuth.js Configuration (`app/(auth)/auth.ts`)
 - **JWT Strategy**: Uses JSON Web Tokens stored in HTTP-only cookies
-- **Dual Authentication Modes**:
-  - **Regular Users**: Email/password authentication with bcrypt hashing
-  - **Guest Users**: Automatic guest user creation for anonymous access
-- **Session Extensions**: Custom session and JWT interfaces for user type tracking
+- **Authentication Mode**: Email/password authentication with bcrypt hashing for registered users
+- **Session Extensions**: Custom session and JWT interfaces with user ID tracking
 
 #### 2. Authentication Providers
 - **Credentials Provider**: Handles email/password login for registered users
-- **Guest Provider**: Automatically creates temporary guest users in database
 
 #### 3. Middleware Protection (`middleware.ts`)
 - **JWT Verification**: Uses `getToken()` to verify JWT tokens on protected routes
-- **Guest Redirection**: Automatically redirects unauthenticated users to guest authentication
+- **Login Redirection**: Automatically redirects unauthenticated users to login page
 - **Route Protection**: Protects API routes and authenticated pages
 - **Security**: Secure cookies in production environments
 
 #### 4. Session Management
 - **Stateless Design**: No server-side session storage required
 - **Cookie Security**: HTTP-only cookies with secure flag in production
-- **User Types**: Supports both `'guest'` and `'regular'` user classifications
-- **Token Claims**: JWT includes user ID and user type for authorization
+- **User Classification**: Supports `'regular'` authenticated users only
+- **Token Claims**: JWT includes user ID for authorization
 
 #### 5. API Route Protection
 All API routes implement consistent session verification:
@@ -59,7 +56,7 @@ if (!session?.user) {
 
 #### 6. User Authorization
 - **Ownership Checks**: Resources are protected by user ID matching
-- **Guest Limitations**: Guest users have restricted access to certain features
+- **Authentication Required**: All chat functionality requires user login
 - **Rate Limiting**: Message count tracking per user for usage limits
 
 ### Security Features
