@@ -49,6 +49,12 @@ La Plata County SMBs (population ~56,116) with diverse technology readiness leve
 
 ## Running Locally
 
+**If you've already cloned this repo previously (when it used pnpm):**
+```bash
+# Clean up old pnpm files first
+rm -rf node_modules pnpm-lock.yaml
+```
+
 1. Install dependencies:
 ```bash
 npm install
