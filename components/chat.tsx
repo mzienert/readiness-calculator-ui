@@ -26,7 +26,6 @@ import { useDataStream } from './data-stream-provider';
 export function Chat({
   id,
   initialMessages,
-  initialChatModel,
   initialVisibilityType,
   isReadonly,
   session,
@@ -34,7 +33,6 @@ export function Chat({
 }: {
   id: string;
   initialMessages: ChatMessage[];
-  initialChatModel: string;
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
@@ -71,7 +69,6 @@ export function Chat({
           body: {
             id,
             message: messages.at(-1),
-            selectedChatModel: initialChatModel,
             selectedVisibilityType: visibilityType,
             ...body,
           },
@@ -131,10 +128,8 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={initialChatModel}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
-          session={session}
         />
 
         <Messages
