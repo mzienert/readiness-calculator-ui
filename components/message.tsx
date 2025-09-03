@@ -15,7 +15,6 @@ import {
   ToolOutput,
 } from './elements/tool';
 import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
@@ -52,9 +51,6 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
-  const attachmentsFromMessage = message.parts.filter(
-    (part) => part.type === 'file',
-  );
 
   useDataStream();
 
@@ -89,23 +85,6 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-            {attachmentsFromMessage.length > 0 && (
-              <div
-                data-testid={`message-attachments`}
-                className="flex flex-row gap-2 justify-end"
-              >
-                {attachmentsFromMessage.map((attachment) => (
-                  <PreviewAttachment
-                    key={attachment.url}
-                    attachment={{
-                      name: attachment.filename ?? 'file',
-                      contentType: attachment.mediaType,
-                      url: attachment.url,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
 
             {message.parts?.map((part, index) => {
               const { type } = part;

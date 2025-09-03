@@ -27,7 +27,7 @@ import { textArtifact } from '@/artifacts/text/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
-import type { Attachment, ChatMessage } from '@/lib/types';
+import type { ChatMessage } from '@/lib/types';
 
 export const artifactDefinitions = [
   textArtifact,
@@ -58,8 +58,6 @@ function PureArtifact({
   setInput,
   status,
   stop,
-  attachments,
-  setAttachments,
   sendMessage,
   messages,
   setMessages,
@@ -73,8 +71,6 @@ function PureArtifact({
   setInput: Dispatch<SetStateAction<string>>;
   status: UseChatHelpers<ChatMessage>['status'];
   stop: UseChatHelpers<ChatMessage>['stop'];
-  attachments: Attachment[];
-  setAttachments: Dispatch<SetStateAction<Attachment[]>>;
   messages: ChatMessage[];
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   votes: Array<Vote> | undefined;
@@ -329,11 +325,8 @@ function PureArtifact({
                     setInput={setInput}
                     status={status}
                     stop={stop}
-                    attachments={attachments}
-                    setAttachments={setAttachments}
                     messages={messages}
                     sendMessage={sendMessage}
-                    className="bg-background dark:bg-muted"
                     setMessages={setMessages}
                     selectedVisibilityType={selectedVisibilityType}
                   />

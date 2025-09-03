@@ -39,7 +39,6 @@ La Plata County SMBs (population ~56,116) with diverse technology readiness leve
 - **[Drizzle ORM](https://orm.drizzle.team)** - Type-safe database operations
 - **[Redis](https://redis.io)** - Caching and session management
 - **[Vercel](https://vercel.com)** - Hosting, deployment, and serverless functions
-- **[Vercel Blob](https://vercel.com/storage/blob)** - File storage for reports and uploads
 
 ### AI & Integration
 - **[Beautiful.ai](https://beautiful.ai)** - Professional report generation via MCP integration

@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 export class ArtifactPage {
   constructor(private page: Page) {}
@@ -76,21 +76,12 @@ export class ArtifactPage {
 
     const content = await lastMessageElement.innerText();
 
-    const hasAttachments = await lastMessageElement
-      .getByTestId('message-attachments')
-      .isVisible()
-      .catch(() => false);
-
-    const attachments = hasAttachments
-      ? await lastMessageElement.getByTestId('message-attachments').all()
-      : [];
 
     const page = this.artifact;
 
     return {
       element: lastMessageElement,
       content,
-      attachments,
       async edit(newMessage: string) {
         await page.getByTestId('message-edit-button').click();
         await page.getByTestId('message-editor').fill(newMessage);
