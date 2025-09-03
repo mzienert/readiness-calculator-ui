@@ -51,7 +51,7 @@ La Plata County SMBs (population ~56,116) with diverse technology readiness leve
 
 1. Install dependencies:
 ```bash
-pnpm install
+npm install
 ```
 
 2. Set up environment variables:
@@ -60,25 +60,25 @@ pnpm install
 
 3. Run database migrations:
 ```bash
-pnpm run db:migrate
+npm run db:migrate
 ```
 
 4. Start the development server:
 ```bash
-pnpm run dev
+npm run dev
 ```
 
 The app will be available at [localhost:3000](http://localhost:3000).
 
 ## Available Scripts
 
-- `pnpm run dev` - Start development server
-- `pnpm run build` - Build for production (includes database migrations)
-- `pnpm run start` - Start production server
-- `pnpm run lint` - Run linting and formatting (Biome)
-- `pnpm run db:migrate` - Run database migrations
-- `pnpm run db:studio` - Open database studio
-- `pnpm run test` - Run end-to-end tests (Playwright)
+- `npm run dev` - Start development server
+- `npm run build` - Build for production (includes database migrations)
+- `npm run start` - Start production server
+- `npm run lint` - Run linting and formatting (Biome)
+- `npm run db:migrate` - Run database migrations
+- `npm run db:studio` - Open database studio
+- `npm run test` - Run end-to-end tests (Playwright)
 
 ## Development Status
 

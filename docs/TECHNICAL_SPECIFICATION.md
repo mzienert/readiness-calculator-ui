@@ -281,7 +281,7 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ with pnpm
+- Node.js 18+ with npm
 - PostgreSQL database (Neon recommended with staging/production separation)
 - Redis instance for caching
 - OpenAI API key for multi-agent AI features
@@ -291,7 +291,7 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 
 1. **Install dependencies**:
    ```bash
-   pnpm install
+   npm install
    ```
 
 2. **Configure environment**:
@@ -302,21 +302,21 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 
 3. **Setup database**:
    ```bash
-   pnpm run db:migrate
+   npm run db:migrate
    ```
 
 4. **Start development server**:
    ```bash
-   pnpm run dev
+   npm run dev
    ```
 
 ### Key Scripts
-- `pnpm run dev` - Development server
-- `pnpm run build` - Production build
-- `pnpm run lint` - Code linting
-- `pnpm run db:migrate` - Database migrations
-- `pnpm run db:studio` - Database GUI
-- `pnpm run test` - Run tests
+- `npm run dev` - Development server
+- `npm run build` - Production build
+- `npm run lint` - Code linting
+- `npm run db:migrate` - Database migrations
+- `npm run db:studio` - Database GUI
+- `npm run test` - Run tests
 
 ---
 
