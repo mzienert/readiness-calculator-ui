@@ -61,8 +61,25 @@ npm install
 ```
 
 2. Set up environment variables:
-   - Copy `.env.example` to `.env.local` 
-   - Configure OpenAI API key, database connections, and Beautiful.ai credentials
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local` and configure:
+
+**AUTH_SECRET** (required for NextAuth.js):
+```bash
+# Generate a random 32-character secret
+openssl rand -base64 32
+# Or visit: https://generate-secret.vercel.app/32
+```
+
+**POSTGRES_URL** (required for database):
+- Follow [Vercel Postgres setup guide](https://vercel.com/docs/storage/vercel-postgres/quickstart)
+- Or use any PostgreSQL connection string format:
+  ```
+  postgresql://user:password@host:port/database
+  ```
 
 3. Run database migrations:
 ```bash
