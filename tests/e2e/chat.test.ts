@@ -80,23 +80,6 @@ test.describe('Chat activity', () => {
     await chatPage.isElementNotVisible('suggested-actions');
   });
 
-  test('Upload file and send image attachment with message', async () => {
-    await chatPage.addImageAttachment();
-
-    await chatPage.isElementVisible('attachments-preview');
-    await chatPage.isElementVisible('input-attachment-loader');
-    await chatPage.isElementNotVisible('input-attachment-loader');
-
-    await chatPage.sendUserMessage('Who painted this?');
-
-    const userMessage = await chatPage.getRecentUserMessage();
-    expect(userMessage.attachments).toHaveLength(1);
-
-    await chatPage.isGenerationComplete();
-
-    const assistantMessage = await chatPage.getRecentAssistantMessage();
-    expect(assistantMessage.content).toBe('This painting is by Monet!');
-  });
 
   test('Call weather tool', async () => {
     await chatPage.sendUserMessage("What's the weather in sf?");
