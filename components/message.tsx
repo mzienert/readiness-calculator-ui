@@ -3,7 +3,6 @@ import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
-import { DocumentToolResult } from './document';
 import { PencilEditIcon, SparklesIcon } from './icons';
 import { Response } from './elements/response';
 import { MessageContent } from './elements/message';
@@ -21,7 +20,6 @@ import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
-import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
@@ -174,103 +172,7 @@ const PurePreviewMessage = ({
                 );
               }
 
-              if (type === 'tool-createDocument') {
-                const { toolCallId, state } = part;
 
-                return (
-                  <Tool key={toolCallId} defaultOpen={true}>
-                    <ToolHeader type="tool-createDocument" state={state} />
-                    <ToolContent>
-                      {state === 'input-available' && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === 'output-available' && (
-                        <ToolOutput
-                          output={
-                            'error' in part.output ? (
-                              <div className="p-2 text-red-500 rounded border">
-                                Error: {String(part.output.error)}
-                              </div>
-                            ) : (
-                              <DocumentPreview
-                                isReadonly={isReadonly}
-                                result={part.output}
-                              />
-                            )
-                          }
-                          errorText={undefined}
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
-
-              if (type === 'tool-updateDocument') {
-                const { toolCallId, state } = part;
-
-                return (
-                  <Tool key={toolCallId} defaultOpen={true}>
-                    <ToolHeader type="tool-updateDocument" state={state} />
-                    <ToolContent>
-                      {state === 'input-available' && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === 'output-available' && (
-                        <ToolOutput
-                          output={
-                            'error' in part.output ? (
-                              <div className="p-2 text-red-500 rounded border">
-                                Error: {String(part.output.error)}
-                              </div>
-                            ) : (
-                              <DocumentToolResult
-                                type="update"
-                                result={part.output}
-                                isReadonly={isReadonly}
-                              />
-                            )
-                          }
-                          errorText={undefined}
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
-
-              if (type === 'tool-requestSuggestions') {
-                const { toolCallId, state } = part;
-
-                return (
-                  <Tool key={toolCallId} defaultOpen={true}>
-                    <ToolHeader type="tool-requestSuggestions" state={state} />
-                    <ToolContent>
-                      {state === 'input-available' && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === 'output-available' && (
-                        <ToolOutput
-                          output={
-                            'error' in part.output ? (
-                              <div className="p-2 text-red-500 rounded border">
-                                Error: {String(part.output.error)}
-                              </div>
-                            ) : (
-                              <DocumentToolResult
-                                type="request-suggestions"
-                                result={part.output}
-                                isReadonly={isReadonly}
-                              />
-                            )
-                          }
-                          errorText={undefined}
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
             })}
 
             {!isReadonly && (

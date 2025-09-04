@@ -2,8 +2,6 @@ import { z } from 'zod';
 import type { getWeather } from './ai/tools/get-weather';
 import type { InferUITool, UIMessage } from 'ai';
 
-import type { ArtifactKind } from '@/components/artifact';
-import type { Suggestion } from './db/schema';
 
 export type DataPart = { type: 'append-message'; message: string };
 
@@ -20,17 +18,7 @@ export type ChatTools = {
 };
 
 export type CustomUIDataTypes = {
-  textDelta: string;
-  imageDelta: string;
-  sheetDelta: string;
-  codeDelta: string;
-  suggestion: Suggestion;
   appendMessage: string;
-  id: string;
-  title: string;
-  kind: ArtifactKind;
-  clear: null;
-  finish: null;
 };
 
 export type ChatMessage = UIMessage<
