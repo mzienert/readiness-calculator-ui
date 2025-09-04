@@ -1,7 +1,5 @@
 import { z } from 'zod';
-import type { getWeather } from './ai/tools/get-weather';
-import type { InferUITool, UIMessage } from 'ai';
-
+import type { UIMessage } from 'ai';
 
 export type DataPart = { type: 'append-message'; message: string };
 
@@ -11,11 +9,7 @@ export const messageMetadataSchema = z.object({
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
-type weatherTool = InferUITool<typeof getWeather>;
-
-export type ChatTools = {
-  getWeather: weatherTool;
-};
+export type ChatTools = Record<string, never>;
 
 export type CustomUIDataTypes = {
   appendMessage: string;

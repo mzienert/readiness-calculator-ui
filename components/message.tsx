@@ -14,7 +14,6 @@ import {
   ToolOutput,
 } from './elements/tool';
 import { MessageActions } from './message-actions';
-import { Weather } from './weather';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -151,26 +150,6 @@ const PurePreviewMessage = ({
                 }
               }
 
-              if (type === 'tool-getWeather') {
-                const { toolCallId, state } = part;
-
-                return (
-                  <Tool key={toolCallId} defaultOpen={true}>
-                    <ToolHeader type="tool-getWeather" state={state} />
-                    <ToolContent>
-                      {state === 'input-available' && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === 'output-available' && (
-                        <ToolOutput
-                          output={<Weather weatherAtLocation={part.output} />}
-                          errorText={undefined}
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
 
 
             })}
