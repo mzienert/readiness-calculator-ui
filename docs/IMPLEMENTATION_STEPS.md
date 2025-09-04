@@ -14,17 +14,18 @@ This document tracks the specific implementation steps, action items, and develo
 - ✅ Document data insights capture opportunity
 - ✅ Define talent showcase and platform objectives
 - ✅ Update problem analysis with current solution status
+- ✅ Review and integrate existing system prompt framework
+- ✅ Design calculator solution - primary deliverable
+- ✅ Design data gathering solution - secondary system
 
 ### In Progress
-- 🔄 Review and integrate existing system prompt framework
-- 🔄 Design calculator solution - primary deliverable
-- 🔄 Design data gathering solution - secondary system
+*Currently no active development tasks*
 
 ### Pending Tasks
 
 **Technical Implementation:**
-- ⏳ Remove unauthenticated access to chat UI (require authentication before accessing any chat functionality)
-- ⏳ Implement controlled access rollout strategy (URL distribution to selected 5 SMBs initially)
+- ✅ Remove unauthenticated access to chat UI (require authentication before accessing any chat functionality)
+- ✅ Implement controlled access rollout strategy (URL distribution to selected 5 SMBs initially)
 
 **Multi-Agent Architecture Implementation:**
 - ⏳ Define Zod/JSON schemas for agent responses and data validation
@@ -41,6 +42,12 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Upgrade to Vercel AI SDK v5
 - ⏳ Remove Groq and Grok inference providers
 - ⏳ Update inference provider to OpenAI
+- ⏳ **Refactor artifacts system architecture** - Separate concerns currently mixed in artifacts handlers:
+  - Extract AI generation services (pure functions)
+  - Create dedicated streaming/real-time communication layer
+  - Separate document persistence from generation logic
+  - Remove image generation functionality (not needed for readiness calculator)
+  - Keep text/code generation and streaming for assessment UI
 - ⏳ Implement proper staging/production environment separation (environment-based configuration)
 - ⏳ Set up cost tracking and metrics separation between environments
 - ⏳ Implement usage tracking at service level for AI API costs per user/assessment
