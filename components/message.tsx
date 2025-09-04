@@ -2,17 +2,7 @@
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
-import type { Vote } from '@/lib/db/schema';
 import { PencilEditIcon, SparklesIcon } from './icons';
-import { Response } from './elements/response';
-import { MessageContent } from './elements/message';
-import {
-  Tool,
-  ToolHeader,
-  ToolContent,
-  ToolInput,
-  ToolOutput,
-} from './elements/tool';
 import { MessageActions } from './message-actions';
 import equal from 'fast-deep-equal';
 import { cn, sanitizeText } from '@/lib/utils';
@@ -30,7 +20,6 @@ import { useDataStream } from './data-stream-provider';
 const PurePreviewMessage = ({
   chatId,
   message,
-  vote,
   isLoading,
   setMessages,
   regenerate,
@@ -39,7 +28,6 @@ const PurePreviewMessage = ({
 }: {
   chatId: string;
   message: ChatMessage;
-  vote: Vote | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   regenerate: UseChatHelpers<ChatMessage>['regenerate'];
@@ -119,16 +107,18 @@ const PurePreviewMessage = ({
                         </Tooltip>
                       )}
 
-                      <MessageContent
+                      <div
                         data-testid="message-content"
-                        className={cn('justify-start items-start text-left', {
+                        className={cn('justify-start items-start text-left rounded-xl px-3 py-2', {
                           'bg-primary text-primary-foreground':
                             message.role === 'user',
                           'bg-transparent': message.role === 'assistant',
                         })}
                       >
-                        <Response>{sanitizeText(part.text)}</Response>
-                      </MessageContent>
+                        <div className="prose prose-neutral dark:prose-invert max-w-none whitespace-pre-wrap">
+                          {sanitizeText(part.text)}
+                        </div>
+                      </div>
                     </div>
                   );
                 }
@@ -159,7 +149,6 @@ const PurePreviewMessage = ({
                 key={`action-${message.id}`}
                 chatId={chatId}
                 message={message}
-                vote={vote}
                 isLoading={isLoading}
               />
             )}
@@ -178,7 +167,6 @@ export const PreviewMessage = memo(
     if (prevProps.requiresScrollPadding !== nextProps.requiresScrollPadding)
       return false;
     if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
-    if (!equal(prevProps.vote, nextProps.vote)) return false;
 
     return false;
   },

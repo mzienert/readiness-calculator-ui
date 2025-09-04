@@ -7,7 +7,18 @@ import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
-import { Conversation, ConversationContent, ConversationScrollButton } from './elements/conversation';
+// Simple inline conversation components
+function Conversation({ children, className }: { children: React.ReactNode, className?: string }) {
+  return <div className={className}>{children}</div>;
+}
+
+function ConversationContent({ children, className }: { children: React.ReactNode, className?: string }) {
+  return <div className={className}>{children}</div>;
+}
+
+function ConversationScrollButton() {
+  return null;
+}
 
 interface MessagesProps {
   chatId: string;
@@ -51,7 +62,6 @@ function PureMessages({
               chatId={chatId}
               message={message}
               isLoading={status === 'streaming' && messages.length - 1 === index}
-              vote={undefined}
               setMessages={setMessages}
               regenerate={regenerate}
               isReadonly={isReadonly}
