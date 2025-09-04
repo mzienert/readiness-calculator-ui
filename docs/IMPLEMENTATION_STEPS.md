@@ -43,11 +43,14 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Remove Groq and Grok inference providers
 - ⏳ Update inference provider to OpenAI
 - ⏳ **Refactor artifacts system architecture** - Separate concerns currently mixed in artifacts handlers:
-  - Extract AI generation services (pure functions)
-  - Create dedicated streaming/real-time communication layer
-  - Separate document persistence from generation logic
-  - Remove image generation functionality (not needed for readiness calculator)
-  - Keep text/code generation and streaming for assessment UI
+  - ✅ Remove image generation functionality (not needed for readiness calculator)
+  - ✅ Remove code generation functionality (not needed for readiness calculator)  
+  - ✅ Remove sheet generation functionality (not needed for readiness calculator)
+  - ✅ Remove document suggestions functionality (not needed for readiness calculator)
+  - ⏳ Extract AI generation services (pure functions)
+  - ⏳ Create dedicated streaming/real-time communication layer
+  - ⏳ Separate document persistence from generation logic
+  - Keep text generation and streaming for assessment UI
 - ⏳ Implement proper staging/production environment separation (environment-based configuration)
 - ⏳ Set up cost tracking and metrics separation between environments
 - ⏳ Implement usage tracking at service level for AI API costs per user/assessment
