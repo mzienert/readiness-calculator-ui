@@ -178,7 +178,7 @@ The AI Readiness Calculator serves as the primary user-facing deliverable, provi
 
 **Assessment Approach:**
 - Hybrid conversational/structured approach
-- Leverages existing system prompt framework (see **[System Prompt Framework](./SYSTEM_PROMPT.md)**)
+- Leverages existing system prompt framework (see **[System Prompt Framework](./system%20prompts/Assessment_Agent_System_Prompt.md)**)
 - Natural chat interaction with structured elements when needed
 - 6-category assessment: Market Strategy, Business Understanding, Workforce Acumen, Company Culture, Role of Technology, Data
 - Dynamic weighting based on SMB qualifiers (employee count, revenue, business type)
