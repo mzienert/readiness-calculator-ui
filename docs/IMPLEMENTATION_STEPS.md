@@ -47,10 +47,15 @@ This document tracks the specific implementation steps, action items, and develo
   - ✅ Remove code generation functionality (not needed for readiness calculator)  
   - ✅ Remove sheet generation functionality (not needed for readiness calculator)
   - ✅ Remove document suggestions functionality (not needed for readiness calculator)
-  - ⏳ Extract AI generation services (pure functions)
-  - ⏳ Create dedicated streaming/real-time communication layer
-  - ⏳ Separate document persistence from generation logic
-  - Keep text generation and streaming for assessment UI
+  - ⏳ **Extract AI generation services into pure functions** - Current text artifact handler in `artifacts/text/server.ts` mixes 4 concerns:
+    - AI text generation using `streamText` from Vercel AI SDK
+    - Real-time streaming via `dataStream.write` 
+    - State accumulation (`draftContent += text`)
+    - Database persistence via `saveDocument` call
+    - **Goal**: Create reusable `generateText()`, `streamToClient()`, `persistDocument()` functions for readiness calculator use
+  - ⏳ **Create dedicated streaming/real-time communication layer** - Extract streaming logic from artifact handlers
+  - ⏳ **Separate document persistence from generation logic** - Move `saveDocument` calls out of generation handlers
+  - **Current state**: Artifacts system streamlined to only text generation (`artifactKinds = ['text']`), ready for pure function extraction
 - ⏳ Implement proper staging/production environment separation (environment-based configuration)
 - ⏳ Set up cost tracking and metrics separation between environments
 - ⏳ Implement usage tracking at service level for AI API costs per user/assessment
@@ -133,7 +138,32 @@ This document tracks the specific implementation steps, action items, and develo
 
 ## Development Notes
 
-*[Implementation notes, blockers, and solutions will be documented here]*
+### Artifacts System Refactoring Progress (2024-09-04)
+
+**Completed Cleanup:**
+- Removed unused artifact types: `image`, `code`, `sheet` generations
+- Removed document suggestions functionality (`getSuggestions`, `getSuggestionsByDocumentId`)
+- Streamlined to single `text` artifact type for AI chat responses
+- Current files: `artifacts/text/server.ts`, `artifacts/text/client.tsx`, `lib/artifacts/server.ts`
+
+**Current Architecture Issues:**
+- `artifacts/text/server.ts` (`textDocumentHandler`) mixes concerns:
+  - AI generation: `streamText()` with `myProvider.languageModel('artifact-model')`
+  - Streaming: `dataStream.write({ type: 'data-textDelta', data: text })`
+  - Persistence: `saveDocument()` calls in `lib/artifacts/server.ts` wrapper
+- `lib/artifacts/server.ts` (`createDocumentHandler`) adds persistence layer around generation logic
+
+**Next Steps:**
+1. Extract pure AI generation functions from artifact handlers
+2. Create dedicated streaming service layer  
+3. Separate document persistence from generation logic
+4. Make AI generation reusable for readiness calculator assessment flow
+
+**Key Files for Next Context:**
+- `artifacts/text/server.ts` - Current mixed-concern implementation
+- `lib/artifacts/server.ts` - Handler wrapper with persistence
+- `lib/ai/providers.ts` - AI model configuration  
+- `lib/ai/prompts.ts` - System prompts (streamlined after cleanup)
 
 ---
 
