@@ -21,7 +21,7 @@ La Plata County SMBs (population ~56,116) with diverse technology readiness leve
 
 - 📋 **[Technical Specification](./docs/TECHNICAL_SPECIFICATION.md)** - Complete technical overview including architecture, problems solved, outputs produced, and implementation roadmap
 - 🔍 **[Problem Analysis](./docs/PROBLEM_ANALYSIS.md)** - Detailed problem breakdown, solution design, and multi-agent architecture with La Plata County context
-- 🤖 **[System Prompt Framework](./docs/SYSTEM_PROMPT.md)** - AI behavior specification for SMB-focused readiness evaluation with 6-category scoring system
+- 🤖 **[System Prompt Framework](./docs/system%20prompts/Assessment_Agent_System_Prompt.md)** - AI behavior specification for SMB-focused readiness evaluation with 6-category scoring system
 - 🚀 **[Implementation Steps](./docs/IMPLEMENTATION_STEPS.md)** - Comprehensive development task tracking including multi-agent implementation and evaluation/fine-tuning phases
 
 ## Technical Architecture
