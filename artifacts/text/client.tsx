@@ -10,33 +10,15 @@ import {
   RedoIcon,
   UndoIcon,
 } from '@/components/icons';
-import type { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
-import { getSuggestions } from '../actions';
 
-interface TextArtifactMetadata {
-  suggestions: Array<Suggestion>;
-}
-
-export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
+export const textArtifact = new Artifact<'text', {}>({
   kind: 'text',
   description: 'Useful for text content, like drafting essays and emails.',
-  initialize: async ({ documentId, setMetadata }) => {
-    const suggestions = await getSuggestions({ documentId });
-
-    setMetadata({
-      suggestions,
-    });
+  initialize: async ({ setMetadata }) => {
+    setMetadata({});
   },
-  onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
-    if (streamPart.type === 'data-suggestion') {
-      setMetadata((metadata) => {
-        return {
-          suggestions: [...metadata.suggestions, streamPart.data],
-        };
-      });
-    }
-
+  onStreamPart: ({ streamPart, setArtifact }) => {
     if (streamPart.type === 'data-textDelta') {
       setArtifact((draftArtifact) => {
         return {
@@ -62,7 +44,6 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     onSaveContent,
     getDocumentContentById,
     isLoading,
-    metadata,
   }) => {
     if (isLoading) {
       return <DocumentSkeleton artifactKind="text" />;
@@ -80,16 +61,12 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
         <div className="flex flex-row py-8 md:p-20 px-4">
           <Editor
             content={content}
-            suggestions={metadata ? metadata.suggestions : []}
+            suggestions={[]}
             isCurrentVersion={isCurrentVersion}
             currentVersionIndex={currentVersionIndex}
             status={status}
             onSaveContent={onSaveContent}
           />
-
-          {metadata?.suggestions && metadata.suggestions.length > 0 ? (
-            <div className="md:hidden h-dvh w-12 shrink-0" />
-          ) : null}
         </div>
       </>
     );
@@ -101,7 +78,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('toggle');
       },
-      isDisabled: ({ currentVersionIndex, setMetadata }) => {
+      isDisabled: ({ currentVersionIndex }) => {
         if (currentVersionIndex === 0) {
           return true;
         }
