@@ -178,7 +178,14 @@ CLIENT CONCERNS: ...]
         }
       },
       "dynamic_weighting": {
-        "description": "Adjusts scoring thresholds and recommendations based on qualifiers to make the assessment approachable for SMBs."
+        "description": "Adjusts scoring thresholds and recommendations based on qualifiers to make the assessment approachable for SMBs.",
+        "rules": {
+          "solopreneur_relaxation": null,
+          "small_team_relaxation": null,
+          "rural_focus_weighting": null,
+          "budget_modifier": null
+        },
+        "notes": null
       }
     },
     "categories": {

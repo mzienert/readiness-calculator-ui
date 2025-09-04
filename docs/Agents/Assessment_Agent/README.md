@@ -96,3 +96,185 @@ AI Readiness Assessment Agent for SMBs and solopreneurs. It evaluates readiness 
 ### File Reference
 - System prompt: `Assessment_Agent_System_Prompt.md`
 
+### Uniform JSON schema
+- **Naming**: all fields are `snake_case`.
+- **Scoring values**: integers 1–5. Category totals are integers 2–10. `overall_score` is integer 0–60 before weighting.
+- **Dates**: ISO 8601 strings (e.g., `2025-01-15T13:45:30Z`).
+- **Enums**:
+  - `recommended_strategies`: `"efficiency" | "productivity" | "effectiveness" | "growth" | "expert"`.
+  - `readiness_level`: `"light" | "emerging" | "implementing" | "advanced" | "innovators"`.
+
+#### Input schema (authoritative)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/assessment-input.schema.json",
+  "title": "AssessmentInput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["metadata", "qualifiers", "scores", "client_concerns"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version"],
+      "properties": {
+        "version": { "type": "string", "const": "SMB-1.0" }
+      }
+    },
+    "qualifiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["employee_count", "revenue_band", "business_type"],
+      "properties": {
+        "employee_count": { "type": ["string", "null"] },
+        "revenue_band": { "type": ["string", "null"] },
+        "business_type": { "type": ["string", "null"] }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["1a", "1b", "2a", "2b", "3a", "3b", "4a", "4b", "5a", "5b", "6a", "6b"],
+      "properties": {
+        "1a": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "1b": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "2a": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "2b": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "3a": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "3b": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "4a": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "4b": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "5a": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "5b": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "6a": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "6b": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 }
+      }
+    },
+    "client_concerns": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+```
+
+#### Output schema (authoritative)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/assessment-output.schema.json",
+  "title": "AssessmentOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assessment_result"],
+  "properties": {
+    "assessment_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scores",
+        "overall_score",
+        "readiness_level",
+        "recommended_strategies",
+        "client_concerns_addressed",
+        "strategy_rationale",
+        "assessment_date",
+        "assessor",
+        "dynamic_weights_applied"
+      ],
+      "properties": {
+        "scores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "market_strategy",
+            "business_understanding",
+            "workforce_acumen",
+            "company_culture",
+            "role_of_technology",
+            "data"
+          ],
+          "properties": {
+            "market_strategy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["1a", "1b", "total"],
+              "properties": {
+                "1a": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "1b": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "total": { "type": "integer", "minimum": 0, "maximum": 10 }
+              }
+            },
+            "business_understanding": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["2a", "2b", "total"],
+              "properties": {
+                "2a": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "2b": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "total": { "type": "integer", "minimum": 0, "maximum": 10 }
+              }
+            },
+            "workforce_acumen": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["3a", "3b", "total"],
+              "properties": {
+                "3a": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "3b": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "total": { "type": "integer", "minimum": 0, "maximum": 10 }
+              }
+            },
+            "company_culture": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["4a", "4b", "total"],
+              "properties": {
+                "4a": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "4b": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "total": { "type": "integer", "minimum": 0, "maximum": 10 }
+              }
+            },
+            "role_of_technology": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["5a", "5b", "total"],
+              "properties": {
+                "5a": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "5b": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "total": { "type": "integer", "minimum": 0, "maximum": 10 }
+              }
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["6a", "6b", "total"],
+              "properties": {
+                "6a": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "6b": { "type": "integer", "minimum": 0, "maximum": 5 },
+                "total": { "type": "integer", "minimum": 0, "maximum": 10 }
+              }
+            }
+          }
+        },
+        "overall_score": { "type": "integer", "minimum": 0, "maximum": 60 },
+        "readiness_level": { "type": "string", "enum": ["light", "emerging", "implementing", "advanced", "innovators"] },
+        "recommended_strategies": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["efficiency", "productivity", "effectiveness", "growth", "expert"] }
+        },
+        "client_concerns_addressed": { "type": "object" },
+        "strategy_rationale": { "type": "string" },
+        "assessment_date": { "type": "string", "format": "date-time" },
+        "assessor": { "type": "string" },
+        "dynamic_weights_applied": { "type": "object" }
+      }
+    }
+  }
+}
+```
+
+This schema is the single source of truth for producer/consumer integrations. Any changes must be reflected here first and coordinated across UI, server, and tests.
+
