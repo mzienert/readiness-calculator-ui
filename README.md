@@ -37,7 +37,7 @@ La Plata County SMBs (population ~56,116) with diverse technology readiness leve
 ### Data & Infrastructure  
 - **[Neon PostgreSQL](https://neon.tech)** - Primary database with staging/production separation
 - **[Drizzle ORM](https://orm.drizzle.team)** - Type-safe database operations
-- **[Redis](https://redis.io)** - Caching and session management
+- **[Redis](https://redis.io)** - Resumable chat streams (optional), planned for caching and session management
 - **[Vercel](https://vercel.com)** - Hosting, deployment, and serverless functions
 
 ### AI & Integration
@@ -79,6 +79,11 @@ openssl rand -base64 32
   ```
   postgresql://user:password@host:port/database
   ```
+
+**REDIS_URL** (optional for resumable chat streams):
+- If configured, enables chat streams to resume after interruption
+- App works fine without Redis - streams just won't be resumable
+- Use any Redis connection string: `redis://user:password@host:port`
 
 3. Run database migrations:
 ```bash
