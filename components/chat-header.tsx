@@ -63,7 +63,7 @@ function PureChatHeader({
         asChild
       >
         <Link
-          href={`https://vercel.com/new/clone?repository-url=https://github.com/vercel/ai-chatbot&env=AUTH_SECRET&envDescription=Learn more about how to get the API Keys for the application&envLink=https://github.com/vercel/ai-chatbot/blob/main/.env.example&demo-title=AI Chatbot&demo-description=An Open-Source AI Chatbot Template Built With Next.js and the AI SDK by Vercel.&demo-url=https://chat.vercel.ai&products=[{"type":"integration","protocol":"ai","productSlug":"grok","integrationSlug":"xai"},{"type":"integration","protocol":"storage","productSlug":"neon","integrationSlug":"neon"},{"type":"integration","protocol":"storage","productSlug":"upstash-kv","integrationSlug":"upstash"}]`}
+          href={`https://vercel.com/new/clone?repository-url=https://github.com/mzienert/readiness-calculator-ui&env=AUTH_SECRET,OPENAI_API_KEY&envDescription=Learn more about how to get the API Keys for the application&demo-title=AI Readiness Calculator&demo-description=AI-powered assessment platform for La Plata County SMBs&products=[{"type":"integration","protocol":"ai","productSlug":"openai","integrationSlug":"openai"},{"type":"integration","protocol":"storage","productSlug":"neon","integrationSlug":"neon"},{"type":"integration","protocol":"storage","productSlug":"upstash-kv","integrationSlug":"upstash"}]`}
           target="_noblank"
         >
           <VercelIcon size={16} />
