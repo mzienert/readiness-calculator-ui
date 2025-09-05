@@ -44,3 +44,6 @@ package-lock.json
 /playwright-report/
 /blob-report/
 /playwright/*
+
+# Local development files
+WARP.md
