@@ -48,9 +48,9 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ Design Stream Management system for smooth conversational UX
 
 **Infrastructure & Architecture:**
-- ⏳ Upgrade to Vercel AI SDK v5
-- ⏳ Remove Groq and Grok inference providers
-- ⏳ Update inference provider to OpenAI
+- ✅ Upgrade to Vercel AI SDK v5 (already on version 5.0.26)
+- ✅ Remove Groq and Grok inference providers (removed @ai-sdk/xai dependency)
+- ✅ Update inference provider to OpenAI (installed @ai-sdk/openai, updated all models to gpt-4o/gpt-4o-mini)
 - ✅ **Complete artifacts system removal** - Simplified from complex document/artifact system to pure streaming chat:
   - ✅ Remove image generation functionality (not needed for readiness calculator)
   - ✅ Remove code generation functionality (not needed for readiness calculator)  
