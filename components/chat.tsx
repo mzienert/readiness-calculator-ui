@@ -67,6 +67,7 @@ export function Chat({
             id,
             message: messages.at(-1),
             selectedVisibilityType: visibilityType,
+            selectedChatModel: 'chat-model', // Default to primary chat model
             ...body,
           },
         };
