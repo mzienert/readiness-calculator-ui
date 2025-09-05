@@ -14,7 +14,10 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import { StopIcon } from './icons';
 import { Button } from './ui/button';
-import { SuggestedActions } from './suggested-actions';
+// Simple inline suggested actions component
+function SuggestedActions() {
+  return null;
+}
 // Simple inline prompt input components
 function PromptInput({ children, className, onSubmit }: { children: React.ReactNode, className?: string, onSubmit?: (e: React.FormEvent) => void }) {
   return <form className={className} onSubmit={onSubmit}>{children}</form>;
@@ -214,13 +217,7 @@ function PureMultimodalInput({
         )}
       </AnimatePresence>
 
-      {messages.length === 0 && (
-          <SuggestedActions
-            sendMessage={sendMessage}
-            chatId={chatId}
-            selectedVisibilityType={selectedVisibilityType}
-          />
-        )}
+      {messages.length === 0 && <SuggestedActions />}
 
 
       <PromptInput
