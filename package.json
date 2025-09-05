@@ -19,9 +19,9 @@
     "test": "export PLAYWRIGHT=True && npx playwright test"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.24",
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/react": "2.0.26",
-    "@ai-sdk/xai": "2.0.13",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
     "@codemirror/state": "^6.5.0",
@@ -84,6 +84,7 @@
     "react-dom": "19.0.0-rc-45804af1-20241021",
     "react-resizable-panels": "^2.1.7",
     "react-syntax-highlighter": "^15.6.6",
+    "redis": "^5.8.2",
     "resumable-stream": "^2.0.0",
     "server-only": "^0.0.1",
     "shiki": "^3.12.0",
