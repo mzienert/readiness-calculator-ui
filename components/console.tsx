@@ -1,5 +1,13 @@
 import { TerminalWindowIcon, CrossSmallIcon } from './icons';
-import { Loader } from './elements/loader';
+// Simple inline loader component
+function Loader({ size = 16 }: { size?: number }) {
+  return (
+    <div 
+      className="animate-spin rounded-full border-2 border-current border-t-transparent" 
+      style={{ width: size, height: size }}
+    />
+  );
+}
 import { Button } from './ui/button';
 import {
   type Dispatch,
@@ -10,7 +18,6 @@ import {
   useState,
 } from 'react';
 import { cn } from '@/lib/utils';
-import { useArtifactSelector } from '@/hooks/use-artifact';
 
 export interface ConsoleOutputContent {
   type: 'text' | 'image';
@@ -32,8 +39,6 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState(false);
   const consoleEndRef = useRef<HTMLDivElement>(null);
-
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   const minHeight = 100;
   const maxHeight = 800;
@@ -70,12 +75,6 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   useEffect(() => {
     consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [consoleOutputs]);
-
-  useEffect(() => {
-    if (!isArtifactVisible) {
-      setConsoleOutputs([]);
-    }
-  }, [isArtifactVisible, setConsoleOutputs]);
 
   return consoleOutputs.length > 0 ? (
     <>

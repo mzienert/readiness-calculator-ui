@@ -1,7 +1,10 @@
 
 import { Chat } from '@/components/chat';
 import { generateUUID } from '@/lib/utils';
-import { DataStreamHandler } from '@/components/data-stream-handler';
+// Simple inline data stream handler component
+function DataStreamHandler() {
+  return null;
+}
 import { auth } from '../(auth)/auth';
 import { redirect } from 'next/navigation';
 

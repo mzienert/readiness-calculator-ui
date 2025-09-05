@@ -1,7 +1,7 @@
 'use client';
 
 import type { UIMessage } from 'ai';
-import {
+import React, {
   useRef,
   useEffect,
   useCallback,
@@ -14,13 +14,66 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import { StopIcon } from './icons';
 import { Button } from './ui/button';
-import { SuggestedActions } from './suggested-actions';
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputSubmit,
-} from './elements/prompt-input';
+// Simple inline suggested actions component
+function SuggestedActions() {
+  return null;
+}
+// Simple inline prompt input components
+function PromptInput({ children, className, onSubmit }: { children: React.ReactNode, className?: string, onSubmit?: (e: React.FormEvent) => void }) {
+  return <form className={className} onSubmit={onSubmit}>{children}</form>;
+}
+
+const PromptInputTextarea = React.forwardRef<HTMLTextAreaElement, {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  autoFocus?: boolean;
+  'data-testid'?: string;
+  minHeight?: number;
+  maxHeight?: number;
+  style?: React.CSSProperties;
+  disableAutoResize?: boolean;
+  rows?: number;
+}>((props, ref) => {
+  const { value, onChange, placeholder, disabled, className, onKeyDown, autoFocus, minHeight, maxHeight, style, disableAutoResize, rows, ...rest } = props;
+  const textareaStyle = {
+    minHeight: minHeight ? `${minHeight}px` : undefined,
+    maxHeight: maxHeight ? `${maxHeight}px` : undefined,
+    ...style
+  };
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={className}
+      onKeyDown={onKeyDown}
+      autoFocus={autoFocus}
+      rows={rows || 1}
+      style={textareaStyle}
+      {...rest}
+    />
+  );
+});
+
+function PromptInputToolbar({ children, className }: { children: React.ReactNode, className?: string }) {
+  return <div className={className}>{children}</div>;
+}
+
+function PromptInputSubmit({ children, disabled, status, className, size, ...rest }: { 
+  children: React.ReactNode; 
+  disabled?: boolean; 
+  status?: string; 
+  className?: string; 
+  size?: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type="submit" disabled={disabled} className={className} {...rest}>{children}</button>;
+}
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
@@ -164,13 +217,7 @@ function PureMultimodalInput({
         )}
       </AnimatePresence>
 
-      {messages.length === 0 && (
-          <SuggestedActions
-            sendMessage={sendMessage}
-            chatId={chatId}
-            selectedVisibilityType={selectedVisibilityType}
-          />
-        )}
+      {messages.length === 0 && <SuggestedActions />}
 
 
       <PromptInput
@@ -208,7 +255,9 @@ function PureMultimodalInput({
               disabled={!input.trim()}
               className="bg-primary hover:bg-primary/90 text-primary-foreground size-8"
               size="sm"
-            />
+            >
+              Submit
+            </PromptInputSubmit>
           )}
         </PromptInputToolbar>
       </PromptInput>

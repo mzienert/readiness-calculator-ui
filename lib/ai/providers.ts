@@ -31,7 +31,4 @@ export const myProvider = isTestEnvironment
         'title-model': xai('grok-2-1212'),
         'artifact-model': xai('grok-2-1212'),
       },
-      imageModels: {
-        'small-model': xai.imageModel('grok-2-image'),
-      },
     });
