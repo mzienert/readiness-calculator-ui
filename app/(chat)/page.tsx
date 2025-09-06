@@ -1,6 +1,6 @@
 
 import { Chat } from '@/components/chat';
-import { generateUUID } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
 // Simple inline data stream handler component
 function DataStreamHandler() {
   return null;
@@ -15,7 +15,7 @@ export default async function Page() {
     redirect('/login');
   }
 
-  const id = generateUUID();
+  const id = uuidv4();
 
   return (
     <>

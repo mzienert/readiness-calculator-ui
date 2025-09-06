@@ -1,4 +1,4 @@
-import { generateUUID } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
 import { expect, test } from '../fixtures';
 import { TEST_PROMPTS } from '../prompts/routes';
 import { getMessageByErrorCode } from '@/lib/errors';
@@ -40,7 +40,7 @@ test.describe
     });
 
     test('Ada can invoke chat generation', async ({ adaContext }) => {
-      const chatId = generateUUID();
+      const chatId = uuidv4();
 
       const response = await adaContext.request.post('/api/chat', {
         data: {
@@ -115,19 +115,19 @@ test.describe
       adaContext,
     }) => {
       const response = await adaContext.request.get(
-        `/api/chat/${generateUUID()}/stream`,
+        `/api/chat/${uuidv4()}/stream`,
       );
       expect(response.status()).toBe(404);
     });
 
     test('Ada can resume chat generation', async ({ adaContext }) => {
-      const chatId = generateUUID();
+      const chatId = uuidv4();
 
       const firstRequest = adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
           message: {
-            id: generateUUID(),
+            id: uuidv4(),
             role: 'user',
             content: 'Help me write an essay about Silcon Valley',
             parts: [
@@ -175,13 +175,13 @@ test.describe
     test('Ada can resume chat generation that has ended during request', async ({
       adaContext,
     }) => {
-      const chatId = generateUUID();
+      const chatId = uuidv4();
 
       const firstRequest = await adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
           message: {
-            id: generateUUID(),
+            id: uuidv4(),
             role: 'user',
             content: 'Help me write an essay about Silcon Valley',
             parts: [
@@ -225,13 +225,13 @@ test.describe
     test('Ada cannot resume chat generation that has ended', async ({
       adaContext,
     }) => {
-      const chatId = generateUUID();
+      const chatId = uuidv4();
 
       const firstResponse = await adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
           message: {
-            id: generateUUID(),
+            id: uuidv4(),
             role: 'user',
             content: 'Help me write an essay about Silcon Valley',
             parts: [
@@ -268,13 +268,13 @@ test.describe
       adaContext,
       babbageContext,
     }) => {
-      const chatId = generateUUID();
+      const chatId = uuidv4();
 
       const firstRequest = adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
           message: {
-            id: generateUUID(),
+            id: uuidv4(),
             role: 'user',
             content: 'Help me write an essay about Silcon Valley',
             parts: [
@@ -315,13 +315,13 @@ test.describe
       babbageContext,
     }) => {
       test.fixme();
-      const chatId = generateUUID();
+      const chatId = uuidv4();
 
       const firstRequest = adaContext.request.post('/api/chat', {
         data: {
           id: chatId,
           message: {
-            id: generateUUID(),
+            id: uuidv4(),
             role: 'user',
             content: 'Help me write an essay about Silicon Valley',
             parts: [
