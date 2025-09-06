@@ -5,7 +5,8 @@ import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
-import { fetcher, fetchWithErrorHandlers, generateUUID } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
+import { fetcher, fetchWithErrorHandlers } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
@@ -57,7 +58,7 @@ export function Chat({
     id,
     messages: initialMessages,
     experimental_throttle: 100,
-    generateId: generateUUID,
+    generateId: uuidv4,
     transport: new DefaultChatTransport({
       api: '/api/chat',
       fetch: fetchWithErrorHandlers,
