@@ -12,23 +12,26 @@ import {
 } from './models.test';
 import { isTestEnvironment } from '../constants';
 
+const gpt5Nano = 'gpt-5-nano';
+const MODELS = {
+  GPT_5_NANO: gpt5Nano,
+};
+
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
         'chat-model': chatModel,
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
-        'artifact-model': artifactModel,
       },
     })
   : customProvider({
       languageModels: {
-        'chat-model': openai('gpt-4o-mini'),
+        'chat-model': openai(MODELS.GPT_5_NANO),
         'chat-model-reasoning': wrapLanguageModel({
-          model: openai('gpt-4o-mini'),
+          model: openai(MODELS.GPT_5_NANO),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': openai('gpt-4o-mini'),
-        'artifact-model': openai('gpt-4o-mini'),
+        'title-model': openai(MODELS.GPT_5_NANO),
       },
     });

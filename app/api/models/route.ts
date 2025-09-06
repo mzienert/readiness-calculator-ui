@@ -23,8 +23,9 @@ export async function GET() {
     }
 
     const models = await response.json();
+    const modelIds = models.data.map((model: any) => model.id);
 
-    return Response.json(models, { status: 200 });
+    return Response.json(modelIds, { status: 200 });
   } catch (error) {
     console.error('Models API error:', error);
     return new ChatSDKError('offline:api').toResponse();
