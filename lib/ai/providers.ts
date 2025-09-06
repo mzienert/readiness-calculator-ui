@@ -8,8 +8,8 @@ import { chatModel, reasoningModel, titleModel } from './models.test';
 import { isTestEnvironment } from '../constants';
 
 const MODELS = {
-  GPT_5_NANO: 'gpt-5-nano',
-  GPT_5: 'gpt-5',
+  GPT_5_NANO: 'gpt-4o-mini',
+  GPT_5: 'gpt-4o-mini',
 };
 
 export const myProvider = isTestEnvironment

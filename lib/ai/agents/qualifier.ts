@@ -10,7 +10,7 @@ import {
 import type { CoreMessage } from 'ai';
 
 export class QualifierAgent {
-  private model = myProvider.languageModel('gpt-4o-mini');
+  private model = myProvider.languageModel('chat-model');
 
   /**
    * Determines if the current conversation is ready for qualification
