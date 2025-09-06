@@ -3,10 +3,10 @@
 import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
+import { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import { v4 as uuidv4 } from 'uuid';
-import { fetcher, fetchWithErrorHandlers } from '@/lib/utils';
+import { fetchWithErrorHandlers } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
