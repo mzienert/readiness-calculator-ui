@@ -4,13 +4,13 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import {
-  artifactModel,
-  chatModel,
-  reasoningModel,
-  titleModel,
-} from './models.test';
+import { chatModel, reasoningModel, titleModel } from './models.test';
 import { isTestEnvironment } from '../constants';
+
+const MODELS = {
+  GPT_5_NANO: 'gpt-5-nano',
+  GPT_5: 'gpt-5',
+};
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -18,17 +18,15 @@ export const myProvider = isTestEnvironment
         'chat-model': chatModel,
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
-        'artifact-model': artifactModel,
       },
     })
   : customProvider({
       languageModels: {
-        'chat-model': openai('gpt-4o-mini'),
+        'chat-model': openai(MODELS.GPT_5),
         'chat-model-reasoning': wrapLanguageModel({
-          model: openai('gpt-4o-mini'),
+          model: openai(MODELS.GPT_5),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': openai('gpt-4o-mini'),
-        'artifact-model': openai('gpt-4o-mini'),
+        'title-model': openai(MODELS.GPT_5_NANO),
       },
     });

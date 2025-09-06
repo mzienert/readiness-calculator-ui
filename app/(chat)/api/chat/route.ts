@@ -17,7 +17,8 @@ import {
   saveChat,
   saveMessages,
 } from '@/lib/db/queries';
-import { convertToUIMessages, generateUUID } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
+import { convertToUIMessages } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
@@ -143,7 +144,7 @@ export async function POST(request: Request) {
       ],
     });
 
-    const streamId = generateUUID();
+    const streamId = uuidv4();
     await createStreamId({ streamId, chatId: id });
 
     const stream = createUIMessageStream({
@@ -168,7 +169,7 @@ export async function POST(request: Request) {
           }),
         );
       },
-      generateId: generateUUID,
+      generateId: uuidv4,
       onFinish: async ({ messages }) => {
         await saveMessages({
           messages: messages.map((message) => ({
