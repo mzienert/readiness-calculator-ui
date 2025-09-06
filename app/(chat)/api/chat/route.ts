@@ -3,9 +3,9 @@ import {
   createUIMessageStream,
   JsonToSseTransformStream,
   smoothStream,
-  stepCountIs,
   streamText,
 } from 'ai';
+import { AssessmentOrchestrator } from '@/lib/ai/orchestrator';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -20,7 +20,6 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { convertToUIMessages } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
-import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -147,27 +146,48 @@ export async function POST(request: Request) {
     const streamId = uuidv4();
     await createStreamId({ streamId, chatId: id });
 
+    // Initialize orchestrator for multi-agent assessment
+    const orchestrator = new AssessmentOrchestrator();
+    
     const stream = createUIMessageStream({
-      execute: ({ writer: dataStream }) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
-        });
+      execute: async ({ writer: dataStream }) => {
+        try {
+          // Process message through multi-agent orchestrator
+          const result = await orchestrator.processMessage(
+            convertToModelMessages(uiMessages),
+            session.user.id
+          );
 
-        result.consumeStream();
+          // Create a simple text response (no streaming for now, we'll add that later)
+          dataStream.writeMessage({
+            id: uuidv4(),
+            role: 'assistant',
+            parts: [{ type: 'text', text: result.response }],
+          });
 
-        dataStream.merge(
-          result.toUIMessageStream({
-            sendReasoning: true,
-          }),
-        );
+          // Optional: Add state information for debugging
+          if (process.env.NODE_ENV === 'development') {
+            dataStream.writeMessage({
+              id: uuidv4(),
+              role: 'assistant', 
+              parts: [{ type: 'text', text: `\n\n_Debug: Phase: ${result.state.phase}, Agent: ${result.state.currentAgent}_` }],
+            });
+          }
+
+        } catch (error) {
+          console.error('Orchestrator error:', error);
+          
+          // Fallback to simple streamText if orchestrator fails
+          const fallbackResult = streamText({
+            model: myProvider.languageModel(selectedChatModel),
+            system: systemPrompt({ selectedChatModel, requestHints }),
+            messages: convertToModelMessages(uiMessages),
+            experimental_transform: smoothStream({ chunking: 'word' }),
+          });
+
+          fallbackResult.consumeStream();
+          dataStream.merge(fallbackResult.toUIMessageStream());
+        }
       },
       generateId: uuidv4,
       onFinish: async ({ messages }) => {
