@@ -55,7 +55,6 @@ export function getLocalStorage(key: string) {
   return [];
 }
 
-
 type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
 type ResponseMessage = ResponseMessageWithoutId & { id: string };
 
