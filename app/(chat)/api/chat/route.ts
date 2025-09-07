@@ -178,30 +178,47 @@ export async function POST(request: Request) {
           // Log the full response for debugging
           console.log('📄 Full response text:', result.response);
 
-          // Use streamText with system message to echo the orchestrator response
-          console.log('💬 Using streamText to echo orchestrator response...');
+          // Stream our orchestrator response directly without AI model involvement
+          console.log('💬 Creating direct text stream for orchestrator response...');
           
-          const textStream = streamText({
-            model: myProvider.languageModel(selectedChatModel),
-            system: 'You are an AI assistant. Your task is to repeat the exact text provided in the user message without any changes, additions, or formatting.',
-            messages: [
-              {
-                role: 'user',
-                content: `Please repeat this text exactly: ${result.response}`
+          // Create a custom readable stream that emits our orchestrator response
+          const directStream = new ReadableStream({
+            start(controller) {
+              console.log('📝 Starting direct stream emission...');
+              
+              // Generate consistent ID for entire text part
+              const textPartId = uuidv4();
+              console.log('📝 Using text part ID:', textPartId);
+              
+              // Add text-specific structure chunks
+              console.log('📝 Emitting text-start chunk...');
+              controller.enqueue({ type: 'text-start', id: textPartId });
+              
+              // Split response into words for smooth streaming
+              const words = result.response.split(' ');
+              console.log('📝 Streaming', words.length, 'word chunks');
+              
+              for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                const isLast = i === words.length - 1;
+                
+                controller.enqueue({
+                  type: 'text-delta',
+                  delta: word + (isLast ? '' : ' '),
+                  id: textPartId,
+                });
               }
-            ],
-            experimental_transform: smoothStream({ chunking: 'word' }),
+              
+              console.log('📝 Emitting text-end chunk...');
+              controller.enqueue({ type: 'text-end', id: textPartId });
+              
+              console.log('📝 Direct stream completed');
+              controller.close();
+            }
           });
 
-          console.log('🔍 StreamText created, inspecting properties...');
-          console.log('🔍 StreamText object keys:', Object.getOwnPropertyNames(textStream));
-          
-          console.log('🔀 Converting to UIMessageStream...');
-          const uiStream = textStream.toUIMessageStream();
-          console.log('🔍 UIMessageStream created:', !!uiStream);
-          
-          console.log('🔀 Merging into dataStream...');
-          dataStream.merge(uiStream);
+          console.log('🔀 Merging direct stream into dataStream...');
+          dataStream.merge(directStream);
 
           console.log('✅ Stream execution completed successfully');
 
