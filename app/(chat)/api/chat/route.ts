@@ -130,6 +130,13 @@ export async function POST(request: Request) {
       country,
     };
 
+    console.log('💾 Saving user message:', {
+      id: message.id,
+      role: 'user',
+      partsCount: message.parts?.length,
+      partsTypes: message.parts?.map(p => p.type),
+    });
+
     await saveMessages({
       messages: [
         {
@@ -152,32 +159,63 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         try {
+          console.log('🚀 Starting stream execution');
+          console.log('📝 Converting messages for orchestrator...');
+          
           // Process message through multi-agent orchestrator
           const result = await orchestrator.processMessage(
             convertToModelMessages(uiMessages),
             session.user.id
           );
 
-          // Create a simple text response (no streaming for now, we'll add that later)
-          dataStream.writeMessage({
-            id: uuidv4(),
-            role: 'assistant',
-            parts: [{ type: 'text', text: result.response }],
+          console.log('🎭 Orchestrator result received:', {
+            hasResponse: !!result.response,
+            responseLength: result.response?.length,
+            phase: result.state.phase,
+            agent: result.state.currentAgent
           });
 
-          // Optional: Add state information for debugging
-          if (process.env.NODE_ENV === 'development') {
-            dataStream.writeMessage({
+          // Log the full response for debugging
+          console.log('📄 Full response text:', result.response);
+
+          // The orchestrator already has the final text, send it directly as text chunks
+          console.log('💬 Writing orchestrator response directly as text parts...');
+          
+          // Write proper UI message stream chunks
+          console.log('📝 Writing text-start chunk...');
+          dataStream.write({
+            type: 'text-start',
+            id: uuidv4(),
+          });
+
+          // Write the text content as chunks
+          const words = result.response.split(' ');
+          console.log('📝 Writing', words.length, 'text-delta chunks...');
+          for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const isLast = i === words.length - 1;
+            
+            dataStream.write({
+              type: 'text-delta',
+              delta: word + (isLast ? '' : ' '),
               id: uuidv4(),
-              role: 'assistant', 
-              parts: [{ type: 'text', text: `\n\n_Debug: Phase: ${result.state.phase}, Agent: ${result.state.currentAgent}_` }],
             });
           }
 
+          console.log('📝 Writing text-end chunk...');
+          dataStream.write({
+            type: 'text-end',
+            id: uuidv4(),
+          });
+
+          console.log('✅ Stream execution completed successfully');
+
         } catch (error) {
-          console.error('Orchestrator error:', error);
+          console.error('💥 Orchestrator error:', error);
+          console.error('📍 Error stack:', error.stack);
           
           // Fallback to simple streamText if orchestrator fails
+          console.log('🔄 Using fallback streamText...');
           const fallbackResult = streamText({
             model: myProvider.languageModel(selectedChatModel),
             system: systemPrompt({ selectedChatModel, requestHints }),
@@ -185,22 +223,35 @@ export async function POST(request: Request) {
             experimental_transform: smoothStream({ chunking: 'word' }),
           });
 
-          fallbackResult.consumeStream();
           dataStream.merge(fallbackResult.toUIMessageStream());
         }
       },
       generateId: uuidv4,
       onFinish: async ({ messages }) => {
-        await saveMessages({
-          messages: messages.map((message) => ({
-            id: message.id,
-            role: message.role,
-            parts: message.parts,
-            createdAt: new Date(),
-            attachments: [],
-            chatId: id,
-          })),
-        });
+        console.log('💾 onFinish called with messages:', messages.length);
+        console.log('📊 Message details:', messages.map(m => ({
+          id: m.id,
+          role: m.role,
+          partsCount: m.parts?.length,
+          partsTypes: m.parts?.map(p => p.type),
+        })));
+
+        try {
+          await saveMessages({
+            messages: messages.map((message) => ({
+              id: message.id,
+              role: message.role,
+              parts: message.parts,
+              createdAt: new Date(),
+              attachments: [],
+              chatId: id,
+            })),
+          });
+          console.log('✅ Messages saved successfully');
+        } catch (error) {
+          console.error('💥 Failed to save messages:', error);
+          // Don't re-throw here to avoid breaking the stream response
+        }
       },
       onError: () => {
         return 'Oops, an error occurred!';
@@ -224,7 +275,7 @@ export async function POST(request: Request) {
       return error.toResponse();
     }
     // Return error response for non-ChatSDKError cases
-    return new ChatSDKError('internal_error').toResponse();
+    return new ChatSDKError('bad_request:api').toResponse();
   }
 }
 
