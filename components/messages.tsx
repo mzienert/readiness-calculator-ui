@@ -50,6 +50,19 @@ function PureMessages({
 
   useDataStream();
 
+  // Log messages received by the Messages component
+  console.log('📱 Messages component received:', {
+    messagesCount: messages.length,
+    status,
+    messagesInfo: messages.map((msg, idx) => ({
+      id: msg.id,
+      role: msg.role,
+      partsCount: msg.parts?.length,
+      partsTypes: msg.parts?.map(p => p.type),
+      index: idx
+    }))
+  });
+
   return (
     <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
       <Conversation className="flex flex-col min-w-0 gap-6 pt-4 pb-32">

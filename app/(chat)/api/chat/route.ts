@@ -178,35 +178,30 @@ export async function POST(request: Request) {
           // Log the full response for debugging
           console.log('📄 Full response text:', result.response);
 
-          // The orchestrator already has the final text, send it directly as text chunks
-          console.log('💬 Writing orchestrator response directly as text parts...');
+          // Use streamText with system message to echo the orchestrator response
+          console.log('💬 Using streamText to echo orchestrator response...');
           
-          // Write proper UI message stream chunks
-          console.log('📝 Writing text-start chunk...');
-          dataStream.write({
-            type: 'text-start',
-            id: uuidv4(),
+          const textStream = streamText({
+            model: myProvider.languageModel(selectedChatModel),
+            system: 'You are an AI assistant. Your task is to repeat the exact text provided in the user message without any changes, additions, or formatting.',
+            messages: [
+              {
+                role: 'user',
+                content: `Please repeat this text exactly: ${result.response}`
+              }
+            ],
+            experimental_transform: smoothStream({ chunking: 'word' }),
           });
 
-          // Write the text content as chunks
-          const words = result.response.split(' ');
-          console.log('📝 Writing', words.length, 'text-delta chunks...');
-          for (let i = 0; i < words.length; i++) {
-            const word = words[i];
-            const isLast = i === words.length - 1;
-            
-            dataStream.write({
-              type: 'text-delta',
-              delta: word + (isLast ? '' : ' '),
-              id: uuidv4(),
-            });
-          }
-
-          console.log('📝 Writing text-end chunk...');
-          dataStream.write({
-            type: 'text-end',
-            id: uuidv4(),
-          });
+          console.log('🔍 StreamText created, inspecting properties...');
+          console.log('🔍 StreamText object keys:', Object.getOwnPropertyNames(textStream));
+          
+          console.log('🔀 Converting to UIMessageStream...');
+          const uiStream = textStream.toUIMessageStream();
+          console.log('🔍 UIMessageStream created:', !!uiStream);
+          
+          console.log('🔀 Merging into dataStream...');
+          dataStream.merge(uiStream);
 
           console.log('✅ Stream execution completed successfully');
 
@@ -235,6 +230,27 @@ export async function POST(request: Request) {
           partsCount: m.parts?.length,
           partsTypes: m.parts?.map(p => p.type),
         })));
+
+        // Log parts details separately for better visibility
+        messages.forEach((msg, msgIdx) => {
+          console.log(`📝 Message ${msgIdx} parts:`, msg.parts?.map((p, partIdx) => {
+            const partInfo = {
+              type: p.type,
+              hasText: 'text' in p,
+              textLength: 'text' in p ? p.text?.length : 'no text property',
+              textPreview: 'text' in p ? `"${p.text?.substring(0, 50)}..."` : 'no text',
+              allKeys: Object.keys(p)
+            };
+            
+            // Log full part content for step-start parts to understand structure
+            if (p.type === 'step-start') {
+              console.log(`  🔍 Full step-start part content:`, p);
+            }
+            
+            console.log(`  Part ${partIdx}:`, partInfo);
+            return `Part ${partIdx}: ${p.type}`;
+          }));
+        });
 
         try {
           await saveMessages({
