@@ -100,7 +100,7 @@ To get started, could you tell me a bit about your business? For example, how ma
 
     // For now, we only have QualifierAgent, so route everything there
     // TODO: Load existing state and route to appropriate agent
-    let state = this.initializeState(userId); // Temporary: always start fresh
+    const state = this.initializeState(userId); // Temporary: always start fresh
 
     switch (state.currentAgent) {
       case 'qualifier': {
