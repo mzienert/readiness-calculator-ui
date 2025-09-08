@@ -137,42 +137,5 @@ export const {
   clearError,
 } = orchestratorSlice.actions;
 
-// Selectors
-export const selectCurrentSession = (state: { orchestrator: OrchestratorState }) => 
-  state.orchestrator.currentSession;
-
-export const selectCurrentAgent = (state: { orchestrator: OrchestratorState }) => 
-  state.orchestrator.currentSession?.currentAgent;
-
-export const selectCurrentPhase = (state: { orchestrator: OrchestratorState }) => 
-  state.orchestrator.currentSession?.phase;
-
-export const selectIsProcessing = (state: { orchestrator: OrchestratorState }) => 
-  state.orchestrator.isProcessing;
-
-export const selectProgress = (state: { orchestrator: OrchestratorState }) => {
-  if (!state.orchestrator.currentSession) return null;
-  
-  // Progress calculation moved from orchestrator class to selector
-  const session = state.orchestrator.currentSession;
-  const phaseMap = {
-    qualifying: { step: 1, name: 'Business Context' },
-    assessing: { step: 2, name: 'Assessment Questions' },
-    analyzing: { step: 3, name: 'Analysis & Scoring' },
-    reporting: { step: 4, name: 'Report Generation' },
-    complete: { step: 4, name: 'Complete' },
-  };
-
-  const totalSteps = 4;
-  const currentPhase = phaseMap[session.phase];
-
-  return {
-    phase: session.phase,
-    currentAgent: session.currentAgent,
-    completedSteps: currentPhase.step - 1,
-    totalSteps,
-    progress: Math.round(((currentPhase.step - 1) / totalSteps) * 100),
-  };
-};
 
 export default orchestratorSlice.reducer;
