@@ -119,6 +119,61 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
      - Dependency on OpenAI's service availability
      - Reduced ability to implement complex branching logic or step-by-step processing flows
 
+   **OpenAI Assistants Threading Example**:
+   ```javascript
+   // Create thread and start assessment
+   async function startAssessment() {
+     const thread = await openai.beta.threads.create();
+     
+     // Initial qualifier questions
+     const message = await openai.beta.threads.messages.create(thread.id, {
+       role: "user",
+       content: "I want to start a readiness assessment for my business"
+     });
+     
+     const run = await openai.beta.threads.runs.create(thread.id, {
+       assistant_id: "asst_qualifier_agent_id"
+     });
+     
+     return { threadId: thread.id, runId: run.id };
+   }
+
+   // Continue conversation in same thread
+   async function continueAssessment(threadId, userResponse) {
+     // Add user response to existing thread
+     await openai.beta.threads.messages.create(threadId, {
+       role: "user", 
+       content: userResponse
+     });
+     
+     // Run assessment agent on same thread
+     const run = await openai.beta.threads.runs.create(threadId, {
+       assistant_id: "asst_assessment_agent_id"
+     });
+     
+     // Thread automatically has full context:
+     // - Previous qualifier responses
+     // - Business size, revenue, industry
+     // - All prior Q&A responses
+     
+     return run;
+   }
+
+   // Example flow
+   const { threadId } = await startAssessment();
+
+   // User: "We're a 5-person marketing agency"
+   await continueAssessment(threadId, "We're a 5-person marketing agency");
+
+   // User: "$500K annual revenue"  
+   await continueAssessment(threadId, "$500K annual revenue");
+
+   // Agent automatically knows company size + revenue for all subsequent questions
+   await continueAssessment(threadId, "We struggle with lead generation");
+   ```
+   
+   The thread preserves all context automatically - no manual state management needed.
+
 2. **SMB-Focused Assessment Framework**
    - 6-category evaluation: Market Strategy, Business Understanding, Workforce Acumen, Company Culture, Role of Technology, Data
    - Dynamic weighting based on business qualifiers (solopreneur vs small team adjustments)
