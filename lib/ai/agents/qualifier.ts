@@ -40,7 +40,6 @@ Focus on:
 
 Keep it conversational and encouraging. Many SMB owners may feel intimidated by "assessments" so emphasize this is to help customize guidance for their specific situation.`,
       messages,
-      maxTokens: 200,
     });
 
     return text;
