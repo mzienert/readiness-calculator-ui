@@ -39,6 +39,7 @@ const PurePreviewMessage = ({
 
   useDataStream();
 
+
   return (
     <AnimatePresence>
       <motion.div
@@ -74,6 +75,7 @@ const PurePreviewMessage = ({
             {message.parts?.map((part, index) => {
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
+
 
               if (type === 'reasoning' && part.text?.trim().length > 0) {
                 return (
