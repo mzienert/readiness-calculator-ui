@@ -75,52 +75,12 @@ export function Chat({
       },
     }),
     onData: (dataPart) => {
-      console.log('📱 UI onData received:', {
-        type: dataPart.type,
-        hasText: 'text' in dataPart,
-        hasDelta: 'delta' in dataPart,
-        hasId: 'id' in dataPart,
-        keys: Object.keys(dataPart),
-        preview: JSON.stringify(dataPart).substring(0, 100) + '...'
-      });
-      
-      if (dataPart.type === 'text-delta' && 'delta' in dataPart) {
-        console.log('📱 UI text-delta content:', `"${dataPart.delta}"`);
-      }
-      
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
     },
-    onFinish: (message, options) => {
-      console.log('📱 UI onFinish called with:', {
-        messageId: message?.id,
-        messageRole: message?.role,
-        partsCount: message?.parts?.length,
-        partsTypes: message?.parts?.map(p => p.type),
-        options
-      });
-      
-      // Log full message parts for debugging
-      message?.parts?.forEach((part, idx) => {
-        console.log(`📱 UI final part ${idx}:`, {
-          type: part.type,
-          hasText: 'text' in part,
-          textLength: 'text' in part ? part.text?.length : 'no text property',
-          textPreview: 'text' in part ? `"${part.text?.substring(0, 50)}..."` : 'no text',
-          allKeys: Object.keys(part)
-        });
-        
-        if (part.type === 'step-start') {
-          console.log(`📱 UI full step-start part:`, part);
-        }
-      });
-      
+    onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
-      console.log('📱 UI onError called:', error);
-      console.log('📱 UI error type:', error.constructor.name);
-      console.log('📱 UI error message:', error.message);
-      
       if (error instanceof ChatSDKError) {
         toast({
           type: 'error',

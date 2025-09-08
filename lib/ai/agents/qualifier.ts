@@ -177,19 +177,12 @@ Ready to begin with the first assessment question?`
     dynamicWeighting?: DynamicWeighting;
     isComplete: boolean;
   }> {
-    console.log('🏢 QualifierAgent.process called');
-    console.log('📨 Processing messages:', messages.length);
-    
     // Try to extract qualifier data from current conversation
-    console.log('🔍 Attempting to extract qualifier data...');
     const qualifier = await this.extractQualifierData(messages);
-    console.log('📋 Extracted qualifier:', qualifier ? 'SUCCESS' : 'NULL');
 
     if (!qualifier) {
-      console.log('❓ No qualifier data, generating questions...');
       // Still need more information, ask qualifying questions
       const response = await this.generateQualifyingQuestions(messages);
-      console.log('💬 Generated question response length:', response?.length);
       
       return {
         response,
@@ -197,15 +190,8 @@ Ready to begin with the first assessment question?`
       };
     }
 
-    console.log('✅ Qualifier data available, completing qualification...');
     // We have enough information, complete qualification
     const qualifierResponse = await this.completeQualification(messages, qualifier);
-    console.log('🎯 Completion response:', {
-      hasNextMessage: !!qualifierResponse.nextMessage,
-      messageLength: qualifierResponse.nextMessage?.length,
-      hasQualifier: !!qualifierResponse.qualifier,
-      hasDynamicWeighting: !!qualifierResponse.dynamicWeighting
-    });
     
     return {
       response: qualifierResponse.nextMessage,

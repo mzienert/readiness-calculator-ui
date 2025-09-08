@@ -130,12 +130,6 @@ export async function POST(request: Request) {
       country,
     };
 
-    console.log('💾 Saving user message:', {
-      id: message.id,
-      role: 'user',
-      partsCount: message.parts?.length,
-      partsTypes: message.parts?.map(p => p.type),
-    });
 
     await saveMessages({
       messages: [
@@ -159,8 +153,6 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         try {
-          console.log('🚀 Starting stream execution');
-          console.log('📝 Converting messages for orchestrator...');
           
           // Process message through multi-agent orchestrator
           const result = await orchestrator.processMessage(
@@ -168,35 +160,19 @@ export async function POST(request: Request) {
             session.user.id
           );
 
-          console.log('🎭 Orchestrator result received:', {
-            hasResponse: !!result.response,
-            responseLength: result.response?.length,
-            phase: result.state.phase,
-            agent: result.state.currentAgent
-          });
-
-          // Log the full response for debugging
-          console.log('📄 Full response text:', result.response);
-
           // Stream our orchestrator response directly without AI model involvement
-          console.log('💬 Creating direct text stream for orchestrator response...');
           
           // Create a custom readable stream that emits our orchestrator response
           const directStream = new ReadableStream({
             start(controller) {
-              console.log('📝 Starting direct stream emission...');
-              
               // Generate consistent ID for entire text part
               const textPartId = uuidv4();
-              console.log('📝 Using text part ID:', textPartId);
               
               // Add text-specific structure chunks
-              console.log('📝 Emitting text-start chunk...');
               controller.enqueue({ type: 'text-start', id: textPartId });
               
               // Split response into words for smooth streaming
               const words = result.response.split(' ');
-              console.log('📝 Streaming', words.length, 'word chunks');
               
               for (let i = 0; i < words.length; i++) {
                 const word = words[i];
@@ -209,25 +185,17 @@ export async function POST(request: Request) {
                 });
               }
               
-              console.log('📝 Emitting text-end chunk...');
               controller.enqueue({ type: 'text-end', id: textPartId });
-              
-              console.log('📝 Direct stream completed');
               controller.close();
             }
           });
 
-          console.log('🔀 Merging direct stream into dataStream...');
           dataStream.merge(directStream);
 
-          console.log('✅ Stream execution completed successfully');
-
         } catch (error) {
-          console.error('💥 Orchestrator error:', error);
-          console.error('📍 Error stack:', error.stack);
+          console.error('Orchestrator error:', error);
           
           // Fallback to simple streamText if orchestrator fails
-          console.log('🔄 Using fallback streamText...');
           const fallbackResult = streamText({
             model: myProvider.languageModel(selectedChatModel),
             system: systemPrompt({ selectedChatModel, requestHints }),
@@ -240,34 +208,6 @@ export async function POST(request: Request) {
       },
       generateId: uuidv4,
       onFinish: async ({ messages }) => {
-        console.log('💾 onFinish called with messages:', messages.length);
-        console.log('📊 Message details:', messages.map(m => ({
-          id: m.id,
-          role: m.role,
-          partsCount: m.parts?.length,
-          partsTypes: m.parts?.map(p => p.type),
-        })));
-
-        // Log parts details separately for better visibility
-        messages.forEach((msg, msgIdx) => {
-          console.log(`📝 Message ${msgIdx} parts:`, msg.parts?.map((p, partIdx) => {
-            const partInfo = {
-              type: p.type,
-              hasText: 'text' in p,
-              textLength: 'text' in p ? p.text?.length : 'no text property',
-              textPreview: 'text' in p ? `"${p.text?.substring(0, 50)}..."` : 'no text',
-              allKeys: Object.keys(p)
-            };
-            
-            // Log full part content for step-start parts to understand structure
-            if (p.type === 'step-start') {
-              console.log(`  🔍 Full step-start part content:`, p);
-            }
-            
-            console.log(`  Part ${partIdx}:`, partInfo);
-            return `Part ${partIdx}: ${p.type}`;
-          }));
-        });
 
         try {
           await saveMessages({
@@ -280,9 +220,8 @@ export async function POST(request: Request) {
               chatId: id,
             })),
           });
-          console.log('✅ Messages saved successfully');
         } catch (error) {
-          console.error('💥 Failed to save messages:', error);
+          console.error('Failed to save messages:', error);
           // Don't re-throw here to avoid breaking the stream response
         }
       },

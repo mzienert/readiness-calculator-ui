@@ -39,21 +39,6 @@ const PurePreviewMessage = ({
 
   useDataStream();
 
-  // Log message processing details
-  console.log('📱 PreviewMessage processing:', {
-    messageId: message.id,
-    role: message.role,
-    partsCount: message.parts?.length,
-    isLoading,
-    parts: message.parts?.map((part, idx) => ({
-      index: idx,
-      type: part.type,
-      hasText: 'text' in part,
-      textLength: 'text' in part ? part.text?.length : 'no text property',
-      textPreview: 'text' in part ? `"${part.text?.substring(0, 30)}..."` : 'no text',
-      allKeys: Object.keys(part)
-    }))
-  });
 
   return (
     <AnimatePresence>
@@ -91,14 +76,6 @@ const PurePreviewMessage = ({
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
 
-              console.log(`📱 Processing part ${index}:`, {
-                type,
-                hasText: 'text' in part,
-                textValue: 'text' in part ? part.text : 'NO TEXT PROPERTY',
-                textLength: 'text' in part ? part.text?.length : 'no text property',
-                allKeys: Object.keys(part),
-                fullPart: part
-              });
 
               if (type === 'reasoning' && part.text?.trim().length > 0) {
                 return (

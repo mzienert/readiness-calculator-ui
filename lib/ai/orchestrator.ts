@@ -43,7 +43,6 @@ export class AssessmentOrchestrator {
    */
   async saveState(state: AgentState): Promise<void> {
     // TODO: Implement state persistence to database
-    console.log('Saving state:', state.sessionId, state.currentAgent, state.phase);
   }
 
   /**
@@ -83,62 +82,42 @@ To get started, could you tell me a bit about your business? For example, how ma
     response: string;
     state: AgentState;
   }> {
-    console.log('🔄 Orchestrator.processMessage called');
-    console.log('📥 Messages:', messages.length);
-    console.log('👤 UserId:', userId);
     
     // Handle initial greeting for new assessments
     if (this.isNewAssessment(messages)) {
-      console.log('🆕 New assessment detected');
       const state = this.initializeState(userId);
       const response = this.getInitialGreeting();
       
-      console.log('💾 Saving initial state:', state.sessionId);
       await this.saveState(state);
       
-      console.log('✅ Returning initial greeting');
       return { response, state };
     }
 
     // For now, we only have QualifierAgent, so route everything there
     // TODO: Load existing state and route to appropriate agent
     let state = this.initializeState(userId); // Temporary: always start fresh
-    console.log('🔧 Initialized state:', state.currentAgent, state.phase);
 
     switch (state.currentAgent) {
       case 'qualifier': {
-        console.log('👨‍💼 Routing to QualifierAgent');
         const result = await this.qualifierAgent.process(messages);
-        console.log('📤 QualifierAgent result:', {
-          hasResponse: !!result.response,
-          responseLength: result.response?.length,
-          hasQualifier: !!result.qualifier,
-          hasDynamicWeighting: !!result.dynamicWeighting,
-          isComplete: result.isComplete
-        });
         
         // Update state with qualifier results
         if (result.qualifier) {
-          console.log('📋 Adding qualifier to state:', result.qualifier);
           state.qualifier = result.qualifier;
         }
         if (result.dynamicWeighting) {
-          console.log('⚖️ Adding dynamic weighting to state:', result.dynamicWeighting);
           state.dynamicWeighting = result.dynamicWeighting;
         }
         
         // Handle agent transition
         if (result.isComplete) {
-          console.log('✅ Qualifier complete, transitioning to assessor');
           state.currentAgent = 'assessor';
           state.phase = 'assessing';
           // TODO: Add transition message about starting assessment
         }
 
-        console.log('💾 Saving updated state');
         await this.saveState(state);
         
-        console.log('🎯 Returning result with response length:', result.response?.length);
         return {
           response: result.response,
           state,
@@ -210,6 +189,5 @@ To get started, could you tell me a bit about your business? For example, how ma
    */
   async resetState(sessionId: string): Promise<void> {
     // TODO: Implement state reset in database
-    console.log('Resetting state for session:', sessionId);
   }
 }
