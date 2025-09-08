@@ -1,9 +1,9 @@
 import { QualifierAgent } from './agents/qualifier';
-import { 
-  type AgentState, 
-  type SMBQualifier, 
+import {
+  type AgentState,
+  type SMBQualifier,
   type DynamicWeighting,
-  agentStateSchema 
+  agentStateSchema,
 } from './schemas';
 import type { CoreMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
@@ -43,6 +43,12 @@ export class AssessmentOrchestrator {
    */
   async saveState(state: AgentState): Promise<void> {
     // TODO: Implement state persistence to database
+    console.log(
+      'Saving state:',
+      state.sessionId,
+      state.currentAgent,
+      state.phase,
+    );
   }
 
   /**
@@ -76,20 +82,19 @@ To get started, could you tell me a bit about your business? For example, how ma
    * Process a conversation turn and return response
    */
   async processMessage(
-    messages: CoreMessage[], 
-    userId: string
+    messages: CoreMessage[],
+    userId: string,
   ): Promise<{
     response: string;
-    state: AgentState;
+    state?: AgentState;
   }> {
-    
     // Handle initial greeting for new assessments
     if (this.isNewAssessment(messages)) {
       const state = this.initializeState(userId);
       const response = this.getInitialGreeting();
-      
+
       await this.saveState(state);
-      
+
       return { response, state };
     }
 
@@ -100,7 +105,7 @@ To get started, could you tell me a bit about your business? For example, how ma
     switch (state.currentAgent) {
       case 'qualifier': {
         const result = await this.qualifierAgent.process(messages);
-        
+
         // Update state with qualifier results
         if (result.qualifier) {
           state.qualifier = result.qualifier;
@@ -108,7 +113,7 @@ To get started, could you tell me a bit about your business? For example, how ma
         if (result.dynamicWeighting) {
           state.dynamicWeighting = result.dynamicWeighting;
         }
-        
+
         // Handle agent transition
         if (result.isComplete) {
           state.currentAgent = 'assessor';
@@ -117,17 +122,18 @@ To get started, could you tell me a bit about your business? For example, how ma
         }
 
         await this.saveState(state);
-        
+
         return {
           response: result.response,
-          state,
+          //state,
         };
       }
 
       case 'assessor': {
         // TODO: Implement AssessmentAgent processing
         return {
-          response: "Assessment phase not yet implemented. This would handle the 6-category questions.",
+          response:
+            'Assessment phase not yet implemented. This would handle the 6-category questions.',
           state,
         };
       }
@@ -135,7 +141,8 @@ To get started, could you tell me a bit about your business? For example, how ma
       case 'analyzer': {
         // TODO: Implement AnalysisAgent processing
         return {
-          response: "Analysis phase not yet implemented. This would generate scores and recommendations.",
+          response:
+            'Analysis phase not yet implemented. This would generate scores and recommendations.',
           state,
         };
       }
@@ -143,7 +150,8 @@ To get started, could you tell me a bit about your business? For example, how ma
       case 'reporter': {
         // TODO: Implement ReportingAgent processing
         return {
-          response: "Reporting phase not yet implemented. This would generate Beautiful.ai reports.",
+          response:
+            'Reporting phase not yet implemented. This would generate Beautiful.ai reports.',
           state,
         };
       }
@@ -165,16 +173,16 @@ To get started, could you tell me a bit about your business? For example, how ma
     progress: number;
   } {
     const phaseMap = {
-      'qualifying': { step: 1, name: 'Business Context' },
-      'assessing': { step: 2, name: 'Assessment Questions' },
-      'analyzing': { step: 3, name: 'Analysis & Scoring' },
-      'reporting': { step: 4, name: 'Report Generation' },
-      'complete': { step: 4, name: 'Complete' },
+      qualifying: { step: 1, name: 'Business Context' },
+      assessing: { step: 2, name: 'Assessment Questions' },
+      analyzing: { step: 3, name: 'Analysis & Scoring' },
+      reporting: { step: 4, name: 'Report Generation' },
+      complete: { step: 4, name: 'Complete' },
     };
 
     const totalSteps = 4;
     const currentPhase = phaseMap[state.phase];
-    
+
     return {
       phase: state.phase,
       currentAgent: state.currentAgent,
@@ -189,5 +197,6 @@ To get started, could you tell me a bit about your business? For example, how ma
    */
   async resetState(sessionId: string): Promise<void> {
     // TODO: Implement state reset in database
+    console.log('Resetting state for session:', sessionId);
   }
 }
