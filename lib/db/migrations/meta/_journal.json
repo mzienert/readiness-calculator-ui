@@ -12,40 +12,26 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1730207363999,
-      "tag": "0001_sparkling_blue_marvel",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
       "when": 1730725226313,
       "tag": "0002_wandering_riptide",
       "breakpoints": true
     },
     {
-      "idx": 3,
+      "idx": 2,
       "version": "7",
       "when": 1733403031014,
       "tag": "0003_cloudy_glorian",
       "breakpoints": true
     },
     {
-      "idx": 4,
-      "version": "7",
-      "when": 1733945232355,
-      "tag": "0004_odd_slayback",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
+      "idx": 3,
       "version": "7",
       "when": 1741934630596,
       "tag": "0005_wooden_whistler",
       "breakpoints": true
     },
     {
-      "idx": 6,
+      "idx": 4,
       "version": "7",
       "when": 1746118166211,
       "tag": "0006_marvelous_frog_thor",
