@@ -1,4 +1,4 @@
-import { QualifierAgent } from './agents/qualifier';
+// Removed direct agent imports - now using API calls
 import {
   type AgentState,
   type SMBQualifier,
@@ -16,7 +16,6 @@ import {
 import { v4 as uuidv4 } from 'uuid'; // Keep for OpenAI assistant thread management
 
 export class AssessmentOrchestrator {
-  private qualifierAgent = new QualifierAgent();
   private dispatch: AppDispatch;
   private getState: () => RootState;
   
@@ -103,7 +102,20 @@ To get started, could you tell me a bit about your business? For example, how ma
 
       switch (currentSession.currentAgent) {
         case 'qualifier': {
-          const result = await this.qualifierAgent.process(messages);
+          // Call qualifier API instead of direct agent
+          const response = await fetch('/api/agents/qualifier', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ messages }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Qualifier API error: ${response.status}`);
+          }
+
+          const result = await response.json();
 
           // Update Redux state with qualifier results
           const updates: Partial<AgentState> = {};
@@ -157,7 +169,8 @@ To get started, could you tell me a bit about your business? For example, how ma
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      this.dispatch(updateSessionState({ error: errorMessage }));
+      // Error handling will be added to orchestrator slice later
+      console.error('Orchestrator error:', errorMessage);
       throw error;
     }
   }

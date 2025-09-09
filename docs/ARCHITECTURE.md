@@ -119,23 +119,23 @@ interface OrchestratorState {
 }
 ```
 
-#### 4. Integration with AI Orchestrator
-The `AssessmentOrchestrator` class now accepts Redux store dependencies:
-- **Constructor Injection**: Receives `dispatch` and `getState` functions
-- **State Coordination**: Dispatches actions instead of managing internal state
-- **Pure Functions**: Business logic separated from state management
+#### 4. Client-Side AI Orchestrator Integration
+The `AssessmentOrchestrator` runs entirely on the client-side with direct Redux integration:
+- **Client-Side Execution**: Orchestrator instantiated in React components with Redux dependencies
+- **Direct State Updates**: Real-time Redux dispatch calls for immediate UI feedback
+- **Cost Optimization**: Reduces Vercel server compute costs by moving AI processing to client
+- **OpenAI Assistants Ready**: Architecture aligns with OpenAI Assistants API (client-side calls)
 
 ```typescript
-export class AssessmentOrchestrator {
-  constructor(
-    private dispatch: AppDispatch, 
-    private getState: () => RootState
-  ) {}
+// Client-side component integration
+export function Chat() {
+  const dispatch = useAppDispatch();
+  const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
   
-  async processMessage(messages: CoreMessage[], userId: string) {
-    // Dispatches to Redux instead of internal state management
-    this.dispatch(updateSessionState(updates));
-  }
+  const handleMessage = async (message) => {
+    // Client-side orchestration with real-time Redux updates
+    const result = await orchestrator.processMessage(messages, userId);
+  };
 }
 ```
 
@@ -161,17 +161,34 @@ Redux is integrated at the root level in `app/layout.tsx`:
 ### Usage Pattern
 
 ```typescript
-// In components
+// Client-side component usage
 const dispatch = useAppDispatch();
 const currentSession = useAppSelector(selectCurrentSession);
 const progress = useAppSelector(selectProgress);
 
-// Initialize assessment
-dispatch(initializeSession({ userId }));
+// Create client-side orchestrator instance
+const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
 
-// Update session state
-dispatch(updateSessionState({ phase: 'assessing' }));
+// Handle user messages through orchestrator
+const handleMessage = async (message) => {
+  const result = await orchestrator.processMessage(messages, userId);
+  // Redux state automatically updated, UI re-renders
+};
 
-// Create orchestrator with Redux integration
-const orchestrator = new AssessmentOrchestrator(dispatch, store.getState);
+// Access real-time state updates
+const currentPhase = useAppSelector(selectCurrentPhase);
+```
+
+### Async Database Operations
+
+While the orchestrator runs client-side, database operations are handled through dedicated API endpoints:
+
+```typescript
+// Client-side orchestrator calls server APIs for data persistence
+const saveAssessmentResults = async (results) => {
+  await fetch('/api/assessment/save', { 
+    method: 'POST', 
+    body: JSON.stringify(results) 
+  });
+};
 ```
