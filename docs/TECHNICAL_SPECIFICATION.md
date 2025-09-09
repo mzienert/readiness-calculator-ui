@@ -60,6 +60,7 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 ├─────────────────────────────────────────────────────────────┤
 │ • Next.js 15 App Router                                     │
 │ • React 19 with TypeScript                                  │  
+│ • Redux Toolkit + React-Redux state management              │
 │ • Tailwind CSS + shadcn/ui components                       │
 │ • Real-time updates via Server-Sent Events                  │
 │ • Interactive charts (D3.js/Chart.js)                       │
@@ -107,7 +108,7 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    - AssessmentAgent: 6-category question management with one-at-a-time flow
    - AnalysisAgent: Post-processing scoring with dynamic weighting and strategy determination
    - ReportingAgent: Beautiful.ai MCP integration for professional report generation
-   - Agent Orchestrator: Seamless handoffs and state management
+   - Agent Orchestrator: Seamless handoffs and **Redux-integrated state management**
 
    **Alternative Architecture: OpenAI Assistants**
    - **Built-in conversation threading**: OpenAI Assistants automatically maintain conversation state through "threads" that preserve entire conversation history across multiple interactions, eliminating the need to re-send context
@@ -174,7 +175,39 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    
    The thread preserves all context automatically - no manual state management needed.
 
-2. **SMB-Focused Assessment Framework**
+2. **Redux State Management Architecture**
+   - **Global State**: Centralized assessment session state accessible across all components
+   - **Orchestrator Slice**: Manages current session, agent transitions, UI state, and error handling
+   - **Typed Integration**: Full TypeScript support with custom hooks (`useAppDispatch`, `useAppSelector`)
+   - **Database Ready**: Async thunks prepared for future database persistence operations
+   - **Developer Experience**: Redux DevTools integration for state inspection and time-travel debugging
+   
+   **State Structure**:
+   ```typescript
+   interface OrchestratorState {
+     currentSession: AgentState | null;    // Active assessment session
+     isProcessing: boolean;                // Loading states for UI
+     error: string | null;                 // Global error handling
+     showProgress: boolean;                // UI preferences
+     sidebarOpen: boolean;                 // Layout state
+     recentSessions: string[];             // Session history
+   }
+   ```
+   
+   **Integration Pattern**:
+   ```typescript
+   // Orchestrator receives Redux dependencies
+   const orchestrator = new AssessmentOrchestrator(dispatch, store.getState);
+   
+   // Business logic dispatches actions instead of internal state management
+   await orchestrator.processMessage(messages, userId);
+   
+   // Components automatically re-render on state changes
+   const currentPhase = useAppSelector(selectCurrentPhase);
+   const progress = useAppSelector(selectProgress);
+   ```
+
+3. **SMB-Focused Assessment Framework**
    - 6-category evaluation: Market Strategy, Business Understanding, Workforce Acumen, Company Culture, Role of Technology, Data
    - Dynamic weighting based on business qualifiers (solopreneur vs small team adjustments)
    - 5-tier AI strategy progression tailored for SMB constraints and capabilities
@@ -287,6 +320,7 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 
 ### Phase 1: Core Platform Development
 - Multi-agent architecture implementation (Qualifier → Assessor → Analyzer → Reporter)
+- **Redux Toolkit state management** with typed hooks and global session handling
 - 6-category SMB assessment framework with dynamic weighting
 - OpenAI Structured Outputs and Zod schema definitions
 - Authentication system and controlled access rollout (5 initial SMBs)
@@ -315,6 +349,7 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 ### Frontend
 - **Next.js 15** with App Router
 - **React 19** with TypeScript
+- **Redux Toolkit** + **React-Redux** for state management
 - **Tailwind CSS** + **shadcn/ui** components
 - **Chart.js/D3.js** for visualizations
 - **Framer Motion** for animations

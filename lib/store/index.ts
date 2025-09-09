@@ -1,9 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
-import exampleReducer from './slices/example';
+import orchestratorReducer from './slices/orchestrator';
 
 export const store = configureStore({
   reducer: {
-    example: exampleReducer,
+    orchestrator: orchestratorReducer,
   },
 });
 

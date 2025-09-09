@@ -14,6 +14,7 @@ The Readiness Calculator UI is a Next.js 15 application built for AI-powered rea
 - **Database**: PostgreSQL (Neon)
 - **ORM**: Drizzle ORM
 - **Authentication**: NextAuth.js
+- **State Management**: Redux Toolkit with React-Redux
 - **Deployment**: Vercel
 - **AI**: OpenAI API
 
@@ -79,3 +80,98 @@ Required environment variables:
 - `AUTH_SECRET`: JWT signing secret
 - Database connection for user storage
 - Secure cookie configuration based on environment
+
+## State Management
+
+### Redux Architecture
+
+The application uses **Redux Toolkit** with **React-Redux** for global state management, providing predictable state updates and excellent developer experience.
+
+#### Key Components
+
+#### 1. Store Configuration (`lib/store/index.ts`)
+- **Redux Toolkit**: Modern Redux with simplified boilerplate
+- **Typed Hooks**: Custom `useAppDispatch` and `useAppSelector` with full TypeScript support
+- **DevTools Integration**: Redux DevTools for state debugging
+
+#### 2. Orchestrator Slice (`lib/store/slices/orchestrator.ts`)
+- **Session Management**: Global assessment session state
+- **Agent Coordination**: Current agent and phase tracking
+- **UI State**: Progress indicators, sidebar state, error handling
+- **Database Thunks**: Placeholder async actions for future database operations
+
+#### 3. State Structure
+```typescript
+interface OrchestratorState {
+  // Assessment session state
+  currentSession: AgentState | null;
+  
+  // Processing state
+  isProcessing: boolean;
+  error: string | null;
+  
+  // UI state
+  showProgress: boolean;
+  sidebarOpen: boolean;
+  
+  // Session history
+  recentSessions: string[];
+}
+```
+
+#### 4. Integration with AI Orchestrator
+The `AssessmentOrchestrator` class now accepts Redux store dependencies:
+- **Constructor Injection**: Receives `dispatch` and `getState` functions
+- **State Coordination**: Dispatches actions instead of managing internal state
+- **Pure Functions**: Business logic separated from state management
+
+```typescript
+export class AssessmentOrchestrator {
+  constructor(
+    private dispatch: AppDispatch, 
+    private getState: () => RootState
+  ) {}
+  
+  async processMessage(messages: CoreMessage[], userId: string) {
+    // Dispatches to Redux instead of internal state management
+    this.dispatch(updateSessionState(updates));
+  }
+}
+```
+
+#### 5. Provider Integration
+Redux is integrated at the root level in `app/layout.tsx`:
+```tsx
+<ReduxProvider>
+  <ThemeProvider>
+    <SessionProvider>{children}</SessionProvider>
+  </ThemeProvider>
+</ReduxProvider>
+```
+
+### Benefits
+
+- **Global State Access**: Any component can access assessment state
+- **Predictable Updates**: All state changes go through Redux reducers
+- **Time Travel Debugging**: Redux DevTools for state inspection
+- **React Integration**: Components automatically re-render on state changes
+- **Type Safety**: Full TypeScript integration with typed selectors and actions
+- **Future Database Ready**: Async thunks prepared for database operations
+
+### Usage Pattern
+
+```typescript
+// In components
+const dispatch = useAppDispatch();
+const currentSession = useAppSelector(selectCurrentSession);
+const progress = useAppSelector(selectProgress);
+
+// Initialize assessment
+dispatch(initializeSession({ userId }));
+
+// Update session state
+dispatch(updateSessionState({ phase: 'assessing' }));
+
+// Create orchestrator with Redux integration
+const orchestrator = new AssessmentOrchestrator(dispatch, store.getState);
+```
