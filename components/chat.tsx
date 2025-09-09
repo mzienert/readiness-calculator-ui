@@ -83,7 +83,7 @@ export function Chat({
 
   // Replace useChat with local state management for orchestrator-based chat
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
-  const [status, setStatus] = useState<'loading' | 'idle'>('idle');
+  const [status, setStatus] = useState<'submitted' | 'streaming' | 'ready' | 'error'>('ready');
   
   // Custom sendMessage function that uses orchestrator
   const sendMessage = async (message?: any) => {
@@ -97,14 +97,14 @@ export function Chat({
       metadata: message.metadata || { createdAt: new Date().toISOString() },
     };
     
-    setStatus('loading');
+    setStatus('streaming');
     await handleOrchestratorMessage(fullMessage);
-    setStatus('idle');
+    setStatus('ready');
     mutate(unstable_serialize(getChatHistoryPaginationKey));
   };
 
   // Stub functions for compatibility (not needed with orchestrator)
-  const stop = () => setStatus('idle');
+  const stop = () => setStatus('ready');
   const regenerate = async () => {
     if (messages.length > 0) {
       const lastUserMessage = messages.findLast(m => m.role === 'user');

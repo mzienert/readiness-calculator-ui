@@ -141,8 +141,8 @@ function QualifierContent() {
       {qualifier.businessType && (
         <p className="text-xs">{qualifier.businessType}</p>
       )}
-      {qualifier.industryType && (
-        <p className="text-xs text-muted-foreground">{qualifier.industryType}</p>
+      {qualifier.industry && (
+        <p className="text-xs text-muted-foreground">{qualifier.industry}</p>
       )}
     </div>
   );
