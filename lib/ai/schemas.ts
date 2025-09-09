@@ -65,8 +65,8 @@ export const agentStateSchema = z.object({
   // Metadata
   sessionId: z.string(),
   userId: z.string(),
-  startedAt: z.date(),
-  completedAt: z.date().optional(),
+  startedAt: z.string(), // ISO date string
+  completedAt: z.string().optional(), // ISO date string
 });
 
 export type AgentState = z.infer<typeof agentStateSchema>;

@@ -159,7 +159,7 @@ function AssessorContent() {
       {responses.slice(-2).map((response, idx) => (
         <div key={idx} className="text-xs">
           <p className="font-medium text-muted-foreground">{response.category}</p>
-          <p className="truncate">{response.question}</p>
+          <p className="truncate">{response.questionId}</p>
         </div>
       ))}
     </div>
