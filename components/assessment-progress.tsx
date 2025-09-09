@@ -132,9 +132,9 @@ function QualifierContent() {
         <Badge variant="secondary" className="text-xs">
           {qualifier.employeeCount} employees
         </Badge>
-        {qualifier.annualRevenue && (
+        {qualifier.revenueBand && (
           <Badge variant="secondary" className="text-xs">
-            {qualifier.annualRevenue}
+            {qualifier.revenueBand}
           </Badge>
         )}
       </div>
