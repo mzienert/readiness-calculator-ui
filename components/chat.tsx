@@ -21,6 +21,10 @@ import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { AssessmentProgress } from './assessment-progress';
+import { AssessmentOrchestrator } from '@/lib/ai/orchestrator';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { store } from '@/lib/store';
+import { selectHasActiveSession } from '@/lib/store/selectors';
 
 export function Chat({
   id,
@@ -44,6 +48,13 @@ export function Chat({
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
+  
+  // Redux integration for orchestrator
+  const dispatch = useAppDispatch();
+  const hasActiveSession = useAppSelector(selectHasActiveSession);
+  
+  // Create orchestrator instance with Redux dependencies
+  const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
 
   const [input, setInput] = useState<string>('');
 
