@@ -20,6 +20,7 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { AssessmentProgress } from './assessment-progress';
 
 export function Chat({
   id,
@@ -118,37 +119,43 @@ export function Chat({
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader
-          chatId={id}
-          selectedVisibilityType={initialVisibilityType}
-          isReadonly={isReadonly}
-        />
+      <div className="flex h-dvh bg-background">
+        {/* Main chat area */}
+        <div className="flex flex-col min-w-0 flex-1">
+          <ChatHeader
+            chatId={id}
+            selectedVisibilityType={initialVisibilityType}
+            isReadonly={isReadonly}
+          />
 
-        <Messages
-          chatId={id}
-          status={status}
-          messages={messages}
-          setMessages={setMessages}
-          regenerate={regenerate}
-          isReadonly={isReadonly}
-        />
+          <Messages
+            chatId={id}
+            status={status}
+            messages={messages}
+            setMessages={setMessages}
+            regenerate={regenerate}
+            isReadonly={isReadonly}
+          />
 
-        <div className="sticky bottom-0 flex gap-2 px-4 pb-4 mx-auto w-full bg-background md:pb-6 md:max-w-3xl z-[1] border-t-0">
-          {!isReadonly && (
-            <MultimodalInput
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              status={status}
-              stop={stop}
-              messages={messages}
-              setMessages={setMessages}
-              sendMessage={sendMessage}
-              selectedVisibilityType={visibilityType}
-            />
-          )}
+          <div className="sticky bottom-0 flex gap-2 px-4 pb-4 mx-auto w-full bg-background md:pb-6 md:max-w-3xl z-[1] border-t-0">
+            {!isReadonly && (
+              <MultimodalInput
+                chatId={id}
+                input={input}
+                setInput={setInput}
+                status={status}
+                stop={stop}
+                messages={messages}
+                setMessages={setMessages}
+                sendMessage={sendMessage}
+                selectedVisibilityType={visibilityType}
+              />
+            )}
+          </div>
         </div>
+
+        {/* Assessment progress sidebar */}
+        <AssessmentProgress />
       </div>
 
     </>
