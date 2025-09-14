@@ -182,7 +182,7 @@ function AnalyzerContent() {
       {Object.entries(assessmentScore.categoryScores).slice(0, 3).map(([category, score]) => (
         <div key={category} className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">{category}</span>
-          <span>{score}/10</span>
+          <span>{String(score)}/10</span>
         </div>
       ))}
     </div>
