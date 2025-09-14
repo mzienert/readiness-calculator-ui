@@ -36,18 +36,12 @@ export function Chat({
   const [input, setInput] = useState<string>('');
 
   // Use our custom orchestrated chat hook
-  const {
-    messages,
-    setMessages,
-    sendMessage,
-    status,
-    stop,
-    regenerate,
-  } = useOrchestratedChat({
-    id,
-    initialMessages,
-    userId: session.user.id,
-  });
+  const { messages, setMessages, sendMessage, status, stop, regenerate } =
+    useOrchestratedChat({
+      id,
+      initialMessages,
+      userId: session.user.id,
+    });
 
   // Dummy resumeStream for compatibility
   const resumeStream = () => Promise.resolve();
@@ -68,8 +62,6 @@ export function Chat({
       window.history.replaceState({}, '', `/chat/${id}`);
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
-
-
 
   useAutoResume({
     autoResume,
@@ -118,7 +110,6 @@ export function Chat({
         {/* Assessment progress sidebar */}
         <AssessmentProgress />
       </div>
-
     </>
   );
 }
