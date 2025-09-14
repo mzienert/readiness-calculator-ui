@@ -66,21 +66,32 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 │ • React 19 with TypeScript                                  │
 │ • Redux Toolkit + React-Redux state management              │
 │ • Tailwind CSS + shadcn/ui components                       │
-│ • Real-time updates via Server-Sent Events                  │
+│ • Client-side orchestrator with real-time UI updates        │
 │ • Interactive charts (D3.js/Chart.js)                       │
 │ • PDF generation (react-pdf/puppeteer)                      │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│              Multi-Agent AI Integration Layer               │
+│              Multi-Agent API Layer                          │
 ├─────────────────────────────────────────────────────────────┤
-│ • AI SDK v5 with OpenAI models                             │
-│ • Multi-agent orchestrator (Qualifier→Assessor→Analyzer→Reporter) │
-│ • Structured output generation (Zod schemas)                │
+│ • /api/agents/qualifier - SMB context collection            │
+│ • /api/agents/assessor - 6-category question management     │
+│ • /api/agents/analyzer - Post-processing scoring & strategy │
+│ • /api/agents/reporter - Beautiful.ai report generation     │
+│ • OpenAI models with structured outputs (Zod schemas)       │
 │ • Context-aware SMB assessment analysis                     │
 │ • Natural language insight generation                       │
 │ • OpenAI fine-tuning for domain optimization                │
-│ • Evaluation pipelines with synthetic data generation       │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│              Data Persistence Layer                         │
+├─────────────────────────────────────────────────────────────┤
+│ • /api/chat-history - Chat creation & message persistence   │
+│ • Chat record management with user ownership                │
+│ • Message storage with conversation threading               │
+│ • History retrieval with pagination                         │
+│ • Clean separation from AI processing logic                 │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
@@ -182,17 +193,46 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 
    The thread preserves all context automatically - no manual state management needed.
 
-2. **Hybrid Client-Side Architecture with AI SDK Integration**
+2. **Clean Architecture with Separated Concerns**
 
+   - **Client-Side Orchestrator**: Coordinates agent API calls and manages Redux state transitions
+   - **Agent API Endpoints**: Dedicated routes for each agent (`/api/agents/*`) with specific AI processing logic
+   - **Data Persistence Layer**: Dedicated `/api/chat-history` endpoint for pure data operations
    - **Real-Time Global State**: Client-side Redux store with immediate UI updates as orchestrator processes
-   - **Orchestrator Slice**: Manages current session, agent transitions, UI state, and error handling in real-time
-   - **Custom Hook Wrapper**: `useOrchestratedChat` combines AI SDK's `useChat` benefits with client-side orchestrator
-   - **Typed Integration**: Full TypeScript support with custom hooks (`useAppDispatch`, `useAppSelector`)
-   - **Cost Optimization**: Client-side state management reduces Vercel server compute costs
+   - **Custom Hook Wrapper**: `useOrchestratedChat` combines AI SDK's `useChat` benefits with orchestrated flow
+   - **Cost Optimization**: Client-side orchestration reduces server compute while agent APIs handle AI processing
    - **Developer Experience**: Redux DevTools integration for state inspection and time-travel debugging
-   - **Proven UI Patterns**: Leverages battle-tested `useChat` for message management, status handling, error states
-   - **No Server Synchronization**: Avoids complex state syncing between client and server
-   - **Database Integration**: Orchestrator calls dedicated API endpoints for async database operations
+
+   **Architecture Flow**:
+
+   ```typescript
+   // 1. User sends message → Client orchestrator
+   const sendMessage = async (message) => {
+     // 2. Orchestrator determines which agent to call
+     const agentEndpoint = orchestrator.determineAgent(context);
+
+     // 3. Call appropriate agent API
+     const response = await fetch(`/api/agents/${agentEndpoint}`, {
+       method: 'POST',
+       body: JSON.stringify({ messages: context, userId })
+     });
+
+     // 4. Get agent response
+     const agentResult = await response.json();
+
+     // 5. Save conversation to database
+     await fetch('/api/chat-history', {
+       method: 'POST',
+       body: JSON.stringify({
+         chatId: id,
+         messages: [userMessage, agentResult.message]
+       })
+     });
+
+     // 6. Update UI state
+     chat.setMessages([...messages, userMessage, agentResult.message]);
+   };
+   ```
 
    **State Structure**:
 
@@ -207,49 +247,12 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    }
    ```
 
-   **Hybrid Hook Integration Pattern**:
-
-   ```typescript
-   // Custom hook combines useChat + client-side orchestrator
-   export function useOrchestratedChat({ id, initialMessages, userId }) {
-     const dispatch = useAppDispatch();
-     const orchestrator = new AssessmentOrchestrator(dispatch, () =>
-       store.getState()
-     );
-
-     // Use AI SDK's useChat for UI management
-     const chat = useChat({ id, messages: initialMessages });
-
-     // Override sendMessage to process through orchestrator
-     const sendMessage = async (message) => {
-       const result = await orchestrator.processMessage(coreMessages, userId);
-       chat.setMessages([...messages, userMessage, assistantResponse]);
-     };
-
-     return {
-       ...chat,
-       sendMessage,
-       status: isProcessing ? "streaming" : "ready",
-     };
-   }
-
-   // Components get all useChat benefits + Redux integration
-   export function Chat() {
-     const { messages, sendMessage, status } = useOrchestratedChat({
-       id,
-       initialMessages,
-       userId,
-     });
-     const currentPhase = useAppSelector(selectCurrentPhase); // Real-time Redux state
-
-     return (
-       <div>
-         <Messages messages={messages} status={status} />
-         <MultimodalInput sendMessage={sendMessage} status={status} />
-       </div>
-     );
-   }
-   ```
+   **Clean Separation Benefits**:
+   - **Agent Logic**: Isolated in dedicated API routes, easy to refine/replace
+   - **Data Operations**: Pure persistence logic separate from AI processing
+   - **Orchestration**: Client-side coordination with real-time UI updates
+   - **Scalability**: Each agent can be optimized independently
+   - **Testing**: Clear boundaries enable focused unit testing
 
 3. **SMB-Focused Assessment Framework**
 

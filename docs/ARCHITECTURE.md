@@ -130,26 +130,34 @@ interface OrchestratorState {
 }
 ```
 
-#### 4. Client-Side AI Orchestrator with useChat Integration
+#### 4. Clean Multi-Agent Architecture with Separated Concerns
 
-The `AssessmentOrchestrator` runs entirely on the client-side with direct Redux integration, while leveraging AI SDK's `useChat` for proven UI patterns:
+The system uses a clean architecture pattern that separates orchestration, AI processing, and data persistence:
 
-- **Client-Side Execution**: Orchestrator instantiated in React components with Redux dependencies
-- **Direct State Updates**: Real-time Redux dispatch calls for immediate UI feedback
-- **Cost Optimization**: Reduces Vercel server compute costs by moving AI processing to client
-- **OpenAI Assistants Ready**: Architecture aligns with OpenAI Assistants API (client-side calls)
-- **useChat Integration**: Custom hook wrapper provides all useChat benefits while maintaining client-side orchestrator
+- **Client-Side Orchestrator**: Coordinates agent API calls and manages Redux state transitions
+- **Dedicated Agent APIs**: Each agent has its own endpoint for specific AI processing logic
+- **Pure Data Layer**: Dedicated endpoint for chat creation and message persistence
+- **Real-Time UI Updates**: Redux integration provides immediate feedback during orchestration
+- **Cost Optimization**: Client-side coordination with targeted API calls for AI processing
 
-**Why We Use Custom Hook Wrapper**:
-We initially considered replacing `useChat` entirely with manual state management, but realized we could get the best of both worlds by creating a custom `useOrchestratedChat` hook that:
+**Architecture Components**:
 
-- Wraps the proven `useChat` hook for UI management (status, streaming, error handling)
-- Intercepts message processing to route through our client-side orchestrator
-- Avoids server-side state synchronization complexity
-- Maintains all existing component compatibility
+- **Agent API Endpoints**:
+  - `/api/agents/qualifier` - SMB context collection and business qualification
+  - `/api/agents/assessor` - 6-category question management and response collection
+  - `/api/agents/analyzer` - Post-processing scoring and strategy determination
+  - `/api/agents/reporter` - Beautiful.ai report generation and delivery
+
+- **Data Persistence Layer**:
+  - `/api/chat-history` - Pure data operations for chat creation and message storage
+  - Handles user authentication, chat ownership, and conversation threading
+  - Completely separated from AI processing logic
+
+**Custom Hook Integration**:
+The `useOrchestratedChat` hook provides seamless integration while maintaining clean separation:
 
 ```typescript
-// Custom hook that combines useChat + client orchestrator
+// Custom hook that coordinates agents + data persistence
 export function useOrchestratedChat({ id, initialMessages, userId }) {
   const dispatch = useAppDispatch();
   const orchestrator = new AssessmentOrchestrator(dispatch, () =>
@@ -159,10 +167,28 @@ export function useOrchestratedChat({ id, initialMessages, userId }) {
   // Use regular useChat for UI management
   const chat = useChat({ id, messages: initialMessages });
 
-  // Override sendMessage to process through orchestrator
+  // Override sendMessage to orchestrate agent calls + persistence
   const sendMessage = async (message) => {
-    const result = await orchestrator.processMessage(coreMessages, userId);
-    chat.setMessages([...messages, userMessage, assistantResponse]);
+    // 1. Determine which agent to call
+    const agentEndpoint = orchestrator.determineAgent(context);
+
+    // 2. Call agent API for AI processing
+    const agentResponse = await fetch(`/api/agents/${agentEndpoint}`, {
+      method: 'POST',
+      body: JSON.stringify({ messages: context, userId })
+    });
+
+    // 3. Save conversation via data API
+    await fetch('/api/chat-history', {
+      method: 'POST',
+      body: JSON.stringify({
+        chatId: id,
+        messages: [userMessage, agentResult.message]
+      })
+    });
+
+    // 4. Update UI with results
+    chat.setMessages([...messages, userMessage, agentResult.message]);
   };
 
   return { ...chat, sendMessage };
@@ -220,16 +246,40 @@ export function Chat({ id, initialMessages, session }) {
 }
 ```
 
-### Async Database Operations
+### Clean Architecture Benefits
 
-While the orchestrator runs client-side, database operations are handled through dedicated API endpoints:
+The separated concerns architecture provides several key advantages:
 
+**Agent Development**:
 ```typescript
-// Client-side orchestrator calls server APIs for data persistence
-const saveAssessmentResults = async (results) => {
-  await fetch("/api/assessment/save", {
-    method: "POST",
-    body: JSON.stringify(results),
-  });
-};
+// Each agent is independently developed and tested
+export async function POST(request: Request) {
+  const { messages, userId } = await request.json();
+
+  // Focused AI processing logic for this specific agent
+  const result = await processQualifierAgent(messages, userId);
+
+  return Response.json({ message: result.response });
+}
 ```
+
+**Data Operations**:
+```typescript
+// Pure data persistence with no AI processing concerns
+export async function POST(request: Request) {
+  const { chatId, messages } = await request.json();
+
+  // Focus solely on data validation and persistence
+  await saveChat({ id: chatId, userId: session.user.id });
+  await saveMessages({ messages: mappedMessages });
+
+  return Response.json({ success: true });
+}
+```
+
+**Key Benefits**:
+- **Scalability**: Each agent can be optimized independently
+- **Testing**: Clear boundaries enable focused unit testing
+- **Maintenance**: Changes to AI logic don't affect data operations
+- **Performance**: Targeted API calls only when needed
+- **Cost Control**: Clear visibility into compute vs storage costs
