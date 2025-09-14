@@ -175,12 +175,15 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    
    The thread preserves all context automatically - no manual state management needed.
 
-2. **Client-Side Redux State Management Architecture**
+2. **Hybrid Client-Side Architecture with AI SDK Integration**
    - **Real-Time Global State**: Client-side Redux store with immediate UI updates as orchestrator processes
    - **Orchestrator Slice**: Manages current session, agent transitions, UI state, and error handling in real-time
+   - **Custom Hook Wrapper**: `useOrchestratedChat` combines AI SDK's `useChat` benefits with client-side orchestrator
    - **Typed Integration**: Full TypeScript support with custom hooks (`useAppDispatch`, `useAppSelector`)
    - **Cost Optimization**: Client-side state management reduces Vercel server compute costs
    - **Developer Experience**: Redux DevTools integration for state inspection and time-travel debugging
+   - **Proven UI Patterns**: Leverages battle-tested `useChat` for message management, status handling, error states
+   - **No Server Synchronization**: Avoids complex state syncing between client and server
    - **Database Integration**: Orchestrator calls dedicated API endpoints for async database operations
    
    **State Structure**:
@@ -195,22 +198,36 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    }
    ```
    
-   **Client-Side Integration Pattern**:
+   **Hybrid Hook Integration Pattern**:
    ```typescript
-   // Client-side component creates orchestrator with Redux dependencies
-   export function Chat() {
+   // Custom hook combines useChat + client-side orchestrator
+   export function useOrchestratedChat({ id, initialMessages, userId }) {
      const dispatch = useAppDispatch();
      const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
      
-     const handleMessage = async (message) => {
-       // Client-side orchestration with real-time Redux updates
-       await orchestrator.processMessage(messages, userId);
-       // UI automatically re-renders with progress updates
+     // Use AI SDK's useChat for UI management
+     const chat = useChat({ id, messages: initialMessages });
+     
+     // Override sendMessage to process through orchestrator
+     const sendMessage = async (message) => {
+       const result = await orchestrator.processMessage(coreMessages, userId);
+       chat.setMessages([...messages, userMessage, assistantResponse]);
      };
      
-     // Real-time state access
-     const currentPhase = useAppSelector(selectCurrentPhase);
-     const progress = useAppSelector(selectProgress);
+     return { ...chat, sendMessage, status: isProcessing ? 'streaming' : 'ready' };
+   }
+   
+   // Components get all useChat benefits + Redux integration
+   export function Chat() {
+     const { messages, sendMessage, status } = useOrchestratedChat({ id, initialMessages, userId });
+     const currentPhase = useAppSelector(selectCurrentPhase); // Real-time Redux state
+     
+     return (
+       <div>
+         <Messages messages={messages} status={status} />
+         <MultimodalInput sendMessage={sendMessage} status={status} />
+       </div>
+     );
    }
    ```
 

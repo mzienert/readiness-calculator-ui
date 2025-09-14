@@ -119,23 +119,38 @@ interface OrchestratorState {
 }
 ```
 
-#### 4. Client-Side AI Orchestrator Integration
-The `AssessmentOrchestrator` runs entirely on the client-side with direct Redux integration:
+#### 4. Client-Side AI Orchestrator with useChat Integration
+The `AssessmentOrchestrator` runs entirely on the client-side with direct Redux integration, while leveraging AI SDK's `useChat` for proven UI patterns:
+
 - **Client-Side Execution**: Orchestrator instantiated in React components with Redux dependencies
-- **Direct State Updates**: Real-time Redux dispatch calls for immediate UI feedback
+- **Direct State Updates**: Real-time Redux dispatch calls for immediate UI feedback  
 - **Cost Optimization**: Reduces Vercel server compute costs by moving AI processing to client
 - **OpenAI Assistants Ready**: Architecture aligns with OpenAI Assistants API (client-side calls)
+- **useChat Integration**: Custom hook wrapper provides all useChat benefits while maintaining client-side orchestrator
+
+**Why We Use Custom Hook Wrapper**:
+We initially considered replacing `useChat` entirely with manual state management, but realized we could get the best of both worlds by creating a custom `useOrchestratedChat` hook that:
+- Wraps the proven `useChat` hook for UI management (status, streaming, error handling)
+- Intercepts message processing to route through our client-side orchestrator
+- Avoids server-side state synchronization complexity
+- Maintains all existing component compatibility
 
 ```typescript
-// Client-side component integration
-export function Chat() {
+// Custom hook that combines useChat + client orchestrator
+export function useOrchestratedChat({ id, initialMessages, userId }) {
   const dispatch = useAppDispatch();
   const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
   
-  const handleMessage = async (message) => {
-    // Client-side orchestration with real-time Redux updates
-    const result = await orchestrator.processMessage(messages, userId);
+  // Use regular useChat for UI management
+  const chat = useChat({ id, messages: initialMessages });
+  
+  // Override sendMessage to process through orchestrator
+  const sendMessage = async (message) => {
+    const result = await orchestrator.processMessage(coreMessages, userId);
+    chat.setMessages([...messages, userMessage, assistantResponse]);
   };
+  
+  return { ...chat, sendMessage };
 }
 ```
 
@@ -157,26 +172,40 @@ Redux is integrated at the root level in `app/layout.tsx`:
 - **React Integration**: Components automatically re-render on state changes
 - **Type Safety**: Full TypeScript integration with typed selectors and actions
 - **Future Database Ready**: Async thunks prepared for database operations
+- **Proven UI Patterns**: Leverages battle-tested useChat for message management, status handling, and error states
+- **No Server Synchronization**: Avoids complex state syncing between client and server
+- **Component Compatibility**: Works seamlessly with existing MultimodalInput, Messages, and other chat components
 
 ### Usage Pattern
 
 ```typescript
-// Client-side component usage
-const dispatch = useAppDispatch();
-const currentSession = useAppSelector(selectCurrentSession);
-const progress = useAppSelector(selectProgress);
+// Using the custom orchestrated chat hook
+export function Chat({ id, initialMessages, session }) {
+  // Get all useChat functionality + orchestrator integration
+  const {
+    messages,
+    sendMessage,
+    status,
+    stop,
+    regenerate
+  } = useOrchestratedChat({
+    id,
+    initialMessages,
+    userId: session.user.id,
+  });
 
-// Create client-side orchestrator instance
-const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
-
-// Handle user messages through orchestrator
-const handleMessage = async (message) => {
-  const result = await orchestrator.processMessage(messages, userId);
-  // Redux state automatically updated, UI re-renders
-};
-
-// Access real-time state updates
-const currentPhase = useAppSelector(selectCurrentPhase);
+  // Access real-time Redux state updates
+  const currentPhase = useAppSelector(selectCurrentPhase);
+  const progress = useAppSelector(selectProgress);
+  
+  return (
+    <div>
+      <Messages messages={messages} status={status} />
+      <MultimodalInput sendMessage={sendMessage} status={status} />
+      <AssessmentProgress /> {/* Real-time Redux updates */}
+    </div>
+  );
+}
 ```
 
 ### Async Database Operations
