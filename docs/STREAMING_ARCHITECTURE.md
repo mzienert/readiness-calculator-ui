@@ -34,9 +34,9 @@ This document details the streaming architecture implemented for the AI Readines
 
 ### 2. Direct Streaming Layer
 
-**Location**: `/app/(chat)/api/chat/route.ts`
+**Location**: Individual agent endpoints (`/app/(chat)/api/agents/*/route.ts`)
 
-**Purpose**: Converts orchestrator text responses into AI SDK v5 compatible streaming chunks.
+**Purpose**: Each agent endpoint processes requests and returns structured responses for the orchestrator.
 
 **Implementation**:
 ```typescript
@@ -204,7 +204,7 @@ User Message: "Hello"
 
 ### Result
 ```
-✅ POST /api/chat 200
+✅ POST /api/agents/qualifier 200
 ✅ Messages saved successfully
 ```
 
@@ -325,13 +325,16 @@ Implement proper error chunk handling for agent-specific errors.
 
 ### Backend Testing
 ```bash
-# Test orchestrator response
-curl -X POST /api/chat -d '{"message": {"role": "user", "parts": [{"type": "text", "text": "hello"}]}}'
+# Test agent endpoint
+curl -X POST /api/agents/qualifier -d '{"messages": [{"role": "user", "content": "hello"}], "userId": "user123"}'
+
+# Test data persistence
+curl -X POST /api/chat-history -d '{"chatId": "chat123", "messages": [{"id": "msg1", "role": "user", "parts": [{"type": "text", "text": "hello"}]}]}'
 
 # Check logs for:
-# ✅ Orchestrator result received
-# ✅ Direct stream completed  
-# ✅ Messages saved successfully
+# ✅ Agent response received
+# ✅ Chat history saved successfully
+# ✅ Orchestrator coordination working
 ```
 
 ### Frontend Testing

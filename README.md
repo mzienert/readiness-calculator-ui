@@ -1,21 +1,32 @@
 # AI Readiness Calculator
 
-An AI-powered assessment platform designed for La Plata County small and medium-sized businesses (SMBs) to evaluate their organizational AI readiness using a multi-agent conversation system and specialized evaluation framework.
+A specialized AI-powered assessment platform designed for La Plata County small and medium-sized businesses (SMBs) to evaluate their organizational AI readiness through an empathetic, multi-agent conversation system tailored for rural/small business contexts.
 
-## Project Overview
+## What It Does
 
-### Purpose
-Empower La Plata County SMBs with AI readiness assessment while capturing strategic market intelligence and showcasing local technical talent through a sophisticated multi-agent platform.
+**For SMBs**: Provides a comprehensive AI readiness evaluation across 6 key business dimensions, delivering personalized strategy recommendations and professional reports to guide AI adoption decisions.
 
-### Key Features
+**For Regional Development**: Captures anonymous insights on technology adoption patterns to support economic development initiatives and partnership opportunities in Southwest Colorado.
+
+## How It Works
+
+1. **Conversational Assessment**: Multi-agent system guides users through questions one-at-a-time to prevent overwhelm
+2. **Smart Analysis**: Dynamic weighting based on business size and type ensures relevant scoring
+3. **Strategy Mapping**: 5-tier AI readiness framework (Efficiency → Productivity → Effectiveness → Growth → Expert)
+4. **Professional Reporting**: Beautiful.ai integration generates presentation-quality reports
+5. **Market Intelligence**: Anonymous data collection builds regional technology adoption insights
+
+## Key Features
+
 - **6-Category Assessment Framework**: Market Strategy, Business Understanding, Workforce Acumen, Company Culture, Role of Technology, Data
-- **Multi-Agent Conversation System**: Qualifier → Assessor → Analyzer → Reporter agents for optimal user experience
-- **Professional Report Generation**: Beautiful.ai integration for high-quality presentation outputs
-- **Anonymous Data Collection**: Event-driven insights capture for regional market intelligence
-- **SMB-Focused Design**: Dynamic weighting and empathetic conversation tailored for rural/small business context
+- **Multi-Agent Architecture**: Clean separation between orchestration, AI processing, and data persistence
+- **SMB-Focused Design**: Rural/small business terminology and constraints consideration
+- **Professional Reports**: Multiple format outputs with actionable roadmaps
+- **Privacy-First**: Anonymous data collection with no PII or business identity storage
 
-### Target Market
-La Plata County SMBs (population ~56,116) with diverse technology readiness levels from non-existent to emerging capabilities, supported by active Economic Development Alliance and SBDC resources.
+## Target Market
+
+La Plata County, Colorado SMBs with diverse technology readiness levels (non-existent to emerging), supported by active Economic Development Alliance and Small Business Development Center resources.
 
 ## Documentation
 
@@ -26,15 +37,22 @@ La Plata County SMBs (population ~56,116) with diverse technology readiness leve
 
 ## Technical Architecture
 
+### Clean Architecture Pattern
+- **Client-Side Orchestrator**: Coordinates agent API calls and manages Redux state
+- **Agent API Endpoints**: Dedicated routes for each agent (`/api/agents/*`)
+- **Data Persistence Layer**: Pure chat/message operations (`/api/chat-history`)
+- **Real-Time UI**: Redux integration with immediate feedback during processing
+
 ### Core Technologies
 - **[Next.js 15](https://nextjs.org)** - React framework with App Router
 - **[React 19](https://reactjs.org)** - UI library with TypeScript
-- **[AI SDK v5](https://sdk.vercel.ai/docs)** - Multi-agent LLM integration
-- **[OpenAI](https://openai.com)** - Primary inference provider for multi-agent system
+- **[Redux Toolkit](https://redux-toolkit.js.org/)** - State management for orchestrator
+- **[AI SDK v5](https://sdk.vercel.ai/docs)** - Chat UI patterns with custom orchestration
+- **[OpenAI](https://openai.com)** - Primary inference provider for agent endpoints
 - **[Tailwind CSS](https://tailwindcss.com)** + **[shadcn/ui](https://ui.shadcn.com)** - Styling and UI components
 - **[NextAuth.js](https://authjs.dev)** - Authentication system
 
-### Data & Infrastructure  
+### Data & Infrastructure
 - **[Neon PostgreSQL](https://neon.tech)** - Primary database with staging/production separation
 - **[Drizzle ORM](https://orm.drizzle.team)** - Type-safe database operations
 - **[Redis](https://redis.io)** - Resumable chat streams (optional), planned for caching and session management
@@ -42,8 +60,8 @@ La Plata County SMBs (population ~56,116) with diverse technology readiness leve
 
 ### AI & Integration
 - **[Beautiful.ai](https://beautiful.ai)** - Professional report generation via MCP integration
-- **OpenAI Fine-tuning** - Domain-specific model optimization
-- **Structured Outputs** - Zod schema validation for consistent data capture
+- **OpenAI Fine-tuning** - Domain-specific model optimization for individual agents
+- **Structured Outputs** - Zod schema validation for consistent data capture across agents
 - **Event-driven Analytics** - Anonymous data collection for market intelligence
 
 ## Running Locally
@@ -110,32 +128,41 @@ The app will be available at [localhost:3000](http://localhost:3000).
 ## Development Status
 
 ### Current Implementation Phase
-**Phase 1: Core Platform Development** - Multi-agent architecture, assessment framework, and foundational systems
+**Phase 2: Agent Development** - Individual agent implementation and refinement with clean architecture foundation
 
 ### Key Milestones
-- ✅ Technical specification and problem analysis completed
-- ✅ Multi-agent architecture design finalized
-- ✅ System prompt framework for SMB assessments defined
-- 🔄 Multi-agent implementation (Qualifier → Assessor → Analyzer → Reporter)
-- ⏳ Beautiful.ai MCP integration for professional reports
-- ⏳ Event-driven data collection system
-- ⏳ Evaluation and fine-tuning pipeline setup
+- ✅ **Foundation Complete**: Technical specification, problem analysis, system prompt framework
+- ✅ **Architecture Implemented**: Clean separation of concerns with dedicated endpoints
+- ✅ **Chat History Fixed**: Data persistence layer working correctly
+- ✅ **Infrastructure Simplified**: Removed complex artifact system, streamlined for assessment focus
+- ✅ **OpenAI Integration**: Replaced Groq/Grok with OpenAI for consistency
+- 🔄 **Agent Refinement**: Enhancing individual agent logic and responses
+- ⏳ **Beautiful.ai Integration**: Professional report generation implementation
+- ⏳ **Evaluation Pipeline**: Assessment accuracy measurement and fine-tuning setup
+
+### Architecture Benefits Achieved
+- **Clean Separation**: Agent logic isolated from data operations
+- **Scalable Development**: Each agent can be developed and tested independently
+- **Cost Visibility**: Clear compute costs per agent vs data operations
+- **Maintenance Friendly**: Changes to AI logic don't affect persistence layer
 
 ### Controlled Rollout Strategy
+- **Authentication Required**: No unauthenticated access to chat functionality
 - **Initial deployment**: 5 selected La Plata County SMBs
-- **Access control**: Authentication required, URL-based distribution
-- **Performance monitoring**: Cost tracking and usage metrics before scaling
+- **URL-based distribution**: Controlled access through direct links
+- **Performance monitoring**: Cost tracking and usage metrics before broader rollout
 
-## Technical Debt & Upgrade Notes
+## Current Architecture Status
 
-### Infrastructure Improvements Planned
-- **AI SDK v5 Migration**: Upgrade from current version for multi-agent support
-- **OpenAI Integration**: Replace Groq/Grok with OpenAI for better consistency  
-- **Drizzle ORM**: Eliminate raw MySQL queries, implement proper type-safe operations
-- **Environment Separation**: Proper staging/production setup with cost tracking
+### Completed Infrastructure
+- ✅ **Client-side orchestrator** with Redux state management
+- ✅ **Agent API endpoints** ready for individual agent development
+- ✅ **Data persistence layer** (`/api/chat-history`) handling chat creation and message storage
+- ✅ **Authentication system** with user ownership and rate limiting
+- ✅ **Database operations** using Drizzle ORM with proper type safety
 
-### Current Package Versions
-- **Next.js**: `15.3.0-canary.31` (canary - monitoring stability)
-- **React**: `19.0.0-rc-45804af1-20241021` (RC - awaiting stable release)
-- **Tailwind CSS**: `^3.4.1` (stable - avoiding v4 migration issues)
-- **NextAuth.js**: `5.0.0-beta.25` (v5 beta)
+### Ready for Agent Development
+- **QualifierAgent** (`/api/agents/qualifier`) - SMB context collection
+- **AssessmentAgent** (`/api/agents/assessor`) - 6-category question management
+- **AnalysisAgent** (`/api/agents/analyzer`) - Scoring and strategy determination
+- **ReportingAgent** (`/api/agents/reporter`) - Beautiful.ai report generation
