@@ -5,7 +5,6 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
-import { AssessmentOrchestrator } from '@/lib/ai/orchestrator';
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 import {
@@ -147,63 +146,21 @@ export async function POST(request: Request) {
     const streamId = uuidv4();
     await createStreamId({ streamId, chatId: id });
 
-    // Initialize orchestrator for multi-agent assessment
-    const orchestrator = new AssessmentOrchestrator();
-    
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         try {
-          
-          // Process message through multi-agent orchestrator
-          const result = await orchestrator.processMessage(
-            convertToModelMessages(uiMessages),
-            session.user.id
-          );
-
-          // Stream our orchestrator response directly without AI model involvement
-          
-          // Create a custom readable stream that emits our orchestrator response
-          const directStream = new ReadableStream({
-            start(controller) {
-              // Generate consistent ID for entire text part
-              const textPartId = uuidv4();
-              
-              // Add text-specific structure chunks
-              controller.enqueue({ type: 'text-start', id: textPartId });
-              
-              // Split response into words for smooth streaming
-              const words = result.response.split(' ');
-              
-              for (let i = 0; i < words.length; i++) {
-                const word = words[i];
-                const isLast = i === words.length - 1;
-                
-                controller.enqueue({
-                  type: 'text-delta',
-                  delta: word + (isLast ? '' : ' '),
-                  id: textPartId,
-                });
-              }
-              
-              controller.enqueue({ type: 'text-end', id: textPartId });
-              controller.close();
-            }
-          });
-
-          dataStream.merge(directStream);
-
-        } catch (error) {
-          console.error('Orchestrator error:', error);
-          
-          // Fallback to simple streamText if orchestrator fails
-          const fallbackResult = streamText({
+          // Simple AI chat response (orchestrator moved to client-side)
+          const result = streamText({
             model: myProvider.languageModel(selectedChatModel),
             system: systemPrompt({ selectedChatModel, requestHints }),
             messages: convertToModelMessages(uiMessages),
             experimental_transform: smoothStream({ chunking: 'word' }),
           });
 
-          dataStream.merge(fallbackResult.toUIMessageStream());
+          dataStream.merge(result.toUIMessageStream());
+        } catch (error) {
+          console.error('API error:', error);
+          throw error;
         }
       },
       generateId: uuidv4,

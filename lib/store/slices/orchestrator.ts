@@ -74,7 +74,7 @@ const orchestratorSlice = createSlice({
         responses: [],
         sessionId: crypto.randomUUID(),
         userId: action.payload.userId,
-        startedAt: new Date(),
+        startedAt: new Date().toISOString(),
       };
       state.error = null;
     },

@@ -103,12 +103,12 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 
 ### Key Technical Components
 
-1. **Multi-Agent Conversation System**
+1. **Client-Side Multi-Agent Conversation System**
    - QualifierAgent: SMB context collection (employee count, revenue, business type)
    - AssessmentAgent: 6-category question management with one-at-a-time flow
    - AnalysisAgent: Post-processing scoring with dynamic weighting and strategy determination
    - ReportingAgent: Beautiful.ai MCP integration for professional report generation
-   - Agent Orchestrator: Seamless handoffs and **Redux-integrated state management**
+   - **Client-Side Agent Orchestrator**: Runs in React components with direct Redux integration for real-time UI updates and cost optimization
 
    **Alternative Architecture: OpenAI Assistants**
    - **Built-in conversation threading**: OpenAI Assistants automatically maintain conversation state through "threads" that preserve entire conversation history across multiple interactions, eliminating the need to re-send context
@@ -175,12 +175,13 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    
    The thread preserves all context automatically - no manual state management needed.
 
-2. **Redux State Management Architecture**
-   - **Global State**: Centralized assessment session state accessible across all components
-   - **Orchestrator Slice**: Manages current session, agent transitions, UI state, and error handling
+2. **Client-Side Redux State Management Architecture**
+   - **Real-Time Global State**: Client-side Redux store with immediate UI updates as orchestrator processes
+   - **Orchestrator Slice**: Manages current session, agent transitions, UI state, and error handling in real-time
    - **Typed Integration**: Full TypeScript support with custom hooks (`useAppDispatch`, `useAppSelector`)
-   - **Database Ready**: Async thunks prepared for future database persistence operations
+   - **Cost Optimization**: Client-side state management reduces Vercel server compute costs
    - **Developer Experience**: Redux DevTools integration for state inspection and time-travel debugging
+   - **Database Integration**: Orchestrator calls dedicated API endpoints for async database operations
    
    **State Structure**:
    ```typescript
@@ -194,17 +195,23 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    }
    ```
    
-   **Integration Pattern**:
+   **Client-Side Integration Pattern**:
    ```typescript
-   // Orchestrator receives Redux dependencies
-   const orchestrator = new AssessmentOrchestrator(dispatch, store.getState);
-   
-   // Business logic dispatches actions instead of internal state management
-   await orchestrator.processMessage(messages, userId);
-   
-   // Components automatically re-render on state changes
-   const currentPhase = useAppSelector(selectCurrentPhase);
-   const progress = useAppSelector(selectProgress);
+   // Client-side component creates orchestrator with Redux dependencies
+   export function Chat() {
+     const dispatch = useAppDispatch();
+     const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
+     
+     const handleMessage = async (message) => {
+       // Client-side orchestration with real-time Redux updates
+       await orchestrator.processMessage(messages, userId);
+       // UI automatically re-renders with progress updates
+     };
+     
+     // Real-time state access
+     const currentPhase = useAppSelector(selectCurrentPhase);
+     const progress = useAppSelector(selectProgress);
+   }
    ```
 
 3. **SMB-Focused Assessment Framework**
@@ -319,14 +326,14 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 ## Technical Implementation Roadmap
 
 ### Phase 1: Core Platform Development
-- Multi-agent architecture implementation (Qualifier → Assessor → Analyzer → Reporter)
-- **Redux Toolkit state management** with typed hooks and global session handling
+- **Client-side multi-agent architecture** implementation (Qualifier → Assessor → Analyzer → Reporter)
+- **Client-side Redux Toolkit state management** with real-time UI updates and typed hooks
 - 6-category SMB assessment framework with dynamic weighting
-- OpenAI Structured Outputs and Zod schema definitions
+- OpenAI Structured Outputs and Zod schema definitions (client-side integration)
 - Authentication system and controlled access rollout (5 initial SMBs)
-- Event-driven data collection architecture
-- Beautiful.ai MCP integration for report generation
-- Database schema design and migration system
+- Event-driven data collection architecture with dedicated API endpoints
+- Beautiful.ai MCP integration for report generation (client-side calls)
+- Database schema design and API endpoints for async operations
 
 ### Phase 2: Intelligence & Optimization  
 - Evaluation framework with synthetic SMB scenario generation

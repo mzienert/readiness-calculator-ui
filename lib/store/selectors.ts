@@ -1,4 +1,5 @@
 import type { RootState } from './index';
+import { createSelector } from '@reduxjs/toolkit';
 
 // Basic session selectors
 export const selectCurrentSession = (state: RootState) => 
@@ -46,8 +47,10 @@ export const selectQualifierData = (state: RootState) =>
 export const selectDynamicWeighting = (state: RootState) => 
   state.orchestrator.currentSession?.dynamicWeighting;
 
-export const selectResponses = (state: RootState) => 
-  state.orchestrator.currentSession?.responses || [];
+export const selectResponses = createSelector(
+  [(state: RootState) => state.orchestrator.currentSession?.responses],
+  (responses) => responses || []
+);
 
 export const selectResponsesCount = (state: RootState) => 
   state.orchestrator.currentSession?.responses?.length || 0;
@@ -130,22 +133,22 @@ export const selectUIState = (state: RootState) => ({
 });
 
 // Category-specific response selectors
-export const selectResponsesByCategory = (state: RootState) => {
-  const responses = selectResponses(state);
-  return responses.reduce((acc, response) => {
+export const selectResponsesByCategory = createSelector(
+  [selectResponses],
+  (responses) => responses.reduce((acc, response) => {
     if (!acc[response.category]) {
       acc[response.category] = [];
     }
     acc[response.category].push(response);
     return acc;
-  }, {} as Record<string, typeof responses>);
-};
+  }, {} as Record<string, typeof responses>)
+);
 
-export const selectCategoryScores = (state: RootState) => {
-  const responsesByCategory = selectResponsesByCategory(state);
-  return Object.entries(responsesByCategory).reduce((acc, [category, responses]) => {
+export const selectCategoryScores = createSelector(
+  [selectResponsesByCategory],
+  (responsesByCategory) => Object.entries(responsesByCategory).reduce((acc, [category, responses]) => {
     const avgScore = responses.reduce((sum, r) => sum + r.score, 0) / responses.length;
     acc[category] = Math.round(avgScore * 10) / 10; // Round to 1 decimal
     return acc;
-  }, {} as Record<string, number>);
-};
+  }, {} as Record<string, number>)
+);
