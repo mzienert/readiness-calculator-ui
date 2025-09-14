@@ -1,24 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
-import { v4 as uuidv4 } from 'uuid';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
-import { unstable_serialize } from 'swr/infinite';
-import { getChatHistoryPaginationKey } from './sidebar-history';
-import { toast } from './toast';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { useAutoResume } from '@/hooks/use-auto-resume';
 import type { ChatMessage } from '@/lib/types';
 import { AssessmentProgress } from './assessment-progress';
-import { AssessmentOrchestrator } from '@/lib/ai/orchestrator';
-import { useAppDispatch } from '@/lib/store/hooks';
-import { store } from '@/lib/store';
+import { useOrchestratedChat } from '@/hooks/use-orchestrated-chat';
 
 export function Chat({
   id,
@@ -40,82 +33,18 @@ export function Chat({
     initialVisibilityType,
   });
 
-  const { mutate } = useSWRConfig();
-  
-  // Redux integration for orchestrator
-  const dispatch = useAppDispatch();
-  
-  // Create orchestrator instance with Redux dependencies
-  const orchestrator = new AssessmentOrchestrator(dispatch, () => store.getState());
-
   const [input, setInput] = useState<string>('');
 
-  // Custom message handler using orchestrator (replaces regular chat)
-  const handleOrchestratorMessage = async (message: ChatMessage) => {
-    try {
-      // Convert messages to CoreMessage format for orchestrator
-      const coreMessages = [...messages, message].map(msg => ({
-        role: msg.role,
-        content: msg.parts.map(part => part.type === 'text' ? part.text : '').join(''),
-      }));
+  // Use our custom orchestrated chat hook
+  const { messages, setMessages, sendMessage, status, stop, regenerate } =
+    useOrchestratedChat({
+      id,
+      initialMessages,
+      userId: session.user.id,
+    });
 
-      // Process through client-side orchestrator
-      const result = await orchestrator.processMessage(coreMessages, session.user.id);
-
-      // Create assistant response message
-      const assistantMessage: ChatMessage = {
-        id: uuidv4(),
-        role: 'assistant',
-        parts: [{ type: 'text', text: result.response }],
-        metadata: { createdAt: new Date().toISOString() },
-      };
-
-      // Update messages state directly (no server call needed)
-      setMessages([...messages, message, assistantMessage]);
-    } catch (error) {
-      console.error('Orchestrator error:', error);
-      toast({
-        type: 'error',
-        description: 'Assessment error occurred. Please try again.',
-      });
-    }
-  };
-
-  // Replace useChat with local state management for orchestrator-based chat
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
-  const [status, setStatus] = useState<'submitted' | 'streaming' | 'ready' | 'error'>('ready');
-  
-  // Custom sendMessage function that uses orchestrator
-  const sendMessage = async (message?: any) => {
-    if (!message) return;
-    
-    // Ensure message has required fields
-    const fullMessage: ChatMessage = {
-      id: message.id || uuidv4(),
-      role: message.role || 'user',
-      parts: message.parts || [{ type: 'text', text: message.text || message.content || '' }],
-      metadata: message.metadata || { createdAt: new Date().toISOString() },
-    };
-    
-    setStatus('streaming');
-    await handleOrchestratorMessage(fullMessage);
-    setStatus('ready');
-    mutate(unstable_serialize(getChatHistoryPaginationKey));
-  };
-
-  // Stub functions for compatibility (not needed with orchestrator)
-  const stop = () => setStatus('ready');
-  const regenerate = async () => {
-    if (messages.length > 0) {
-      const lastUserMessage = messages.findLast(m => m.role === 'user');
-      if (lastUserMessage) {
-        const previousMessages = messages.slice(0, messages.findLastIndex(m => m.role === 'user'));
-        setMessages(previousMessages);
-        await sendMessage(lastUserMessage);
-      }
-    }
-  };
-  const resumeStream = () => {}; // Not needed for orchestrator
+  // Dummy resumeStream for compatibility
+  const resumeStream = () => Promise.resolve();
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
@@ -133,8 +62,6 @@ export function Chat({
       window.history.replaceState({}, '', `/chat/${id}`);
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
-
-
 
   useAutoResume({
     autoResume,
@@ -183,7 +110,6 @@ export function Chat({
         {/* Assessment progress sidebar */}
         <AssessmentProgress />
       </div>
-
     </>
   );
 }
