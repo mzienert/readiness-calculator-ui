@@ -41,22 +41,26 @@ This document tracks the specific implementation steps, action items, and develo
 
 ### In Progress
 
-**Agent Development & Refinement:**
-- 🔄 **QualifierAgent Enhancement**: Refine SMB context collection and business qualification logic
-- 🔄 **Agent Response Quality**: Improve agent-specific prompting and response consistency
-- 🔄 **Orchestrator Logic**: Enhance agent selection and handoff coordination
+**OpenAI Assistants Migration (Piece-by-Piece Approach):**
+- 🔄 **QualifierAgent OpenAI Assistant Creation**: Create OpenAI Assistant for QualifierAgent only (no orchestrator changes)
+- 🔄 **Direct API Testing**: Test OpenAI Assistant QualifierAgent via direct API calls
+- 🔄 **Single Endpoint Update**: Update `/api/agents/qualifier` endpoint to use OpenAI Assistant
+- 🔄 **Integration Verification**: Verify QualifierAgent works with existing orchestrator and streaming
 
 ### Pending Tasks
 
-**Multi-Agent System Development:**
-- ⏳ Define Zod/JSON schemas for agent responses and data validation across all endpoints
-- ⏳ **QualifierAgent**: Complete SMB context collection with dynamic weighting setup (`/api/agents/qualifier`)
-- ⏳ **AssessmentAgent**: Implement 6-category question management with one-by-one flow (`/api/agents/assessor`)
-- ⏳ **AnalysisAgent**: Build post-processing scoring and strategy determination (`/api/agents/analyzer`)
-- ⏳ **ReportingAgent**: Develop Beautiful.ai MCP integration (`/api/agents/reporter`)
-- ⏳ Set up OpenAI Structured Outputs for consistent data capture across agents
+**OpenAI Assistants Migration (Continued):**
+- ⏳ **Thread Persistence Strategy**: Create thread persistence strategy for database storage
+- ⏳ **Thread ID Management**: Implement thread ID management in chat history system
+- ⏳ **AssessmentAgent Migration**: Convert AssessmentAgent to OpenAI Assistant (`/api/agents/assessor`)
+- ⏳ **AnalysisAgent Migration**: Convert AnalysisAgent to OpenAI Assistant (`/api/agents/analyzer`)
+- ⏳ **ReportingAgent Migration**: Convert ReportingAgent to OpenAI Assistant (`/api/agents/reporter`)
+
+**Multi-Agent System Development (After Migration):**
+- ⏳ Define Zod/JSON schemas for assistant responses and data validation
+- ⏳ Set up OpenAI Structured Outputs for consistent data capture across assistants
 - ⏳ Implement Function Calling for real-time data insertion and analysis
-- ⏳ Enhance orchestrator agent selection logic and state management
+- ⏳ Enhance orchestrator logic for OpenAI Assistant coordination
 
 **Infrastructure & Architecture:**
 - ✅ Upgrade to Vercel AI SDK v5 (already on version 5.0.26)
