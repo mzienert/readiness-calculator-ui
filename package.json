@@ -16,7 +16,8 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && npx playwright test"
+    "test": "export PLAYWRIGHT=True && npx playwright test",
+    "test:assistant": "tsx scripts/test-qualifier-assistant.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.24",
@@ -70,6 +71,7 @@
     "next": "15.3.0-canary.31",
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.3.0",
+    "openai": "^5.20.2",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
     "postgres": "^3.4.4",
