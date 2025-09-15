@@ -14,12 +14,7 @@ const ASSISTANT_ID = 'asst_YpUQWu9pPY3PTNBH9ZVjV2mK';
 
 interface QualifierResponse {
   message: string;
-  collected_info: {
-    employee_count?: string;
-    revenue_band?: string;
-    business_type?: string;
-    location?: string;
-  };
+  collected_info: { [key: string]: string };
   needs_more_info: boolean;
 }
 
