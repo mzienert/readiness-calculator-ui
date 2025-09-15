@@ -46,10 +46,12 @@ export async function POST(request: Request) {
       chatId,
       messages,
       selectedVisibilityType = 'private',
+      threadId,
     }: {
       chatId: string;
       messages: ChatMessage[];
       selectedVisibilityType?: VisibilityType;
+      threadId?: string;
     } = await request.json();
 
     const session = await auth();
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         title,
         visibility: selectedVisibilityType,
+        threadId,
       });
     } else {
       // Verify ownership

@@ -97,6 +97,7 @@ To get started, could you tell me a bit about your business? For example, how ma
     userId: string,
   ): Promise<{
     response: string;
+    threadId?: string;
   }> {
     try {
       this.dispatch(clearError());
@@ -105,7 +106,8 @@ To get started, could you tell me a bit about your business? For example, how ma
       if (this.isNewAssessment(messages)) {
         await this.initializeNewSession(userId);
         const response = this.getInitialGreeting();
-        return { response };
+        const currentSession = this.getCurrentSession();
+        return { response, threadId: currentSession?.threadId };
       }
 
       // Get current session from Redux state
@@ -156,7 +158,7 @@ To get started, could you tell me a bit about your business? For example, how ma
           // Dispatch updates to Redux
           this.dispatch(updateSessionState(updates));
 
-          return { response: result.response };
+          return { response: result.response, threadId: currentSession.threadId };
         }
 
         case 'assessor': {

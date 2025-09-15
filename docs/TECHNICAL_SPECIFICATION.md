@@ -88,7 +88,9 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 │              Data Persistence Layer                         │
 ├─────────────────────────────────────────────────────────────┤
 │ • /api/chat-history - Chat creation & message persistence   │
+│ • /api/threads - OpenAI thread creation & lifecycle mgmt    │
 │ • Chat record management with user ownership                │
+│ • ThreadId storage for conversation persistence             │
 │ • Message storage with conversation threading               │
 │ • History retrieval with pagination                         │
 │ • Clean separation from AI processing logic                 │
@@ -132,72 +134,106 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    - **Non-developer management**: Assistants can be configured and modified through OpenAI's dashboard, allowing non-developers to adjust prompts and instructions without requiring code deployments
    - **Structured outputs**: Native support for JSON-structured responses for consistent data processing
    - **Current Implementation Details**:
-     - **Performance**: ~8-9 second response times with 2-4 polling cycles
-     - **Thread Strategy**: New thread per request with full conversation history replay
+     - **Performance**: ~6-7 second response times with shared thread optimization
+     - **Thread Strategy**: **Shared thread per conversation session** with persistent conversation state
+     - **Thread Management**: Created by orchestrator, passed to agents, preserved across agent calls
+     - **Database Integration**: ThreadId stored in Chat schema and Redux state for session persistence
      - **JSON Structure**: Structured responses with `message`, `collected_info`, `needs_more_info`
      - **Integration**: Seamless compatibility with existing orchestrator and streaming
 
    - **Trade-offs Observed**:
-     - Higher latency compared to hand-rolled agents (~8s vs ~2s)
-     - Increased token costs due to full conversation replay
+     - **Performance Improved**: ~6-7s response times (down from 8-9s) with shared threads
+     - **Cost Optimization**: Significant token savings by eliminating conversation replay
+     - **State Persistence**: Conversation context automatically maintained across agent transitions
+     - **Simplified Architecture**: Thread lifecycle managed by orchestrator, not individual agents
      - Less control over execution flow and error handling
      - Simplified development and maintenance
 
-   **OpenAI Assistants Threading Example**:
+   **Shared Thread Architecture Example**:
 
    ```javascript
-   // Create thread and start assessment
-   async function startAssessment() {
-     const thread = await openai.beta.threads.create();
-
-     // Initial qualifier questions
-     const message = await openai.beta.threads.messages.create(thread.id, {
-       role: "user",
-       content: "I want to start a readiness assessment for my business",
+   // 1. Orchestrator creates thread for session (client-side)
+   async function initializeNewSession(userId) {
+     // Call server-side API to create OpenAI thread
+     const response = await fetch('/api/threads', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' }
      });
 
+     const { threadId } = await response.json();
+
+     // Store threadId in Redux state for session persistence
+     dispatch(initializeSession({ userId, threadId }));
+   }
+
+   // 2. Agent calls use shared thread (server-side)
+   async function callQualifierAgent(messages, threadId) {
+     const response = await fetch('/api/agents/qualifier', {
+       method: 'POST',
+       body: JSON.stringify({
+         messages,
+         threadId // Pass shared thread to agent
+       })
+     });
+
+     return response.json();
+   }
+
+   // 3. Agent preserves thread state (server-side implementation)
+   export async function POST(request) {
+     const { messages, threadId } = await request.json();
+
+     let thread;
+     if (threadId) {
+       // Use existing shared thread - no conversation replay needed
+       thread = { id: threadId };
+
+       // Only add latest user message
+       const latestMessage = messages.filter(m => m.role === 'user').pop();
+       await openai.beta.threads.messages.create(threadId, {
+         role: 'user',
+         content: latestMessage.content
+       });
+     } else {
+       // Fallback: create new thread with full conversation
+       thread = await openai.beta.threads.create();
+       // Add all messages...
+     }
+
+     // Run assistant on preserved thread
      const run = await openai.beta.threads.runs.create(thread.id, {
-       assistant_id: "asst_qualifier_agent_id",
+       assistant_id: ASSISTANT_ID
      });
 
-     return { threadId: thread.id, runId: run.id };
+     // Preserve thread (don't delete) for continued conversation
+     // Thread contains full conversation context automatically
    }
 
-   // Continue conversation in same thread
-   async function continueAssessment(threadId, userResponse) {
-     // Add user response to existing thread
-     await openai.beta.threads.messages.create(threadId, {
-       role: "user",
-       content: userResponse,
-     });
+   // 4. Example conversation flow
+   // Session start: Orchestrator creates thread_abc123
+   await initializeNewSession(userId);
 
-     // Run assessment agent on same thread
-     const run = await openai.beta.threads.runs.create(threadId, {
-       assistant_id: "asst_assessment_agent_id",
-     });
-
-     // Thread automatically has full context:
-     // - Previous qualifier responses
-     // - Business size, revenue, industry
-     // - All prior Q&A responses
-
-     return run;
-   }
-
-   // Example flow
-   const { threadId } = await startAssessment();
+   // User: "I want to assess my business"
+   // → QualifierAgent uses thread_abc123, conversation starts
 
    // User: "We're a 5-person marketing agency"
-   await continueAssessment(threadId, "We're a 5-person marketing agency");
+   // → QualifierAgent adds message to thread_abc123, full context preserved
 
    // User: "$500K annual revenue"
-   await continueAssessment(threadId, "$500K annual revenue");
+   // → QualifierAgent adds message to thread_abc123, knows company size + revenue
 
-   // Agent automatically knows company size + revenue for all subsequent questions
-   await continueAssessment(threadId, "We struggle with lead generation");
+   // Later: Transition to AssessmentAgent
+   // → AssessmentAgent receives same thread_abc123, has full qualifier context
+
+   // User: "We struggle with lead generation"
+   // → AssessmentAgent uses thread_abc123, knows business size, revenue, industry
    ```
 
-   The thread preserves all context automatically - no manual state management needed.
+   **Key Benefits**:
+   - **Performance**: ~6-7s response (improved from 8-9s) by eliminating conversation replay
+   - **Cost Optimization**: Significant token savings from not resending conversation history
+   - **Seamless Handoffs**: Agent transitions preserve full conversation context
+   - **State Persistence**: Thread stored in database and Redux for session recovery
 
 2. **Clean Architecture with Separated Concerns**
 

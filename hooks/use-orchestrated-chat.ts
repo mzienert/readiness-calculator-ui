@@ -96,6 +96,7 @@ export function useOrchestratedChat({
           chatId: id,
           messages: [userMessage, assistantMessage],
           selectedVisibilityType: 'private',
+          threadId: result.threadId,
         }),
       });
 

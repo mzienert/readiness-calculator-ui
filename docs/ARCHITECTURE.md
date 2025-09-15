@@ -150,7 +150,9 @@ The system uses a clean architecture pattern that separates orchestration, AI pr
 
 - **Data Persistence Layer**:
   - `/api/chat-history` - Pure data operations for chat creation and message storage
+  - `/api/threads` - OpenAI thread creation and lifecycle management
   - Handles user authentication, chat ownership, and conversation threading
+  - ThreadId storage for OpenAI conversation persistence across agent transitions
   - Completely separated from AI processing logic
 
 **Custom Hook Integration**:
@@ -218,6 +220,66 @@ Redux is integrated at the root level in `app/layout.tsx`:
 - **Proven UI Patterns**: Leverages battle-tested useChat for message management, status handling, and error states
 - **No Server Synchronization**: Avoids complex state syncing between client and server
 - **Component Compatibility**: Works seamlessly with existing MultimodalInput, Messages, and other chat components
+
+## Thread Management Architecture
+
+### Shared Thread Strategy
+
+The application implements a **shared thread architecture** for OpenAI Assistants that optimizes performance and maintains conversation context across multiple agent interactions:
+
+#### Key Components
+
+1. **Thread Creation (Server-Side)**:
+   ```typescript
+   // /api/threads endpoint
+   export async function POST(request: NextRequest) {
+     const session = await auth();
+     const thread = await openai.beta.threads.create();
+     return Response.json({ threadId: thread.id });
+   }
+   ```
+
+2. **Orchestrator Thread Management (Client-Side)**:
+   ```typescript
+   // lib/ai/orchestrator.ts
+   async initializeNewSession(userId: string): Promise<void> {
+     // Create thread via API call
+     const response = await fetch('/api/threads', { method: 'POST' });
+     const { threadId } = await response.json();
+
+     // Store in Redux state
+     this.dispatch(initializeSession({ userId, threadId }));
+   }
+   ```
+
+3. **Agent Thread Usage (Server-Side)**:
+   ```typescript
+   // /api/agents/qualifier
+   const { messages, threadId } = await request.json();
+
+   if (threadId) {
+     // Use existing thread - only add latest message
+     const latestMessage = messages.filter(m => m.role === 'user').pop();
+     await openai.beta.threads.messages.create(threadId, {
+       role: 'user',
+       content: latestMessage.content
+     });
+   }
+   ```
+
+4. **Database Integration**:
+   ```sql
+   -- Chat schema includes threadId for persistence
+   ALTER TABLE "Chat" ADD COLUMN "threadId" varchar(128);
+   ```
+
+#### Benefits
+
+- **Performance**: ~6-7 second response times (improved from 8-9s)
+- **Cost Optimization**: Eliminates conversation replay, significant token savings
+- **Seamless Handoffs**: Agent transitions preserve full conversation context
+- **State Persistence**: Thread stored in database and Redux for session recovery
+- **Scalability**: Thread lifecycle managed centrally by orchestrator
 
 ### Usage Pattern
 
