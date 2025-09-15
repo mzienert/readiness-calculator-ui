@@ -67,13 +67,14 @@ const orchestratorSlice = createSlice({
     },
     
     // Session management
-    initializeSession: (state, action: PayloadAction<{ userId: string }>) => {
+    initializeSession: (state, action: PayloadAction<{ userId: string; threadId?: string }>) => {
       state.currentSession = {
         currentAgent: 'qualifier',
         phase: 'qualifying',
         responses: [],
         sessionId: crypto.randomUUID(),
         userId: action.payload.userId,
+        threadId: action.payload.threadId,
         startedAt: new Date().toISOString(),
       };
       state.error = null;

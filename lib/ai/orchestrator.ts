@@ -13,12 +13,12 @@ import {
   clearSession,
   clearError 
 } from '@/lib/store/slices/orchestrator';
-import { v4 as uuidv4 } from 'uuid'; // Keep for OpenAI assistant thread management
+import { v4 as uuidv4 } from 'uuid'; // Keep for session correlation
 
 export class AssessmentOrchestrator {
   private dispatch: AppDispatch;
   private getState: () => RootState;
-  
+
   // TODO: Migrate to OpenAI Assistants API
   // Each agent will become an OpenAI Assistant with its own thread
   // Will need uuidv4() for thread management and session correlation
@@ -34,8 +34,25 @@ export class AssessmentOrchestrator {
   /**
    * Initialize a new assessment session (now dispatches to Redux)
    */
-  initializeNewSession(userId: string): void {
-    this.dispatch(initializeSession({ userId }));
+  async initializeNewSession(userId: string): Promise<void> {
+    // Create OpenAI thread via API call
+    const response = await fetch('/api/threads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Thread creation failed: ${response.status}`);
+    }
+
+    const { threadId } = await response.json();
+
+    this.dispatch(initializeSession({
+      userId,
+      threadId
+    }));
   }
 
   /**
@@ -86,17 +103,17 @@ To get started, could you tell me a bit about your business? For example, how ma
 
       // Handle initial greeting for new assessments
       if (this.isNewAssessment(messages)) {
-        this.initializeNewSession(userId);
+        await this.initializeNewSession(userId);
         const response = this.getInitialGreeting();
         return { response };
       }
 
       // Get current session from Redux state
       let currentSession = this.getCurrentSession();
-      
+
       // If no session exists, create one
       if (!currentSession) {
-        this.initializeNewSession(userId);
+        await this.initializeNewSession(userId);
         currentSession = this.getCurrentSession()!;
       }
 
@@ -108,7 +125,10 @@ To get started, could you tell me a bit about your business? For example, how ma
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ messages }),
+            body: JSON.stringify({
+              messages,
+              threadId: currentSession.threadId
+            }),
           });
 
           if (!response.ok) {

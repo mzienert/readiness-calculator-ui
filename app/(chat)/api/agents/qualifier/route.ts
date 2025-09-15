@@ -14,6 +14,7 @@ const ASSISTANT_ID = 'asst_YpUQWu9pPY3PTNBH9ZVjV2mK';
 
 interface QualifierRequest {
   messages: CoreMessage[];
+  threadId?: string;
 }
 
 interface QualifierResponse {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     console.log(`👤 [QualifierAgent] User: ${session.user.id}`);
 
     // Parse request body
-    const { messages }: QualifierRequest = await request.json();
+    const { messages, threadId }: QualifierRequest = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return new ChatSDKError('bad_request:api', 'Messages array is required').toResponse();
@@ -50,25 +51,44 @@ export async function POST(request: NextRequest) {
     console.log(`📥 [QualifierAgent] Received ${messages.length} messages`);
     console.log(`📝 [QualifierAgent] Last user message: "${messages[messages.length - 1]?.content}"`);
 
-    // Simple implementation: Create new thread for each request
-    // TODO: Later we'll add thread persistence for conversation continuity
-    console.log('🧵 [QualifierAgent] Creating new thread...');
-    const thread = await openai.beta.threads.create();
-    console.log(`✅ [QualifierAgent] Thread created: ${thread.id}`);
+    // Use provided thread or create new one
+    let thread;
+    if (threadId) {
+      console.log(`🧵 [QualifierAgent] Using existing thread: ${threadId}`);
+      thread = { id: threadId };
+    } else {
+      console.log('🧵 [QualifierAgent] Creating new thread...');
+      thread = await openai.beta.threads.create();
+      console.log(`✅ [QualifierAgent] Thread created: ${thread.id}`);
+    }
 
-    // Add all conversation messages to the thread
-    console.log('📤 [QualifierAgent] Adding messages to thread...');
-    let userMessageCount = 0;
-    for (const message of messages) {
-      if (message.role === 'user') {
+    // Add messages to thread
+    if (threadId) {
+      // For existing threads, only add the latest user message
+      console.log('📤 [QualifierAgent] Adding latest message to existing thread...');
+      const latestUserMessage = messages.filter(m => m.role === 'user').pop();
+      if (latestUserMessage) {
         await openai.beta.threads.messages.create(thread.id, {
           role: 'user',
-          content: message.content as string,
+          content: latestUserMessage.content as string,
         });
-        userMessageCount++;
+        console.log(`✅ [QualifierAgent] Added latest user message to thread`);
       }
+    } else {
+      // For new threads, add all conversation messages
+      console.log('📤 [QualifierAgent] Adding all messages to new thread...');
+      let userMessageCount = 0;
+      for (const message of messages) {
+        if (message.role === 'user') {
+          await openai.beta.threads.messages.create(thread.id, {
+            role: 'user',
+            content: message.content as string,
+          });
+          userMessageCount++;
+        }
+      }
+      console.log(`✅ [QualifierAgent] Added ${userMessageCount} user messages to thread`);
     }
-    console.log(`✅ [QualifierAgent] Added ${userMessageCount} user messages to thread`);
 
     // Run the assistant
     console.log(`🤖 [QualifierAgent] Running assistant ${ASSISTANT_ID}...`);
@@ -121,9 +141,13 @@ export async function POST(request: NextRequest) {
       needs_more_info: assistantResponse.needs_more_info
     });
 
-    // Clean up thread (simple approach - no persistence yet)
-    console.log(`🗑️ [QualifierAgent] Cleaning up thread: ${thread.id}`);
-    await openai.beta.threads.delete(thread.id);
+    // Clean up thread only if we created it (not provided from orchestrator)
+    if (!threadId) {
+      console.log(`🗑️ [QualifierAgent] Cleaning up thread: ${thread.id}`);
+      await openai.beta.threads.delete(thread.id);
+    } else {
+      console.log(`💾 [QualifierAgent] Preserving shared thread: ${thread.id}`);
+    }
 
     // Return in format expected by orchestrator
     const result = {

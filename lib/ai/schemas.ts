@@ -65,6 +65,7 @@ export const agentStateSchema = z.object({
   // Metadata
   sessionId: z.string(),
   userId: z.string(),
+  threadId: z.string().optional(), // OpenAI thread ID for conversation persistence
   startedAt: z.string(), // ISO date string
   completedAt: z.string().optional(), // ISO date string
 });
