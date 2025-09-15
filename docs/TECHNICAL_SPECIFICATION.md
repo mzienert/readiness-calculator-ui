@@ -118,24 +118,30 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 
 ### Key Technical Components
 
-1. **Client-Side Multi-Agent Conversation System**
+1. **Hybrid Multi-Agent Conversation System** *(Updated 2024-09-15)*
 
-   - QualifierAgent: SMB context collection (employee count, revenue, business type)
-   - AssessmentAgent: 6-category question management with one-at-a-time flow
-   - AnalysisAgent: Post-processing scoring with dynamic weighting and strategy determination
-   - ReportingAgent: Beautiful.ai MCP integration for professional report generation
+   - **QualifierAgent**: OpenAI Assistant (`asst_YpUQWu9pPY3PTNBH9ZVjV2mK`) for SMB context collection
+   - **AssessmentAgent**: 6-category question management with one-at-a-time flow *(Hand-rolled)*
+   - **AnalysisAgent**: Post-processing scoring with dynamic weighting and strategy determination *(Hand-rolled)*
+   - **ReportingAgent**: Beautiful.ai MCP integration for professional report generation *(Hand-rolled)*
    - **Client-Side Agent Orchestrator**: Runs in React components with direct Redux integration for real-time UI updates and cost optimization
 
-   **Alternative Architecture: OpenAI Assistants**
+   **OpenAI Assistants Implementation** *(QualifierAgent - ACTIVE)*
 
    - **Built-in conversation threading**: OpenAI Assistants automatically maintain conversation state through "threads" that preserve entire conversation history across multiple interactions, eliminating the need to re-send context
    - **Non-developer management**: Assistants can be configured and modified through OpenAI's dashboard, allowing non-developers to adjust prompts and instructions without requiring code deployments
    - **Structured outputs**: Native support for JSON-structured responses for consistent data processing
-   - **Trade-offs**:
-     - Less control over execution flow - you submit requests and receive results without controlling intermediate steps, conditional logic, or custom error handling between processing stages
-     - Additional API costs and latency
-     - Dependency on OpenAI's service availability
-     - Reduced ability to implement complex branching logic or step-by-step processing flows
+   - **Current Implementation Details**:
+     - **Performance**: ~8-9 second response times with 2-4 polling cycles
+     - **Thread Strategy**: New thread per request with full conversation history replay
+     - **JSON Structure**: Structured responses with `message`, `collected_info`, `needs_more_info`
+     - **Integration**: Seamless compatibility with existing orchestrator and streaming
+
+   - **Trade-offs Observed**:
+     - Higher latency compared to hand-rolled agents (~8s vs ~2s)
+     - Increased token costs due to full conversation replay
+     - Less control over execution flow and error handling
+     - Simplified development and maintenance
 
    **OpenAI Assistants Threading Example**:
 
@@ -418,7 +424,8 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 ### Backend
 
 - **Next.js API Routes** with server actions
-- **AI SDK v5** for multi-agent LLM integration
+- **AI SDK v5** for multi-agent LLM integration *(Hand-rolled agents)*
+- **OpenAI SDK v5.20.2** for Assistants API *(QualifierAgent)*
 - **OpenAI** for inference (replacing Groq/Grok)
 - **Drizzle ORM** with PostgreSQL (proper usage, avoiding raw queries)
 - **Redis** for caching and session management
