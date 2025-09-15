@@ -161,11 +161,46 @@ To get started, could you tell me a bit about your business? For example, how ma
         }
 
         case 'assessor': {
-          // TODO: Implement AssessmentAgent processing
-          return {
-            response:
-              'Assessment phase not yet implemented. This would handle the 6-category questions.',
-          };
+          // Call assessor API with qualifier context
+          const response = await fetch('/api/agents/assessor', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages,
+              threadId: currentSession.threadId,
+              qualifier: currentSession.qualifier // Pass qualifier context for personalization
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Assessor API error: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          // Update Redux state with assessment results
+          const updates: Partial<AgentState> = {};
+          if (result.assessmentData) {
+            // Store raw assessment responses (no scores yet - analyzer will add scores)
+            updates.rawResponses = result.assessmentData;
+          }
+          if (result.currentQuestionId) {
+            updates.currentQuestionId = result.currentQuestionId;
+          }
+
+          // Handle agent transition when assessment is complete
+          if (result.isComplete) {
+            updates.currentAgent = 'analyzer';
+            updates.phase = 'analyzing';
+            // TODO: Add transition message about starting analysis
+          }
+
+          // Dispatch updates to Redux
+          this.dispatch(updateSessionState(updates));
+
+          return { response: result.response, threadId: currentSession.threadId };
         }
 
         case 'analyzer': {

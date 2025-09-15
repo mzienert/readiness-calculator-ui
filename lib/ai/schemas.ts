@@ -39,7 +39,8 @@ export const agentStateSchema = z.object({
   dynamicWeighting: dynamicWeightingSchema.optional(),
   
   // Assessment Data
-  responses: z.array(assessmentResponseSchema).default([]),
+  rawResponses: z.record(z.string(), z.string()).optional(), // Raw responses from assessor agent (flexible schema)
+  responses: z.array(assessmentResponseSchema).default([]), // Structured responses from analyzer agent (with scores)
   currentCategory: z.enum(['market_strategy', 'business_understanding', 'workforce_acumen', 'company_culture', 'role_of_technology', 'data']).optional(),
   currentQuestionId: z.string().optional(),
   
