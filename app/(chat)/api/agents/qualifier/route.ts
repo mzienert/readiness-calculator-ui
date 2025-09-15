@@ -19,12 +19,7 @@ interface QualifierRequest {
 
 interface QualifierResponse {
   message: string;
-  collected_info: {
-    employee_count?: string;
-    revenue_band?: string;
-    business_type?: string;
-    location?: string;
-  };
+  collected_info: { [key: string]: string };
   needs_more_info: boolean;
 }
 
@@ -45,11 +40,16 @@ export async function POST(request: NextRequest) {
     const { messages, threadId }: QualifierRequest = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return new ChatSDKError('bad_request:api', 'Messages array is required').toResponse();
+      return new ChatSDKError(
+        'bad_request:api',
+        'Messages array is required',
+      ).toResponse();
     }
 
     console.log(`📥 [QualifierAgent] Received ${messages.length} messages`);
-    console.log(`📝 [QualifierAgent] Last user message: "${messages[messages.length - 1]?.content}"`);
+    console.log(
+      `📝 [QualifierAgent] Last user message: "${messages[messages.length - 1]?.content}"`,
+    );
 
     // Use provided thread or create new one
     let thread;
@@ -65,8 +65,10 @@ export async function POST(request: NextRequest) {
     // Add messages to thread
     if (threadId) {
       // For existing threads, only add the latest user message
-      console.log('📤 [QualifierAgent] Adding latest message to existing thread...');
-      const latestUserMessage = messages.filter(m => m.role === 'user').pop();
+      console.log(
+        '📤 [QualifierAgent] Adding latest message to existing thread...',
+      );
+      const latestUserMessage = messages.filter((m) => m.role === 'user').pop();
       if (latestUserMessage) {
         await openai.beta.threads.messages.create(thread.id, {
           role: 'user',
@@ -87,7 +89,9 @@ export async function POST(request: NextRequest) {
           userMessageCount++;
         }
       }
-      console.log(`✅ [QualifierAgent] Added ${userMessageCount} user messages to thread`);
+      console.log(
+        `✅ [QualifierAgent] Added ${userMessageCount} user messages to thread`,
+      );
     }
 
     // Run the assistant
@@ -105,16 +109,23 @@ export async function POST(request: NextRequest) {
     });
 
     let pollCount = 0;
-    while (runStatus.status === 'queued' || runStatus.status === 'in_progress') {
+    while (
+      runStatus.status === 'queued' ||
+      runStatus.status === 'in_progress'
+    ) {
       pollCount++;
-      console.log(`🔄 [QualifierAgent] Poll ${pollCount}: Status ${runStatus.status}`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log(
+        `🔄 [QualifierAgent] Poll ${pollCount}: Status ${runStatus.status}`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(run.id, {
         thread_id: thread.id,
       });
     }
 
-    console.log(`✅ [QualifierAgent] Run completed with status: ${runStatus.status}`);
+    console.log(
+      `✅ [QualifierAgent] Run completed with status: ${runStatus.status}`,
+    );
 
     if (runStatus.status !== 'completed') {
       console.error(`❌ [QualifierAgent] Run failed:`, runStatus.last_error);
@@ -123,22 +134,33 @@ export async function POST(request: NextRequest) {
 
     // Get the assistant's response
     console.log('📨 [QualifierAgent] Fetching assistant response...');
-    const assistantMessages = await openai.beta.threads.messages.list(thread.id);
+    const assistantMessages = await openai.beta.threads.messages.list(
+      thread.id,
+    );
     const lastMessage = assistantMessages.data[0];
 
-    if (lastMessage.role !== 'assistant' || lastMessage.content[0].type !== 'text') {
-      console.error('❌ [QualifierAgent] Invalid response format:', lastMessage);
+    if (
+      lastMessage.role !== 'assistant' ||
+      lastMessage.content[0].type !== 'text'
+    ) {
+      console.error(
+        '❌ [QualifierAgent] Invalid response format:',
+        lastMessage,
+      );
       throw new Error('Invalid assistant response format');
     }
 
     const responseText = lastMessage.content[0].text.value;
-    console.log(`📄 [QualifierAgent] Raw response (${responseText.length} chars):`, responseText);
+    console.log(
+      `📄 [QualifierAgent] Raw response (${responseText.length} chars):`,
+      responseText,
+    );
 
     const assistantResponse: QualifierResponse = JSON.parse(responseText);
     console.log('🎯 [QualifierAgent] Parsed response:', {
       message_preview: `${assistantResponse.message.substring(0, 100)}...`,
       collected_info: assistantResponse.collected_info,
-      needs_more_info: assistantResponse.needs_more_info
+      needs_more_info: assistantResponse.needs_more_info,
     });
 
     // Clean up thread only if we created it (not provided from orchestrator)
@@ -152,7 +174,9 @@ export async function POST(request: NextRequest) {
     // Return in format expected by orchestrator
     const result = {
       response: assistantResponse.message,
-      qualifier: assistantResponse.needs_more_info ? undefined : assistantResponse.collected_info,
+      qualifier: assistantResponse.needs_more_info
+        ? undefined
+        : assistantResponse.collected_info,
       isComplete: !assistantResponse.needs_more_info,
     };
 
@@ -162,17 +186,20 @@ export async function POST(request: NextRequest) {
     console.log(`📊 [QualifierAgent] Result:`, {
       isComplete: result.isComplete,
       hasQualifier: !!result.qualifier,
-      responseLength: result.response.length
+      responseLength: result.response.length,
     });
 
     return Response.json(result);
   } catch (error) {
     console.error('Qualifier agent error:', error);
-    
+
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
-    
-    return new ChatSDKError('bad_request:api', 'Qualifier processing failed').toResponse();
+
+    return new ChatSDKError(
+      'bad_request:api',
+      'Qualifier processing failed',
+    ).toResponse();
   }
 }

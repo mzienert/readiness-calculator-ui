@@ -1,15 +1,7 @@
 import { z } from 'zod';
 
-// SMB Business Context Schema
-export const smbQualifierSchema = z.object({
-  employeeCount: z.enum(['1', '2-10', '11-50', '51-250', '250+']),
-  revenueBand: z.enum(['under-100k', '100k-1m', '1m-5m', '5m-10m', '10m+']),
-  businessType: z.enum(['solopreneur', 'family-owned', 'rural-local', 'small-team', 'medium-business']),
-  industry: z.enum(['health-services', 'retail-trade', 'food-service', 'construction', 'professional-services', 'other']).optional(),
-  location: z.string().optional(), // e.g., "La Plata County, CO"
-});
-
-export type SMBQualifier = z.infer<typeof smbQualifierSchema>;
+// Note: SMB Qualifier schema is now flexible (any string key-value pairs)
+// This allows non-technical users to modify agent instructions without code changes
 
 // Dynamic Weighting Configuration
 export const dynamicWeightingSchema = z.object({
@@ -43,7 +35,7 @@ export const agentStateSchema = z.object({
   phase: z.enum(['qualifying', 'assessing', 'analyzing', 'reporting', 'complete']),
   
   // Qualifier Data
-  qualifier: smbQualifierSchema.optional(),
+  qualifier: z.record(z.string(), z.string()).optional(), // Dynamic key-value pairs
   dynamicWeighting: dynamicWeightingSchema.optional(),
   
   // Assessment Data
@@ -75,7 +67,7 @@ export type AgentState = z.infer<typeof agentStateSchema>;
 // Agent Response Schema (for structured outputs)
 export const qualifierResponseSchema = z.object({
   type: z.literal('qualifier_complete'),
-  qualifier: smbQualifierSchema,
+  qualifier: z.record(z.string(), z.string()), // Dynamic key-value pairs
   dynamicWeighting: dynamicWeightingSchema,
   nextMessage: z.string(), // message to user about starting assessment
   readyForAssessment: z.boolean(),

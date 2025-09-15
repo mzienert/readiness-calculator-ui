@@ -1,7 +1,6 @@
 // Removed direct agent imports - now using API calls
 import {
   type AgentState,
-  type SMBQualifier,
   type DynamicWeighting,
   agentStateSchema,
 } from './schemas';
