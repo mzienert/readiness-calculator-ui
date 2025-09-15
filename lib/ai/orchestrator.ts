@@ -149,8 +149,24 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Handle agent transition
           if (result.isComplete) {
+            // Create new thread for assessor agent
+            const threadResponse = await fetch('/api/threads', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (!threadResponse.ok) {
+              throw new Error(`Thread creation failed: ${threadResponse.status}`);
+            }
+
+            const { threadId: newThreadId } = await threadResponse.json();
+            console.log(`🧵 [Orchestrator] Created new thread for assessor: ${newThreadId}`);
+
             updates.currentAgent = 'assessor';
             updates.phase = 'assessing';
+            updates.threadId = newThreadId; // Use new thread for assessor
             // TODO: Add transition message about starting assessment
           }
 

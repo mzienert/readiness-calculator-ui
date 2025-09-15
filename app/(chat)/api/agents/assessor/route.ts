@@ -69,26 +69,26 @@ export async function POST(request: NextRequest) {
       console.log(`📊 [AssessorAgent] Qualifier context:`, qualifier);
     }
 
-    // Use provided thread or create new one
-    let thread;
-    if (threadId) {
-      console.log(`🧵 [AssessorAgent] Using existing thread: ${threadId}`);
-      thread = { id: threadId };
-    } else {
-      console.log('🧵 [AssessorAgent] Creating new thread...');
-      thread = await openai.beta.threads.create();
-      console.log(`✅ [AssessorAgent] Thread created: ${thread.id}`);
+    // Use thread provided by orchestrator
+    if (!threadId) {
+      return new ChatSDKError(
+        'bad_request:api',
+        'Thread ID is required for assessor agent',
+      ).toResponse();
     }
 
-    // Add qualifier context as initial system message if provided and it's a new thread
-    if (!threadId && qualifier) {
+    console.log(`🧵 [AssessorAgent] Using thread: ${threadId}`);
+    const thread = { id: threadId };
+
+    // Add qualifier context as initial system message (always new thread for assessor)
+    if (qualifier) {
       console.log('📤 [AssessorAgent] Adding qualifier context to new thread...');
       const qualifierContext = `BUSINESS CONTEXT from qualification:
 ${Object.entries(qualifier)
   .map(([key, value]) => `- ${key}: ${value}`)
   .join('\n')}
 
-Please use this context to personalize your assessment questions and language.`;
+Please use this context to personalize your assessment questions and language. Start by greeting them and explaining that you're the assessment specialist who will help them through the 6-category evaluation.`;
 
       await openai.beta.threads.messages.create(thread.id, {
         role: 'user',
@@ -97,36 +97,15 @@ Please use this context to personalize your assessment questions and language.`;
       console.log(`✅ [AssessorAgent] Added qualifier context to thread`);
     }
 
-    // Add messages to thread
-    if (threadId) {
-      // For existing threads, only add the latest user message
-      console.log(
-        '📤 [AssessorAgent] Adding latest message to existing thread...',
-      );
-      const latestUserMessage = messages.filter((m) => m.role === 'user').pop();
-      if (latestUserMessage) {
-        await openai.beta.threads.messages.create(thread.id, {
-          role: 'user',
-          content: latestUserMessage.content as string,
-        });
-        console.log(`✅ [AssessorAgent] Added latest user message to thread`);
-      }
-    } else {
-      // For new threads, add all conversation messages
-      console.log('📤 [AssessorAgent] Adding all messages to new thread...');
-      let userMessageCount = 0;
-      for (const message of messages) {
-        if (message.role === 'user') {
-          await openai.beta.threads.messages.create(thread.id, {
-            role: 'user',
-            content: message.content as string,
-          });
-          userMessageCount++;
-        }
-      }
-      console.log(
-        `✅ [AssessorAgent] Added ${userMessageCount} user messages to thread`,
-      );
+    // Add the latest user message to the new thread
+    console.log('📤 [AssessorAgent] Adding latest user message to new thread...');
+    const latestUserMessage = messages.filter((m) => m.role === 'user').pop();
+    if (latestUserMessage) {
+      await openai.beta.threads.messages.create(thread.id, {
+        role: 'user',
+        content: latestUserMessage.content as string,
+      });
+      console.log(`✅ [AssessorAgent] Added latest user message to thread`);
     }
 
     // Run the assistant
