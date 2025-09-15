@@ -17,7 +17,8 @@
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
     "test": "export PLAYWRIGHT=True && npx playwright test",
-    "test:assistant": "tsx scripts/test-qualifier-assistant.ts"
+    "test:assistant": "tsx scripts/test-qualifier-assistant.ts",
+    "test:assessor-flow": "tsx scripts/test-assessor-flow.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.24",
