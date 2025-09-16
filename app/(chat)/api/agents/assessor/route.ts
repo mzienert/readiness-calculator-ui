@@ -180,10 +180,15 @@ Please use this context to personalize your assessment questions and language. S
       } catch (secondParseError) {
         console.error('❌ [AssessorAgent] Cleaned JSON still failed:', secondParseError);
 
-        return new ChatSDKError(
-          'bad_request:api',
-          'Assistant returned invalid JSON format',
-        ).toResponse();
+        // Last resort: create structured response from plain text
+        console.log('🔄 [AssessorAgent] Creating structured response from plain text...');
+        assistantResponse = {
+          message: responseText.trim(),
+          collected_responses: {}, // Empty for now since we can't parse
+          current_question_id: "1a", // Default to first question
+          assessment_complete: false
+        };
+        console.log('✅ [AssessorAgent] Created fallback structured response');
       }
     }
     console.log('🎯 [AssessorAgent] Parsed response:', {

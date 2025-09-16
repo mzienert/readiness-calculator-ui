@@ -200,13 +200,12 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Update Redux state with assessment results
           const updates: Partial<AgentState> = {};
-          if (result.assessmentData || result.currentQuestionId) {
-            // Store assessment responses in assessor object
-            updates.assessor = {
-              collected_responses: result.assessmentData,
-              currentQuestionId: result.currentQuestionId,
-            };
-          }
+          // Always update assessor state with current response
+          updates.assessor = {
+            collected_responses: result.assessmentData || {},
+            currentQuestionId: result.currentQuestionId,
+            assessment_complete: result.isComplete,
+          };
 
           // Handle agent transition when assessment is complete
           if (result.isComplete) {
