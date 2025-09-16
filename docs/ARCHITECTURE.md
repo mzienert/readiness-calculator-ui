@@ -223,15 +223,15 @@ Redux is integrated at the root level in `app/layout.tsx`:
 
 ## Thread Management Architecture
 
-### Shared Thread Strategy
+### New Thread Per Agent Strategy *(Updated 2024-09-15)*
 
-The application implements a **shared thread architecture** for OpenAI Assistants that optimizes performance and maintains conversation context across multiple agent interactions:
+The application implements a **new thread per agent architecture** for OpenAI Assistants that provides clean separation, explicit context passing, and showcases multi-agent handoffs:
 
 #### Key Components
 
 1. **Thread Creation (Server-Side)**:
    ```typescript
-   // /api/threads endpoint
+   // /api/threads endpoint - Creates fresh threads for each agent
    export async function POST(request: NextRequest) {
      const session = await auth();
      const thread = await openai.beta.threads.create();
@@ -243,66 +243,112 @@ The application implements a **shared thread architecture** for OpenAI Assistant
    ```typescript
    // lib/ai/orchestrator.ts
    async initializeNewSession(userId: string): Promise<void> {
-     // Create thread via API call
+     // Create initial thread for qualifier
      const response = await fetch('/api/threads', { method: 'POST' });
      const { threadId } = await response.json();
 
-     // Store in Redux state
      this.dispatch(initializeSession({ userId, threadId }));
+   }
+
+   // Create new thread during agent transitions
+   async transitionToAssessor(qualifierData): Promise<void> {
+     const threadResponse = await fetch('/api/threads', { method: 'POST' });
+     const { threadId: newThreadId } = await threadResponse.json();
+
+     this.dispatch(updateSessionState({
+       currentAgent: 'assessor',
+       phase: 'assessing',
+       threadId: newThreadId,
+       qualifier: qualifierData
+     }));
    }
    ```
 
 3. **Agent Thread Usage (Server-Side)**:
    ```typescript
-   // /api/agents/qualifier
-   const { messages, threadId } = await request.json();
+   // /api/agents/assessor - Each agent gets new thread + context
+   const { messages, threadId, qualifier } = await request.json();
 
-   if (threadId) {
-     // Use existing thread - only add latest message
-     const latestMessage = messages.filter(m => m.role === 'user').pop();
+   // Always receive threadId from orchestrator (required)
+   if (!threadId) {
+     return new ChatSDKError('bad_request:api', 'Thread ID required').toResponse();
+   }
+
+   const thread = { id: threadId };
+
+   // Add explicit context from previous agent
+   if (qualifier) {
+     const qualifierContext = `BUSINESS CONTEXT from qualification:
+${Object.entries(qualifier).map(([k,v]) => `- ${k}: ${v}`).join('\n')}
+
+Start by greeting them and explaining you're the assessment specialist.`;
+
      await openai.beta.threads.messages.create(threadId, {
        role: 'user',
-       content: latestMessage.content
+       content: qualifierContext
      });
    }
+
+   // Add latest user message to fresh thread
+   const latestMessage = messages.filter(m => m.role === 'user').pop();
+   await openai.beta.threads.messages.create(threadId, {
+     role: 'user',
+     content: latestMessage.content
+   });
    ```
 
-4. **Database Integration**:
-   ```sql
-   -- Chat schema includes threadId for persistence
-   ALTER TABLE "Chat" ADD COLUMN "threadId" varchar(128);
+4. **Redux State Integration**:
+   ```typescript
+   // Thread ID stored in Redux state, updated during agent transitions
+   interface AgentState {
+     threadId?: string;  // Current agent's thread ID
+     qualifier?: { [key: string]: string };  // Context from qualifier
+     rawResponses?: { [key: string]: string };  // Assessment responses
+   }
    ```
 
 #### Benefits
 
-- **Performance**: ~6-7 second response times (improved from 8-9s)
-- **Cost Optimization**: Eliminates conversation replay, significant token savings
-- **Seamless Handoffs**: Agent transitions preserve full conversation context
-- **State Persistence**: Thread stored in database and Redux for session recovery
-- **Scalability**: Thread lifecycle managed centrally by orchestrator
+- **Clean Separation**: Each agent starts fresh with only necessary context
+- **Cost Optimization**: No accumulated conversation history, minimal token usage per agent
+- **Error Recovery**: Agent failures don't corrupt other agents' contexts
+- **Explicit Context**: Clear what data each agent receives and processes
+- **Independent Testing**: Can test individual agents in isolation
+- **Multi-Agent Showcase**: Clear demonstration of agent handoffs to users
+- **Performance**: ~6-7 second response times per agent with optimized context
+- **Scalability**: Each agent can be optimized independently
 
-### Usage Pattern
+### Multi-Agent Flow Example
 
 ```typescript
-// Using the custom orchestrated chat hook
-export function Chat({ id, initialMessages, session }) {
-  // Get all useChat functionality + orchestrator integration
-  const { messages, sendMessage, status, stop, regenerate } =
-    useOrchestratedChat({
-      id,
-      initialMessages,
-      userId: session.user.id,
-    });
+// Example conversation flow with new thread per agent
+export function AssessmentFlow() {
+  const dispatch = useAppDispatch();
+  const currentSession = useAppSelector(selectCurrentSession);
 
-  // Access real-time Redux state updates
-  const currentPhase = useAppSelector(selectCurrentPhase);
-  const progress = useAppSelector(selectProgress);
+  // Phase 1: Qualifier (thread_abc123)
+  // User: "We're a 5-person marketing agency"
+  // → QualifierAgent collects business context
+  // → Returns: { qualifier: {employee_count: "5", ...}, isComplete: true }
+
+  // Phase 2: Agent Transition (orchestrator)
+  // → Creates new thread (thread_def456) for assessor
+  // → Updates Redux state with new threadId + qualifier context
+
+  // Phase 3: Assessor (thread_def456 + qualifier context)
+  // → AssessorAgent: "Hello! I understand you run a Marketing Agency..."
+  // → Begins 6-category assessment with personalized language
+
+  // Each agent gets:
+  // 1. Fresh thread for clean separation
+  // 2. Explicit context from previous agent
+  // 3. Clear handoff messaging to user
 
   return (
     <div>
       <Messages messages={messages} status={status} />
       <MultimodalInput sendMessage={sendMessage} status={status} />
-      <AssessmentProgress /> {/* Real-time Redux updates */}
+      <AgentProgressIndicator /> {/* Shows current agent & phase */}
     </div>
   );
 }
@@ -345,3 +391,46 @@ export async function POST(request: Request) {
 - **Maintenance**: Changes to AI logic don't affect data operations
 - **Performance**: Targeted API calls only when needed
 - **Cost Control**: Clear visibility into compute vs storage costs
+
+## Flexible Schema Architecture
+
+### Non-Technical Configuration
+The system implements flexible schemas that allow non-technical users to modify agent behavior without code changes:
+
+```typescript
+// OpenAI Assistant System Prompt defines data structure
+{
+  "message": "your conversational response here",
+  "collected_info": {
+    "employee_count": "if mentioned",
+    "revenue_band": "if mentioned",
+    "business_type": "if mentioned",
+    "location": "if mentioned"
+  },
+  "needs_more_info": true/false
+}
+```
+
+### Application Layer Adaptation
+The application layer uses flexible types that adapt to any schema:
+
+```typescript
+// TypeScript interfaces use flexible schemas
+interface QualifierResponse {
+  message: string;
+  collected_info: { [key: string]: string };  // Adapts to any keys
+  needs_more_info: boolean;
+}
+
+// Redux state stores flexible data
+interface AgentState {
+  qualifier?: { [key: string]: string };      // Any qualifier keys
+  rawResponses?: { [key: string]: string };   // Any assessment keys
+}
+```
+
+### Benefits
+- **Non-Technical Control**: Business users can modify data collection without developers
+- **Rapid Iteration**: Change assessment questions/data without code deployment
+- **Schema Evolution**: Add new data fields by updating assistant instructions
+- **Future-Proof**: Application adapts to any schema changes automatically

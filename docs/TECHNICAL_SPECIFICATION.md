@@ -120,120 +120,117 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 
 ### Key Technical Components
 
-1. **Hybrid Multi-Agent Conversation System** *(Updated 2024-09-15)*
+1. **Multi-Agent Conversation System with New Thread Architecture** *(Updated 2024-09-15)*
 
    - **QualifierAgent**: OpenAI Assistant (`asst_YpUQWu9pPY3PTNBH9ZVjV2mK`) for SMB context collection
-   - **AssessmentAgent**: 6-category question management with one-at-a-time flow *(Hand-rolled)*
-   - **AnalysisAgent**: Post-processing scoring with dynamic weighting and strategy determination *(Hand-rolled)*
-   - **ReportingAgent**: Beautiful.ai MCP integration for professional report generation *(Hand-rolled)*
+   - **AssessmentAgent**: OpenAI Assistant (`asst_wmitwNMH5YwodUGXryvV1CuA`) for 6-category question management *(COMPLETED)*
+   - **AnalysisAgent**: Post-processing scoring with dynamic weighting and strategy determination *(Pending)*
+   - **ReportingAgent**: Beautiful.ai MCP integration for professional report generation *(Pending)*
    - **Client-Side Agent Orchestrator**: Runs in React components with direct Redux integration for real-time UI updates and cost optimization
 
-   **OpenAI Assistants Implementation** *(QualifierAgent - ACTIVE)*
+   **OpenAI Assistants Implementation** *(QualifierAgent & AssessmentAgent - ACTIVE)*
 
-   - **Built-in conversation threading**: OpenAI Assistants automatically maintain conversation state through "threads" that preserve entire conversation history across multiple interactions, eliminating the need to re-send context
+   - **Built-in conversation threading**: OpenAI Assistants automatically maintain conversation state through "threads" for each agent's specific context
    - **Non-developer management**: Assistants can be configured and modified through OpenAI's dashboard, allowing non-developers to adjust prompts and instructions without requiring code deployments
    - **Structured outputs**: Native support for JSON-structured responses for consistent data processing
+   - **New Thread Per Agent Architecture**: Each agent gets a fresh thread for clean separation and explicit context passing
+
    - **Current Implementation Details**:
-     - **Performance**: ~6-7 second response times with shared thread optimization
-     - **Thread Strategy**: **Shared thread per conversation session** with persistent conversation state
-     - **Thread Management**: Created by orchestrator, passed to agents, preserved across agent calls
-     - **Database Integration**: ThreadId stored in Chat schema and Redux state for session persistence
-     - **JSON Structure**: Structured responses with `message`, `collected_info`, `needs_more_info`
+     - **Performance**: ~6-7 second response times per agent
+     - **Thread Strategy**: **New thread per agent** with explicit context passing for clean separation
+     - **Thread Management**: Orchestrator creates new threads via `/api/threads` endpoint for each agent transition
+     - **Database Integration**: ThreadId stored in Redux state, updated during agent handoffs
+     - **Context Passing**: Qualifier data explicitly passed to AssessmentAgent for personalization
      - **Integration**: Seamless compatibility with existing orchestrator and streaming
 
-   - **Trade-offs Observed**:
-     - **Performance Improved**: ~6-7s response times (down from 8-9s) with shared threads
-     - **Cost Optimization**: Significant token savings by eliminating conversation replay
-     - **State Persistence**: Conversation context automatically maintained across agent transitions
-     - **Simplified Architecture**: Thread lifecycle managed by orchestrator, not individual agents
-     - Less control over execution flow and error handling
-     - Simplified development and maintenance
+   - **Benefits of New Thread Architecture**:
+     - **Clean Separation**: Each agent starts fresh with only necessary context
+     - **Cost Optimization**: No accumulated conversation history, smaller threads
+     - **Error Recovery**: Agent failures don't corrupt other agents' contexts
+     - **Explicit Context**: Clear what data each agent receives
+     - **Independent Testing**: Can test individual agents in isolation
+     - **Multi-Agent Showcase**: Clear demonstration of agent handoffs to users
 
-   **Shared Thread Architecture Example**:
+   **New Thread Per Agent Architecture Example**:
 
    ```javascript
-   // 1. Orchestrator creates thread for session (client-side)
+   // 1. Orchestrator creates initial thread for qualifier
    async function initializeNewSession(userId) {
-     // Call server-side API to create OpenAI thread
      const response = await fetch('/api/threads', {
        method: 'POST',
        headers: { 'Content-Type': 'application/json' }
      });
 
      const { threadId } = await response.json();
-
-     // Store threadId in Redux state for session persistence
      dispatch(initializeSession({ userId, threadId }));
    }
 
-   // 2. Agent calls use shared thread (server-side)
-   async function callQualifierAgent(messages, threadId) {
-     const response = await fetch('/api/agents/qualifier', {
+   // 2. Qualifier agent completes, orchestrator creates NEW thread for assessor
+   if (qualifierResult.isComplete) {
+     const threadResponse = await fetch('/api/threads', {
        method: 'POST',
-       body: JSON.stringify({
-         messages,
-         threadId // Pass shared thread to agent
-       })
+       headers: { 'Content-Type': 'application/json' }
      });
 
-     return response.json();
+     const { threadId: newThreadId } = await threadResponse.json();
+
+     // Update state with new thread and agent transition
+     dispatch(updateSessionState({
+       currentAgent: 'assessor',
+       phase: 'assessing',
+       threadId: newThreadId
+     }));
    }
 
-   // 3. Agent preserves thread state (server-side implementation)
+   // 3. Assessor agent gets qualifier context explicitly (server-side)
    export async function POST(request) {
-     const { messages, threadId } = await request.json();
+     const { messages, threadId, qualifier } = await request.json();
 
-     let thread;
-     if (threadId) {
-       // Use existing shared thread - no conversation replay needed
-       thread = { id: threadId };
+     // Always new thread for assessor
+     const thread = { id: threadId };
 
-       // Only add latest user message
-       const latestMessage = messages.filter(m => m.role === 'user').pop();
+     // Add qualifier context as initial message
+     if (qualifier) {
+       const qualifierContext = `BUSINESS CONTEXT from qualification:
+${Object.entries(qualifier).map(([k,v]) => `- ${k}: ${v}`).join('\n')}
+
+Start by greeting them and explaining you're the assessment specialist.`;
+
        await openai.beta.threads.messages.create(threadId, {
          role: 'user',
-         content: latestMessage.content
+         content: qualifierContext
        });
-     } else {
-       // Fallback: create new thread with full conversation
-       thread = await openai.beta.threads.create();
-       // Add all messages...
      }
 
-     // Run assistant on preserved thread
-     const run = await openai.beta.threads.runs.create(thread.id, {
-       assistant_id: ASSISTANT_ID
+     // Add latest user message and run assistant
+     const latestMessage = messages.filter(m => m.role === 'user').pop();
+     await openai.beta.threads.messages.create(threadId, {
+       role: 'user',
+       content: latestMessage.content
      });
-
-     // Preserve thread (don't delete) for continued conversation
-     // Thread contains full conversation context automatically
    }
 
-   // 4. Example conversation flow
-   // Session start: Orchestrator creates thread_abc123
-   await initializeNewSession(userId);
+   // 4. Example conversation flow with new thread per agent
+   // Qualifier phase: thread_abc123
+   // → User completes qualification
+   // → Qualifier returns: { qualifier: {employee_count: "5", ...}, isComplete: true }
 
-   // User: "I want to assess my business"
-   // → QualifierAgent uses thread_abc123, conversation starts
+   // Agent transition: Orchestrator creates thread_def456 for assessor
+   // → AssessorAgent gets thread_def456 + qualifier context
+   // → AssessorAgent: "Hello! I understand you run a Marketing Agency in Durango..."
 
-   // User: "We're a 5-person marketing agency"
-   // → QualifierAgent adds message to thread_abc123, full context preserved
-
-   // User: "$500K annual revenue"
-   // → QualifierAgent adds message to thread_abc123, knows company size + revenue
-
-   // Later: Transition to AssessmentAgent
-   // → AssessmentAgent receives same thread_abc123, has full qualifier context
-
-   // User: "We struggle with lead generation"
-   // → AssessmentAgent uses thread_abc123, knows business size, revenue, industry
+   // Assessment phase: thread_def456 (clean start with context)
+   // → User: "I'm ready to start the assessment"
+   // → AssessorAgent: "Great! Let's start with question 1a about market understanding..."
    ```
 
    **Key Benefits**:
-   - **Performance**: ~6-7s response (improved from 8-9s) by eliminating conversation replay
-   - **Cost Optimization**: Significant token savings from not resending conversation history
-   - **Seamless Handoffs**: Agent transitions preserve full conversation context
-   - **State Persistence**: Thread stored in database and Redux for session recovery
+   - **Performance**: ~6-7s response times per agent with optimized context
+   - **Cost Optimization**: Minimal token usage with no conversation replay across agents
+   - **Clean Separation**: Each agent starts fresh with only necessary context
+   - **Multi-Agent Demo**: Clear handoffs showcase the agent system to users
+   - **Error Recovery**: Agent failures isolated and don't affect other agents
+   - **Independent Testing**: Can test and refine each agent in isolation
 
 2. **Clean Architecture with Separated Concerns**
 
@@ -296,12 +293,19 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
    - **Scalability**: Each agent can be optimized independently
    - **Testing**: Clear boundaries enable focused unit testing
 
-3. **SMB-Focused Assessment Framework**
+3. **SMB-Focused Assessment Framework with Flexible Schemas**
 
-   - 6-category evaluation: Market Strategy, Business Understanding, Workforce Acumen, Company Culture, Role of Technology, Data
-   - Dynamic weighting based on business qualifiers (solopreneur vs small team adjustments)
-   - 5-tier AI strategy progression tailored for SMB constraints and capabilities
-   - Rural/small business terminology and empathetic conversation design
+   - **6-category evaluation**: Market Strategy, Business Understanding, Workforce Acumen, Company Culture, Role of Technology, Data
+   - **Dynamic weighting** based on business qualifiers (solopreneur vs small team adjustments)
+   - **5-tier AI strategy progression** tailored for SMB constraints and capabilities
+   - **Rural/small business terminology** and empathetic conversation design
+   - **Flexible data collection**: Non-technical users can modify agent instructions and data schemas without code changes
+
+   **Data Flow Architecture**:
+   - **Qualifier**: Collects flexible `qualifier: { [key: string]: string }` business context
+   - **Assessor**: Collects flexible `rawResponses: { [key: string]: string }` assessment data
+   - **Analyzer**: Converts raw responses to structured `responses: AssessmentResponse[]` with scores
+   - **Reporter**: Generates professional reports from structured data
 
 4. **Advanced AI Integration**
 
