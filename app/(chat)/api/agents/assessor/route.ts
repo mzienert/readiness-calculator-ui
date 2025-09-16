@@ -204,9 +204,7 @@ Please use this context to personalize your assessment questions and language. S
     // Return in format expected by orchestrator
     const result = {
       response: assistantResponse.message,
-      assessmentData: assistantResponse.assessment_complete
-        ? assistantResponse.collected_responses
-        : undefined,
+      assessmentData: assistantResponse.collected_responses, // Always include collected responses
       currentQuestionId: assistantResponse.current_question_id,
       isComplete: assistantResponse.assessment_complete,
     };
