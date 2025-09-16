@@ -198,12 +198,12 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Update Redux state with assessment results
           const updates: Partial<AgentState> = {};
-          if (result.assessmentData) {
-            // Store raw assessment responses (no scores yet - analyzer will add scores)
-            updates.rawResponses = result.assessmentData;
-          }
-          if (result.currentQuestionId) {
-            updates.currentQuestionId = result.currentQuestionId;
+          if (result.assessmentData || result.currentQuestionId) {
+            // Store raw assessment responses in assessor object
+            updates.assessor = {
+              rawResponses: result.assessmentData,
+              currentQuestionId: result.currentQuestionId,
+            };
           }
 
           // Handle agent transition when assessment is complete
