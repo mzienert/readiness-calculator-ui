@@ -140,9 +140,11 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Update Redux state with qualifier results
           const updates: Partial<AgentState> = {};
-          if (result.qualifier) {
-            updates.qualifier = result.qualifier;
-          }
+          // Always update qualifier state with current response
+          updates.qualifier = {
+            collected_responses: result.qualifier || {},
+            needs_more_info: !result.isComplete,
+          };
           if (result.dynamicWeighting) {
             updates.dynamicWeighting = result.dynamicWeighting;
           }
@@ -199,9 +201,9 @@ To get started, could you tell me a bit about your business? For example, how ma
           // Update Redux state with assessment results
           const updates: Partial<AgentState> = {};
           if (result.assessmentData || result.currentQuestionId) {
-            // Store raw assessment responses in assessor object
+            // Store assessment responses in assessor object
             updates.assessor = {
-              rawResponses: result.assessmentData,
+              collected_responses: result.assessmentData,
               currentQuestionId: result.currentQuestionId,
             };
           }

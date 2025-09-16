@@ -19,7 +19,7 @@ interface QualifierRequest {
 
 interface QualifierResponse {
   message: string;
-  collected_info: { [key: string]: string };
+  collected_responses: { [key: string]: string };
   needs_more_info: boolean;
 }
 
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
     const assistantResponse: QualifierResponse = JSON.parse(responseText);
     console.log('🎯 [QualifierAgent] Parsed response:', {
       message_preview: `${assistantResponse.message.substring(0, 100)}...`,
-      collected_info: assistantResponse.collected_info,
+      collected_responses: assistantResponse.collected_responses,
       needs_more_info: assistantResponse.needs_more_info,
     });
 
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
       response: assistantResponse.message,
       qualifier: assistantResponse.needs_more_info
         ? undefined
-        : assistantResponse.collected_info,
+        : assistantResponse.collected_responses,
       isComplete: !assistantResponse.needs_more_info,
     };
 

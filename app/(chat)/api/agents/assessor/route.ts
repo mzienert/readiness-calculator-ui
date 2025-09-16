@@ -20,20 +20,7 @@ interface AssessorRequest {
 
 interface AssessorResponse {
   message: string;
-  collected_responses: {
-    question_1a_response?: string;
-    question_1b_response?: string;
-    question_2a_response?: string;
-    question_2b_response?: string;
-    question_3a_response?: string;
-    question_3b_response?: string;
-    question_4a_response?: string;
-    question_4b_response?: string;
-    question_5a_response?: string;
-    question_5b_response?: string;
-    question_6a_response?: string;
-    question_6b_response?: string;
-  };
+  collected_responses: { [key: string]: string };
   current_question_id: string;
   assessment_complete: boolean;
 }
@@ -110,6 +97,7 @@ Please use this context to personalize your assessment questions and language. S
 
     // Run the assistant
     console.log(`🤖 [AssessorAgent] Running assistant ${ASSISTANT_ID}...`);
+    console.log(`🔧 [AssessorAgent] Using response_format: json_object`);
     const run = await openai.beta.threads.runs.create(thread.id, {
       assistant_id: ASSISTANT_ID,
       response_format: { type: 'json_object' },
@@ -170,12 +158,39 @@ Please use this context to personalize your assessment questions and language. S
       responseText,
     );
 
-    const assistantResponse: AssessorResponse = JSON.parse(responseText);
+    // Try to parse JSON response
+    let assistantResponse: AssessorResponse;
+    try {
+      assistantResponse = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('❌ [AssessorAgent] JSON Parse Error:', parseError);
+      console.log('📝 [AssessorAgent] Raw response that failed to parse:', responseText);
+      console.log('🔍 [AssessorAgent] First 200 chars:', responseText.substring(0, 200));
+
+      // Try to fix common JSON issues (newlines, control characters)
+      try {
+        const cleanedResponse = responseText
+          .replace(/\n/g, '\\n')  // Escape newlines
+          .replace(/\r/g, '\\r')  // Escape carriage returns
+          .replace(/\t/g, '\\t'); // Escape tabs
+
+        console.log('🔧 [AssessorAgent] Attempting to parse cleaned JSON...');
+        assistantResponse = JSON.parse(cleanedResponse);
+        console.log('✅ [AssessorAgent] Successfully parsed cleaned JSON');
+      } catch (secondParseError) {
+        console.error('❌ [AssessorAgent] Cleaned JSON still failed:', secondParseError);
+
+        return new ChatSDKError(
+          'bad_request:api',
+          'Assistant returned invalid JSON format',
+        ).toResponse();
+      }
+    }
     console.log('🎯 [AssessorAgent] Parsed response:', {
       message_preview: `${assistantResponse.message.substring(0, 100)}...`,
+      collected_responses: assistantResponse.collected_responses,
       current_question_id: assistantResponse.current_question_id,
       assessment_complete: assistantResponse.assessment_complete,
-      responses_count: Object.keys(assistantResponse.collected_responses).length,
     });
 
     // Preserve thread (don't delete) for continued conversation

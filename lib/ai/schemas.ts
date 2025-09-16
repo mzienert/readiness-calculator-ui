@@ -35,12 +35,15 @@ export const agentStateSchema = z.object({
   phase: z.enum(['qualifying', 'assessing', 'analyzing', 'reporting', 'complete']),
   
   // Qualifier Data
-  qualifier: z.record(z.string(), z.string()).optional(), // Dynamic key-value pairs
+  qualifier: z.object({
+    collected_responses: z.record(z.string(), z.string()).optional(), // Flexible responses from qualifier agent
+    needs_more_info: z.boolean().optional(),
+  }).optional(),
   dynamicWeighting: dynamicWeightingSchema.optional(),
   
   // Assessment Data
   assessor: z.object({
-    rawResponses: z.record(z.string(), z.string()).optional(), // Raw responses from assessor agent (flexible schema)
+    collected_responses: z.record(z.string(), z.string()).optional(), // Raw responses from assessor agent (flexible schema)
     currentQuestionId: z.string().optional(),
   }).optional(),
   responses: z.array(assessmentResponseSchema).default([]), // Structured responses from analyzer agent (with scores)
