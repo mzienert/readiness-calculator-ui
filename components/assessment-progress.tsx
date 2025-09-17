@@ -111,7 +111,7 @@ function AgentSection({
           <Card
             className={cn(
               'transition-all duration-300',
-              isActive ? 'border-blue-500/50 bg-blue-50/50' : 'border-muted',
+              isActive ? 'border-blue-500/50 bg-blue-50/20' : 'border-muted',
             )}
           >
             <CardContent className="p-3">{content}</CardContent>
@@ -125,30 +125,42 @@ function AgentSection({
 function QualifierContent() {
   const qualifier = useAppSelector(selectQualifierData);
 
-  if (!qualifier)
+  if (!qualifier?.collected_responses || Object.keys(qualifier.collected_responses).length === 0)
     return (
       <p className="text-xs text-muted-foreground">
         Gathering business information...
       </p>
     );
 
+  const responses = qualifier.collected_responses;
+
+  // Helper function to format key names nicely
+  const formatKey = (key: string) => {
+    return key
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="text-xs">
-          {qualifier.employeeCount} employees
-        </Badge>
-        {qualifier.revenueBand && (
-          <Badge variant="secondary" className="text-xs">
-            {qualifier.revenueBand}
-          </Badge>
-        )}
+    <div className="space-y-3">
+      <div className="space-y-2">
+        {Object.entries(responses).map(([key, value]) => (
+          <div key={key} className="flex flex-col">
+            <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              {formatKey(key)}
+            </dt>
+            <dd className="text-sm font-medium text-foreground mt-0.5">
+              {value}
+            </dd>
+          </div>
+        ))}
       </div>
-      {qualifier.businessType && (
-        <p className="text-xs">{qualifier.businessType}</p>
-      )}
-      {qualifier.industry && (
-        <p className="text-xs text-muted-foreground">{qualifier.industry}</p>
+      {qualifier.needs_more_info && (
+        <div className="pt-1 border-t border-muted">
+          <p className="text-xs text-muted-foreground italic">
+            Collecting additional information...
+          </p>
+        </div>
       )}
     </div>
   );
