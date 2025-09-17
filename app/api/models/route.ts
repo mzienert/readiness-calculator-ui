@@ -1,5 +1,6 @@
 import { auth } from '@/app/(auth)/auth';
 import { ChatSDKError } from '@/lib/errors';
+import { openaiService } from '@/lib/services/external-api';
 
 export const maxDuration = 30;
 
@@ -11,18 +12,11 @@ export async function GET() {
       return new ChatSDKError('unauthorized:api').toResponse();
     }
 
-    const response = await fetch('https://api.openai.com/v1/models', {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not configured');
     }
 
-    const models = await response.json();
+    const models = await openaiService.getModels(process.env.OPENAI_API_KEY);
     const modelIds = models.data.map((model: any) => model.id);
 
     return Response.json(modelIds, { status: 200 });

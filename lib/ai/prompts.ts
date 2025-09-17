@@ -1,6 +1,5 @@
 import type { Geo } from '@vercel/functions';
 
-
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
@@ -51,14 +50,10 @@ export const systemPrompt = ({
   requestHints: RequestHints;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
-  
+
   // Use OpenAI Playground stub for main chat model (temporary, will be replaced by multi-agent system)
-  const basePrompt = selectedChatModel === 'chat-model' 
-    ? playgroundStubPrompt 
-    : regularPrompt;
+  const basePrompt =
+    selectedChatModel === 'chat-model' ? playgroundStubPrompt : regularPrompt;
 
   return `${basePrompt}\n\n${requestPrompt}`;
 };
-
-
-

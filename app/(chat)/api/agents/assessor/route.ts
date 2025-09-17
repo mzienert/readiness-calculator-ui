@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
     console.log(`👤 [AssessorAgent] User: ${session.user.id}`);
 
     // Parse request body
-    const { messages, threadId, qualifier }: AssessorRequest = await request.json();
+    const { messages, threadId, qualifier }: AssessorRequest =
+      await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return new ChatSDKError(
@@ -69,7 +70,9 @@ export async function POST(request: NextRequest) {
 
     // Add qualifier context as initial system message (always new thread for assessor)
     if (qualifier) {
-      console.log('📤 [AssessorAgent] Adding qualifier context to new thread...');
+      console.log(
+        '📤 [AssessorAgent] Adding qualifier context to new thread...',
+      );
       const qualifierContext = `BUSINESS CONTEXT from qualification:
 ${Object.entries(qualifier)
   .map(([key, value]) => `- ${key}: ${value}`)
@@ -85,7 +88,9 @@ Please use this context to personalize your assessment questions and language. S
     }
 
     // Add the latest user message to the new thread
-    console.log('📤 [AssessorAgent] Adding latest user message to new thread...');
+    console.log(
+      '📤 [AssessorAgent] Adding latest user message to new thread...',
+    );
     const latestUserMessage = messages.filter((m) => m.role === 'user').pop();
     if (latestUserMessage) {
       await openai.beta.threads.messages.create(thread.id, {
@@ -145,10 +150,7 @@ Please use this context to personalize your assessment questions and language. S
       lastMessage.role !== 'assistant' ||
       lastMessage.content[0].type !== 'text'
     ) {
-      console.error(
-        '❌ [AssessorAgent] Invalid response format:',
-        lastMessage,
-      );
+      console.error('❌ [AssessorAgent] Invalid response format:', lastMessage);
       throw new Error('Invalid assistant response format');
     }
 
@@ -164,29 +166,40 @@ Please use this context to personalize your assessment questions and language. S
       assistantResponse = JSON.parse(responseText);
     } catch (parseError) {
       console.error('❌ [AssessorAgent] JSON Parse Error:', parseError);
-      console.log('📝 [AssessorAgent] Raw response that failed to parse:', responseText);
-      console.log('🔍 [AssessorAgent] First 200 chars:', responseText.substring(0, 200));
+      console.log(
+        '📝 [AssessorAgent] Raw response that failed to parse:',
+        responseText,
+      );
+      console.log(
+        '🔍 [AssessorAgent] First 200 chars:',
+        responseText.substring(0, 200),
+      );
 
       // Try to fix common JSON issues (newlines, control characters)
       try {
         const cleanedResponse = responseText
-          .replace(/\n/g, '\\n')  // Escape newlines
-          .replace(/\r/g, '\\r')  // Escape carriage returns
+          .replace(/\n/g, '\\n') // Escape newlines
+          .replace(/\r/g, '\\r') // Escape carriage returns
           .replace(/\t/g, '\\t'); // Escape tabs
 
         console.log('🔧 [AssessorAgent] Attempting to parse cleaned JSON...');
         assistantResponse = JSON.parse(cleanedResponse);
         console.log('✅ [AssessorAgent] Successfully parsed cleaned JSON');
       } catch (secondParseError) {
-        console.error('❌ [AssessorAgent] Cleaned JSON still failed:', secondParseError);
+        console.error(
+          '❌ [AssessorAgent] Cleaned JSON still failed:',
+          secondParseError,
+        );
 
         // Last resort: create structured response from plain text
-        console.log('🔄 [AssessorAgent] Creating structured response from plain text...');
+        console.log(
+          '🔄 [AssessorAgent] Creating structured response from plain text...',
+        );
         assistantResponse = {
           message: responseText.trim(),
           collected_responses: {}, // Empty for now since we can't parse
-          current_question_id: "1a", // Default to first question
-          assessment_complete: false
+          current_question_id: '1a', // Default to first question
+          assessment_complete: false,
         };
         console.log('✅ [AssessorAgent] Created fallback structured response');
       }

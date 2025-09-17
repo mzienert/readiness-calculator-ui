@@ -27,6 +27,7 @@ import { fetcher } from '@/lib/utils';
 import { ChatItem } from './sidebar-history-item';
 import useSWRInfinite from 'swr/infinite';
 import { LoaderIcon } from './icons';
+import { chatApi } from '@/lib/services/api';
 
 type GroupedChats = {
   today: Chat[];
@@ -120,9 +121,8 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     : false;
 
   const handleDelete = async () => {
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: 'DELETE',
-    });
+    if (!deleteId) return;
+    const deletePromise = chatApi.delete(deleteId);
 
     toast.promise(deletePromise, {
       loading: 'Deleting chat...',

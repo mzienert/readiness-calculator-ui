@@ -301,11 +301,16 @@ Start by greeting them and explaining you're the assessment specialist.`;
    - **Rural/small business terminology** and empathetic conversation design
    - **Flexible data collection**: Non-technical users can modify agent instructions and data schemas without code changes
 
-   **Data Flow Architecture**:
-   - **Qualifier**: Collects flexible `qualifier: { [key: string]: string }` business context
-   - **Assessor**: Collects flexible `rawResponses: { [key: string]: string }` assessment data
-   - **Analyzer**: Converts raw responses to structured `responses: AssessmentResponse[]` with scores
+   **Data Flow Architecture with Progressive Updates**:
+   - **Qualifier**: Collects flexible `qualifier.collected_responses: { [key: string]: string }` with progressive Redux updates
+   - **Assessor**: Collects flexible `assessor.collected_responses: { [key: string]: string }` with progressive Redux updates
+   - **Analyzer**: Converts collected responses to structured `responses: AssessmentResponse[]` with scores
    - **Reporter**: Generates professional reports from structured data
+
+   **Progressive State Management**:
+   - **Real-time Updates**: Both qualifier and assessor update Redux state on every response
+   - **Partial Data Visibility**: UI components can show progress and collected data in real-time
+   - **Consistent Structure**: All agents follow same pattern with `collected_responses` and completion flags
 
 4. **Advanced AI Integration**
 

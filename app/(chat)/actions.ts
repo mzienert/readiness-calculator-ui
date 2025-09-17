@@ -9,7 +9,6 @@ import {
 import type { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
 
-
 export async function generateTitleFromUserMessage({
   message,
 }: {

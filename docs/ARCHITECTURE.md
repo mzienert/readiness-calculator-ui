@@ -297,13 +297,24 @@ Start by greeting them and explaining you're the assessment specialist.`;
    });
    ```
 
-4. **Redux State Integration**:
+4. **Redux State Integration with Progressive Updates**:
    ```typescript
-   // Thread ID stored in Redux state, updated during agent transitions
+   // Agent state with progressive data collection
    interface AgentState {
      threadId?: string;  // Current agent's thread ID
-     qualifier?: { [key: string]: string };  // Context from qualifier
-     rawResponses?: { [key: string]: string };  // Assessment responses
+
+     // Qualifier state (progressive updates)
+     qualifier?: {
+       collected_responses?: { [key: string]: string };
+       needs_more_info?: boolean;
+     };
+
+     // Assessor state (progressive updates)
+     assessor?: {
+       collected_responses?: { [key: string]: string };
+       currentQuestionId?: string;
+       assessment_complete?: boolean;
+     };
    }
    ```
 
@@ -401,7 +412,7 @@ The system implements flexible schemas that allow non-technical users to modify 
 // OpenAI Assistant System Prompt defines data structure
 {
   "message": "your conversational response here",
-  "collected_info": {
+  "collected_responses": {
     "employee_count": "if mentioned",
     "revenue_band": "if mentioned",
     "business_type": "if mentioned",
@@ -418,14 +429,21 @@ The application layer uses flexible types that adapt to any schema:
 // TypeScript interfaces use flexible schemas
 interface QualifierResponse {
   message: string;
-  collected_info: { [key: string]: string };  // Adapts to any keys
+  collected_responses: { [key: string]: string };  // Adapts to any keys
   needs_more_info: boolean;
 }
 
-// Redux state stores flexible data
+// Redux state stores flexible data with progressive updates
 interface AgentState {
-  qualifier?: { [key: string]: string };      // Any qualifier keys
-  rawResponses?: { [key: string]: string };   // Any assessment keys
+  qualifier?: {
+    collected_responses?: { [key: string]: string }; // Any qualifier keys
+    needs_more_info?: boolean;
+  };
+  assessor?: {
+    collected_responses?: { [key: string]: string }; // Any assessment keys
+    currentQuestionId?: string;
+    assessment_complete?: boolean;
+  };
 }
 ```
 

@@ -2,70 +2,69 @@ import type { RootState } from './index';
 import { createSelector } from '@reduxjs/toolkit';
 
 // Basic session selectors
-export const selectCurrentSession = (state: RootState) => 
+export const selectCurrentSession = (state: RootState) =>
   state.orchestrator.currentSession;
 
-export const selectCurrentAgent = (state: RootState) => 
+export const selectCurrentAgent = (state: RootState) =>
   state.orchestrator.currentSession?.currentAgent;
 
-export const selectCurrentPhase = (state: RootState) => 
+export const selectCurrentPhase = (state: RootState) =>
   state.orchestrator.currentSession?.phase;
 
-export const selectSessionId = (state: RootState) => 
+export const selectSessionId = (state: RootState) =>
   state.orchestrator.currentSession?.sessionId;
 
-export const selectUserId = (state: RootState) => 
+export const selectUserId = (state: RootState) =>
   state.orchestrator.currentSession?.userId;
 
-export const selectStartedAt = (state: RootState) => 
+export const selectStartedAt = (state: RootState) =>
   state.orchestrator.currentSession?.startedAt;
 
 // Processing and error selectors
-export const selectIsProcessing = (state: RootState) => 
+export const selectIsProcessing = (state: RootState) =>
   state.orchestrator.isProcessing;
 
-export const selectError = (state: RootState) => 
-  state.orchestrator.error;
+export const selectError = (state: RootState) => state.orchestrator.error;
 
-export const selectHasError = (state: RootState) => 
+export const selectHasError = (state: RootState) =>
   Boolean(state.orchestrator.error);
 
 // UI state selectors
-export const selectShowProgress = (state: RootState) => 
+export const selectShowProgress = (state: RootState) =>
   state.orchestrator.showProgress;
 
-export const selectSidebarOpen = (state: RootState) => 
+export const selectSidebarOpen = (state: RootState) =>
   state.orchestrator.sidebarOpen;
 
-export const selectRecentSessions = (state: RootState) => 
+export const selectRecentSessions = (state: RootState) =>
   state.orchestrator.recentSessions;
 
 // Assessment data selectors
-export const selectQualifierData = (state: RootState) => 
+export const selectQualifierData = (state: RootState) =>
   state.orchestrator.currentSession?.qualifier;
 
-export const selectDynamicWeighting = (state: RootState) => 
+export const selectDynamicWeighting = (state: RootState) =>
   state.orchestrator.currentSession?.dynamicWeighting;
 
 export const selectResponses = createSelector(
   [(state: RootState) => state.orchestrator.currentSession?.responses],
-  (responses) => responses || []
+  (responses) => responses || [],
 );
 
-export const selectResponsesCount = (state: RootState) => 
+export const selectResponsesCount = (state: RootState) =>
   state.orchestrator.currentSession?.responses?.length || 0;
 
-export const selectAssessmentComplete = (state: RootState) => 
+export const selectAssessmentComplete = (state: RootState) =>
   state.orchestrator.currentSession?.phase === 'complete';
 
-export const selectAssessmentScore = (state: RootState) => 
+export const selectAssessmentScore = (state: RootState) =>
   state.orchestrator.currentSession?.assessmentScore;
 
-export const selectStrategyRecommendation = (state: RootState) => 
+export const selectStrategyRecommendation = (state: RootState) =>
   state.orchestrator.currentSession?.strategyRecommendation;
 
 // Session status selectors
-export const selectHasActiveSession = (state: RootState) => 
+export const selectHasActiveSession = (state: RootState) =>
   Boolean(state.orchestrator.currentSession);
 
 export const selectSessionAge = (state: RootState) => {
@@ -83,7 +82,7 @@ export const selectIsNewSession = (state: RootState) => {
 // Computed progress selector
 export const selectProgress = (state: RootState) => {
   if (!state.orchestrator.currentSession) return null;
-  
+
   const session = state.orchestrator.currentSession;
   const phaseMap = {
     qualifying: { step: 1, name: 'Business Context' },
@@ -135,20 +134,29 @@ export const selectUIState = (state: RootState) => ({
 // Category-specific response selectors
 export const selectResponsesByCategory = createSelector(
   [selectResponses],
-  (responses) => responses.reduce((acc, response) => {
-    if (!acc[response.category]) {
-      acc[response.category] = [];
-    }
-    acc[response.category].push(response);
-    return acc;
-  }, {} as Record<string, typeof responses>)
+  (responses) =>
+    responses.reduce(
+      (acc, response) => {
+        if (!acc[response.category]) {
+          acc[response.category] = [];
+        }
+        acc[response.category].push(response);
+        return acc;
+      },
+      {} as Record<string, typeof responses>,
+    ),
 );
 
 export const selectCategoryScores = createSelector(
   [selectResponsesByCategory],
-  (responsesByCategory) => Object.entries(responsesByCategory).reduce((acc, [category, responses]) => {
-    const avgScore = responses.reduce((sum, r) => sum + r.score, 0) / responses.length;
-    acc[category] = Math.round(avgScore * 10) / 10; // Round to 1 decimal
-    return acc;
-  }, {} as Record<string, number>)
+  (responsesByCategory) =>
+    Object.entries(responsesByCategory).reduce(
+      (acc, [category, responses]) => {
+        const avgScore =
+          responses.reduce((sum, r) => sum + r.score, 0) / responses.length;
+        acc[category] = Math.round(avgScore * 10) / 10; // Round to 1 decimal
+        return acc;
+      },
+      {} as Record<string, number>,
+    ),
 );

@@ -49,7 +49,6 @@ function PureChatHeader({
         </Tooltip>
       )}
 
-
       {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}

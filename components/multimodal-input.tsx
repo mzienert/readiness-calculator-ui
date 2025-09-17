@@ -19,30 +19,59 @@ function SuggestedActions() {
   return null;
 }
 // Simple inline prompt input components
-function PromptInput({ children, className, onSubmit }: { children: React.ReactNode, className?: string, onSubmit?: (e: React.FormEvent) => void }) {
-  return <form className={className} onSubmit={onSubmit}>{children}</form>;
+function PromptInput({
+  children,
+  className,
+  onSubmit,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  onSubmit?: (e: React.FormEvent) => void;
+}) {
+  return (
+    <form className={className} onSubmit={onSubmit}>
+      {children}
+    </form>
+  );
 }
 
-const PromptInputTextarea = React.forwardRef<HTMLTextAreaElement, {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
-  autoFocus?: boolean;
-  'data-testid'?: string;
-  minHeight?: number;
-  maxHeight?: number;
-  style?: React.CSSProperties;
-  disableAutoResize?: boolean;
-  rows?: number;
-}>((props, ref) => {
-  const { value, onChange, placeholder, disabled, className, onKeyDown, autoFocus, minHeight, maxHeight, style, disableAutoResize, rows, ...rest } = props;
+const PromptInputTextarea = React.forwardRef<
+  HTMLTextAreaElement,
+  {
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    placeholder?: string;
+    disabled?: boolean;
+    className?: string;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
+    autoFocus?: boolean;
+    'data-testid'?: string;
+    minHeight?: number;
+    maxHeight?: number;
+    style?: React.CSSProperties;
+    disableAutoResize?: boolean;
+    rows?: number;
+  }
+>((props, ref) => {
+  const {
+    value,
+    onChange,
+    placeholder,
+    disabled,
+    className,
+    onKeyDown,
+    autoFocus,
+    minHeight,
+    maxHeight,
+    style,
+    disableAutoResize,
+    rows,
+    ...rest
+  } = props;
   const textareaStyle = {
     minHeight: minHeight ? `${minHeight}px` : undefined,
     maxHeight: maxHeight ? `${maxHeight}px` : undefined,
-    ...style
+    ...style,
   };
   return (
     <textarea
@@ -63,18 +92,32 @@ const PromptInputTextarea = React.forwardRef<HTMLTextAreaElement, {
 
 PromptInputTextarea.displayName = 'PromptInputTextarea';
 
-function PromptInputToolbar({ children, className }: { children: React.ReactNode, className?: string }) {
+function PromptInputToolbar({
+  children,
+  className,
+}: { children: React.ReactNode; className?: string }) {
   return <div className={className}>{children}</div>;
 }
 
-function PromptInputSubmit({ children, disabled, status, className, size, ...rest }: { 
-  children: React.ReactNode; 
-  disabled?: boolean; 
-  status?: string; 
-  className?: string; 
+function PromptInputSubmit({
+  children,
+  disabled,
+  status,
+  className,
+  size,
+  ...rest
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  status?: string;
+  className?: string;
   size?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button type="submit" disabled={disabled} className={className} {...rest}>{children}</button>;
+  return (
+    <button type="submit" disabled={disabled} className={className} {...rest}>
+      {children}
+    </button>
+  );
 }
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -152,7 +195,6 @@ function PureMultimodalInput({
     setInput(event.target.value);
   };
 
-
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
@@ -173,16 +215,7 @@ function PureMultimodalInput({
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
-  }, [
-    input,
-    setInput,
-    sendMessage,
-    setLocalStorageInput,
-    width,
-    chatId,
-  ]);
-
-
+  }, [input, setInput, sendMessage, setLocalStorageInput, width, chatId]);
 
   const { isAtBottom, scrollToBottom } = useScrollToBottom();
 
@@ -221,7 +254,6 @@ function PureMultimodalInput({
 
       {messages.length === 0 && <SuggestedActions />}
 
-
       <PromptInput
         className="border border-transparent shadow-lg transition-all duration-200 shadow-black/10 hover:border-primary/20 focus-within:border-primary/30 focus-within:shadow-xl focus-within:shadow-primary/20"
         onSubmit={(event) => {
@@ -233,7 +265,6 @@ function PureMultimodalInput({
           }
         }}
       >
-
         <PromptInputTextarea
           data-testid="multimodal-input"
           ref={textareaRef}
@@ -279,7 +310,6 @@ export const MultimodalInput = memo(
   },
 );
 
-
 function PureStopButton({
   stop,
   setMessages,
@@ -303,4 +333,3 @@ function PureStopButton({
 }
 
 const StopButton = memo(PureStopButton);
-

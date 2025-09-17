@@ -20,4 +20,3 @@ export type ChatMessage = UIMessage<
   CustomUIDataTypes,
   ChatTools
 >;
-

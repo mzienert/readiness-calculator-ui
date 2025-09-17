@@ -32,10 +32,10 @@ async function testQualifierAssistant() {
 
     // Test conversation flow
     const testMessages = [
-      "Hello, I want to start an AI readiness assessment",
-      "We have 5 employees including myself",
+      'Hello, I want to start an AI readiness assessment',
+      'We have 5 employees including myself',
       "We're a small marketing agency in Durango, Colorado",
-      "Our annual revenue is around $500,000"
+      'Our annual revenue is around $500,000',
     ];
 
     for (let i = 0; i < testMessages.length; i++) {
@@ -62,8 +62,11 @@ async function testQualifierAssistant() {
         thread_id: thread.id,
       });
 
-      while (runStatus.status === 'queued' || runStatus.status === 'in_progress') {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      while (
+        runStatus.status === 'queued' ||
+        runStatus.status === 'in_progress'
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         runStatus = await openai.beta.threads.runs.retrieve(run.id, {
           thread_id: thread.id,
         });
@@ -74,7 +77,10 @@ async function testQualifierAssistant() {
         const messages = await openai.beta.threads.messages.list(thread.id);
         const lastMessage = messages.data[0];
 
-        if (lastMessage.role === 'assistant' && lastMessage.content[0].type === 'text') {
+        if (
+          lastMessage.role === 'assistant' &&
+          lastMessage.content[0].type === 'text'
+        ) {
           const responseText = lastMessage.content[0].text.value;
 
           try {
@@ -107,7 +113,6 @@ async function testQualifierAssistant() {
     console.log(`🗑️ Cleaning up thread: ${thread.id}`);
     await openai.beta.threads.delete(thread.id);
     console.log('✅ Thread deleted');
-
   } catch (error) {
     console.error('❌ Test failed:', error);
   }

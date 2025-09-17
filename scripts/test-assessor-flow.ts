@@ -57,10 +57,10 @@ async function testQualifierToAssessorFlow() {
 
     // Test qualifier conversation
     const qualifierMessages = [
-      "Hello, I want to start an AI readiness assessment",
-      "We have 5 employees including myself",
+      'Hello, I want to start an AI readiness assessment',
+      'We have 5 employees including myself',
       "We're a small marketing agency in Durango, Colorado",
-      "Our annual revenue is around $500,000"
+      'Our annual revenue is around $500,000',
     ];
 
     let qualifierData: { [key: string]: string } = {};
@@ -87,8 +87,11 @@ async function testQualifierToAssessorFlow() {
         thread_id: qualifierThread.id,
       });
 
-      while (runStatus.status === 'queued' || runStatus.status === 'in_progress') {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      while (
+        runStatus.status === 'queued' ||
+        runStatus.status === 'in_progress'
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         runStatus = await openai.beta.threads.runs.retrieve(run.id, {
           thread_id: qualifierThread.id,
         });
@@ -96,10 +99,15 @@ async function testQualifierToAssessorFlow() {
 
       if (runStatus.status === 'completed') {
         // Get the assistant's response
-        const messages = await openai.beta.threads.messages.list(qualifierThread.id);
+        const messages = await openai.beta.threads.messages.list(
+          qualifierThread.id,
+        );
         const lastMessage = messages.data[0];
 
-        if (lastMessage.role === 'assistant' && lastMessage.content[0].type === 'text') {
+        if (
+          lastMessage.role === 'assistant' &&
+          lastMessage.content[0].type === 'text'
+        ) {
           const responseText = lastMessage.content[0].text.value;
           const response: QualifierResponse = JSON.parse(responseText);
 
@@ -118,7 +126,9 @@ async function testQualifierToAssessorFlow() {
           }
         }
       } else {
-        throw new Error(`Qualifier run failed with status: ${runStatus.status}`);
+        throw new Error(
+          `Qualifier run failed with status: ${runStatus.status}`,
+        );
       }
 
       console.log('');
@@ -156,8 +166,8 @@ Please use this context to personalize your assessment questions and language. S
     // Test a few assessment interactions
     const assessmentMessages = [
       "I'm ready to start the assessment",
-      "Yes, we have a good understanding of our local market and see opportunities for growth",
-      "We do keep track of our main competitors but we're mostly focused on our own work"
+      'Yes, we have a good understanding of our local market and see opportunities for growth',
+      "We do keep track of our main competitors but we're mostly focused on our own work",
     ];
 
     for (let i = 0; i < assessmentMessages.length; i++) {
@@ -182,8 +192,11 @@ Please use this context to personalize your assessment questions and language. S
         thread_id: assessorThread.id,
       });
 
-      while (runStatus.status === 'queued' || runStatus.status === 'in_progress') {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      while (
+        runStatus.status === 'queued' ||
+        runStatus.status === 'in_progress'
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         runStatus = await openai.beta.threads.runs.retrieve(run.id, {
           thread_id: assessorThread.id,
         });
@@ -191,25 +204,40 @@ Please use this context to personalize your assessment questions and language. S
 
       if (runStatus.status === 'completed') {
         // Get the assistant's response
-        const messages = await openai.beta.threads.messages.list(assessorThread.id);
+        const messages = await openai.beta.threads.messages.list(
+          assessorThread.id,
+        );
         const lastMessage = messages.data[0];
 
-        if (lastMessage.role === 'assistant' && lastMessage.content[0].type === 'text') {
+        if (
+          lastMessage.role === 'assistant' &&
+          lastMessage.content[0].type === 'text'
+        ) {
           const responseText = lastMessage.content[0].text.value;
 
           try {
             const response: AssessorResponse = JSON.parse(responseText);
             console.log(`🤖 Assessor: ${response.message}`);
-            console.log(`📊 Current Question ID: ${response.current_question_id}`);
-            console.log(`📋 Collected Responses:`, response.collected_responses);
-            console.log(`✅ Assessment Complete: ${response.assessment_complete}`);
+            console.log(
+              `📊 Current Question ID: ${response.current_question_id}`,
+            );
+            console.log(
+              `📋 Collected Responses:`,
+              response.collected_responses,
+            );
+            console.log(
+              `✅ Assessment Complete: ${response.assessment_complete}`,
+            );
 
             if (response.assessment_complete) {
               console.log('🎉 Assessment complete!');
               break;
             }
           } catch (parseError) {
-            console.error('❌ Failed to parse assessor JSON response:', parseError);
+            console.error(
+              '❌ Failed to parse assessor JSON response:',
+              parseError,
+            );
             console.log('Raw response:', responseText);
           }
         }
@@ -232,7 +260,6 @@ Please use this context to personalize your assessment questions and language. S
     console.log('✅ Qualifier context passed to assessor');
     console.log('✅ Assessor began assessment with personalized greeting');
     console.log('✅ Multi-agent handoff successful!');
-
   } catch (error) {
     console.error('❌ Test failed:', error);
   }

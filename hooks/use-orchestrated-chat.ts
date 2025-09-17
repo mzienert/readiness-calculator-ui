@@ -12,6 +12,7 @@ import type { CoreMessage } from 'ai';
 import { toast } from '@/components/toast';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from '@/components/sidebar-history';
+import { chatApi } from '@/lib/services/api';
 
 interface UseOrchestratedChatProps {
   id: string;
@@ -19,18 +20,18 @@ interface UseOrchestratedChatProps {
   userId: string;
 }
 
-export function useOrchestratedChat({ 
-  id, 
-  initialMessages, 
-  userId 
+export function useOrchestratedChat({
+  id,
+  initialMessages,
+  userId,
 }: UseOrchestratedChatProps) {
   // Redux integration for client-side orchestrator
   const dispatch = useAppDispatch();
   const { mutate } = useSWRConfig();
-  const [orchestrator] = useState(() => 
-    new AssessmentOrchestrator(dispatch, () => store.getState())
+  const [orchestrator] = useState(
+    () => new AssessmentOrchestrator(dispatch, () => store.getState()),
   );
-  
+
   // Track processing state
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -39,86 +40,93 @@ export function useOrchestratedChat({
     id,
     messages: initialMessages,
     generateId: uuidv4,
-    
+
     // We'll override the transport behavior
     api: '/api/dummy', // This won't actually be called
-    
+
     // Custom send function that processes through orchestrator
     sendExtraMessageFields: true,
   });
 
   // Override the sendMessage function to use orchestrator + new chat-history endpoint
-  const sendMessage = useCallback(async (message: any) => {
-    if (isProcessing) {
-      toast({
-        type: 'error',
-        description: 'Please wait for the current response to complete.',
-      });
-      return;
-    }
+  const sendMessage = useCallback(
+    async (message: any) => {
+      if (isProcessing) {
+        toast({
+          type: 'error',
+          description: 'Please wait for the current response to complete.',
+        });
+        return;
+      }
 
-    setIsProcessing(true);
+      setIsProcessing(true);
 
-    try {
-      // Create user message
-      const userMessage: ChatMessage = {
-        id: message.id || uuidv4(),
-        role: 'user',
-        parts: message.parts || [{ type: 'text', text: message.content || '' }],
-        metadata: { createdAt: new Date().toISOString() },
-      };
+      try {
+        // Create user message
+        const userMessage: ChatMessage = {
+          id: message.id || uuidv4(),
+          role: 'user',
+          parts: message.parts || [
+            { type: 'text', text: message.content || '' },
+          ],
+          metadata: { createdAt: new Date().toISOString() },
+        };
 
-      // Add user message to chat immediately for UI responsiveness
-      chat.setMessages([...chat.messages, userMessage]);
+        // Add user message to chat immediately for UI responsiveness
+        chat.setMessages([...chat.messages, userMessage]);
 
-      // Get conversation context for orchestrator
-      const coreMessages: CoreMessage[] = [...chat.messages, userMessage].map(msg => ({
-        role: msg.role,
-        content: msg.parts.map(part => part.type === 'text' ? part.text : '').join(''),
-      }));
+        // Get conversation context for orchestrator
+        const coreMessages: CoreMessage[] = [...chat.messages, userMessage].map(
+          (msg) => ({
+            role: msg.role,
+            content: msg.parts
+              .map((part) => (part.type === 'text' ? part.text : ''))
+              .join(''),
+          }),
+        );
 
-      // Process through CLIENT-SIDE orchestrator (calls agent endpoints)
-      const result = await orchestrator.processMessage(coreMessages, userId);
+        // Process through CLIENT-SIDE orchestrator (calls agent endpoints)
+        const result = await orchestrator.processMessage(coreMessages, userId);
 
-      // Create orchestrator response message
-      const assistantMessage: ChatMessage = {
-        id: uuidv4(),
-        role: 'assistant',
-        parts: [{ type: 'text', text: result.response }],
-        metadata: { createdAt: new Date().toISOString() },
-      };
+        // Create orchestrator response message
+        const assistantMessage: ChatMessage = {
+          id: uuidv4(),
+          role: 'assistant',
+          parts: [{ type: 'text', text: result.response }],
+          metadata: { createdAt: new Date().toISOString() },
+        };
 
-      // Save both messages to database via new chat-history endpoint
-      await fetch('/api/chat-history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        // Save both messages to database via API service
+        await chatApi.saveHistory({
           chatId: id,
           messages: [userMessage, assistantMessage],
           selectedVisibilityType: 'private',
           threadId: result.threadId,
-        }),
-      });
+        });
 
-      // Update chat with final messages
-      chat.setMessages([...chat.messages, userMessage, assistantMessage]);
+        // Update chat with final messages
+        chat.setMessages([...chat.messages, userMessage, assistantMessage]);
 
-      // Trigger SWR revalidation for chat history
-      mutate(unstable_serialize(getChatHistoryPaginationKey));
-
-    } catch (error) {
-      console.error('Orchestrated chat error:', error);
-      toast({
-        type: 'error',
-        description: 'I apologize, but I encountered an error. Please try again.',
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [chat, orchestrator, userId, isProcessing, id, mutate]);
+        // Trigger SWR revalidation for chat history
+        mutate(unstable_serialize(getChatHistoryPaginationKey));
+      } catch (error) {
+        console.error('Orchestrated chat error:', error);
+        toast({
+          type: 'error',
+          description:
+            'I apologize, but I encountered an error. Please try again.',
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [chat, orchestrator, userId, isProcessing, id, mutate],
+  );
 
   // Create a custom status that reflects our processing state
-  const status: UseChatHelpers<ChatMessage>['status'] = isProcessing ? 'streaming' : 'ready';
+  const status: UseChatHelpers<ChatMessage>['status'] = isProcessing
+    ? 'streaming'
+    : 'ready';
 
   return {
     ...chat,

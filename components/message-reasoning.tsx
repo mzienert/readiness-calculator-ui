@@ -1,16 +1,32 @@
 'use client';
 
 // Simple inline reasoning components
-function Reasoning({ children, isStreaming, defaultOpen, ...props }: { 
-  children: React.ReactNode; 
-  isStreaming?: boolean; 
+function Reasoning({
+  children,
+  isStreaming,
+  defaultOpen,
+  ...props
+}: {
+  children: React.ReactNode;
+  isStreaming?: boolean;
   defaultOpen?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className="reasoning-container border rounded-lg p-2 bg-muted">{children}</div>;
+  return (
+    <div
+      {...props}
+      className="reasoning-container border rounded-lg p-2 bg-muted"
+    >
+      {children}
+    </div>
+  );
 }
 
 function ReasoningTrigger() {
-  return <div className="text-sm font-medium mb-2 text-muted-foreground">Thinking...</div>;
+  return (
+    <div className="text-sm font-medium mb-2 text-muted-foreground">
+      Thinking...
+    </div>
+  );
 }
 
 function ReasoningContent({ children }: { children: React.ReactNode }) {
@@ -27,8 +43,8 @@ export function MessageReasoning({
   reasoning,
 }: MessageReasoningProps) {
   return (
-    <Reasoning 
-      isStreaming={isLoading} 
+    <Reasoning
+      isStreaming={isLoading}
       defaultOpen={true}
       data-testid="message-reasoning"
     >

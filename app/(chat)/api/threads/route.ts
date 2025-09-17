@@ -30,6 +30,9 @@ export async function POST(request: NextRequest) {
       return error.toResponse();
     }
 
-    return new ChatSDKError('bad_request:api', 'Thread creation failed').toResponse();
+    return new ChatSDKError(
+      'bad_request:api',
+      'Thread creation failed',
+    ).toResponse();
   }
 }

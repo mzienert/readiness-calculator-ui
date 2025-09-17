@@ -8,11 +8,17 @@ import { useMessages } from '@/hooks/use-messages';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 // Simple inline conversation components
-function Conversation({ children, className }: { children: React.ReactNode, className?: string }) {
+function Conversation({
+  children,
+  className,
+}: { children: React.ReactNode; className?: string }) {
   return <div className={className}>{children}</div>;
 }
 
-function ConversationContent({ children, className }: { children: React.ReactNode, className?: string }) {
+function ConversationContent({
+  children,
+  className,
+}: { children: React.ReactNode; className?: string }) {
   return <div className={className}>{children}</div>;
 }
 
@@ -50,7 +56,6 @@ function PureMessages({
 
   useDataStream();
 
-
   return (
     <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
       <Conversation className="flex flex-col min-w-0 gap-6 pt-4 pb-32">
@@ -62,7 +67,9 @@ function PureMessages({
               key={message.id}
               chatId={chatId}
               message={message}
-              isLoading={status === 'streaming' && messages.length - 1 === index}
+              isLoading={
+                status === 'streaming' && messages.length - 1 === index
+              }
               setMessages={setMessages}
               regenerate={regenerate}
               isReadonly={isReadonly}
@@ -74,7 +81,9 @@ function PureMessages({
 
           {status === 'submitted' &&
             messages.length > 0 &&
-            messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+            messages[messages.length - 1].role === 'user' && (
+              <ThinkingMessage />
+            )}
 
           <motion.div
             ref={messagesEndRef}

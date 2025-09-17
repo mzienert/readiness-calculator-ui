@@ -63,8 +63,6 @@ export type DBMessage = InferSelectModel<typeof message>;
 // DEPRECATED: The following schema is deprecated and will be removed in the future.
 // Read the migration guide at https://chat-sdk.dev/docs/migration-guides/message-parts
 
-
-
 export const stream = pgTable(
   'Stream',
   {

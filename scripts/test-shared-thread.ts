@@ -20,19 +20,25 @@ async function testSharedThread() {
   // Step 2: First qualifier call with messages
   console.log('2️⃣ First qualifier call...');
   const firstMessages: CoreMessage[] = [
-    { role: 'user', content: 'Hi, I want to assess my business for AI readiness' }
+    {
+      role: 'user',
+      content: 'Hi, I want to assess my business for AI readiness',
+    },
   ];
 
-  const firstResponse = await fetch('http://localhost:3000/api/agents/qualifier', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const firstResponse = await fetch(
+    'http://localhost:3000/api/agents/qualifier',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: firstMessages,
+        threadId: thread.id,
+      }),
     },
-    body: JSON.stringify({
-      messages: firstMessages,
-      threadId: thread.id
-    }),
-  });
+  );
 
   if (!firstResponse.ok) {
     throw new Error(`First request failed: ${firstResponse.status}`);
@@ -41,7 +47,7 @@ async function testSharedThread() {
   const firstResult = await firstResponse.json();
   console.log('First response:', {
     responsePreview: firstResult.response.substring(0, 100) + '...',
-    isComplete: firstResult.isComplete
+    isComplete: firstResult.isComplete,
   });
   console.log('');
 
@@ -50,19 +56,25 @@ async function testSharedThread() {
   const secondMessages: CoreMessage[] = [
     ...firstMessages,
     { role: 'assistant', content: firstResult.response },
-    { role: 'user', content: 'We have 15 employees and make around $2 million per year' }
+    {
+      role: 'user',
+      content: 'We have 15 employees and make around $2 million per year',
+    },
   ];
 
-  const secondResponse = await fetch('http://localhost:3000/api/agents/qualifier', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const secondResponse = await fetch(
+    'http://localhost:3000/api/agents/qualifier',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: secondMessages,
+        threadId: thread.id, // Same thread ID
+      }),
     },
-    body: JSON.stringify({
-      messages: secondMessages,
-      threadId: thread.id  // Same thread ID
-    }),
-  });
+  );
 
   if (!secondResponse.ok) {
     throw new Error(`Second request failed: ${secondResponse.status}`);
@@ -72,7 +84,7 @@ async function testSharedThread() {
   console.log('Second response:', {
     responsePreview: secondResult.response.substring(0, 100) + '...',
     isComplete: secondResult.isComplete,
-    qualifier: secondResult.qualifier
+    qualifier: secondResult.qualifier,
   });
   console.log('');
 
@@ -81,9 +93,10 @@ async function testSharedThread() {
   const messages = await openai.beta.threads.messages.list(thread.id);
   console.log(`Thread contains ${messages.data.length} messages:`);
   messages.data.reverse().forEach((msg, index) => {
-    const content = msg.content[0].type === 'text'
-      ? msg.content[0].text.value.substring(0, 50) + '...'
-      : '[non-text content]';
+    const content =
+      msg.content[0].type === 'text'
+        ? msg.content[0].text.value.substring(0, 50) + '...'
+        : '[non-text content]';
     console.log(`  ${index + 1}. ${msg.role}: ${content}`);
   });
   console.log('');

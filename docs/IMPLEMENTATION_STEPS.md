@@ -272,7 +272,7 @@ This document tracks the specific implementation steps, action items, and develo
 - **Endpoint**: `/app/(chat)/api/agents/assessor/route.ts`
 - **Request Format**: `{ messages, threadId, qualifier }`
 - **Response Format**: `{ response, assessmentData, currentQuestionId, isComplete }`
-- **Redux Integration**: Stores raw responses in `rawResponses` field for analyzer processing
+- **Redux Integration**: Progressive updates to `assessor.collected_responses` with real-time state visibility
 
 **Multi-Agent Handoff Flow:**
 ```typescript

@@ -3,7 +3,7 @@ import {
   getChatById,
   saveChat,
   saveMessages,
-  getChatsByUserId
+  getChatsByUserId,
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
 import type { ChatMessage } from '@/lib/types';
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     let chat = await getChatById({ id: chatId });
     if (!chat) {
       // Find first user message for title generation
-      const firstUserMessage = messages.find(m => m.role === 'user');
+      const firstUserMessage = messages.find((m) => m.role === 'user');
       const title = firstUserMessage
         ? await generateTitleFromUserMessage({ message: firstUserMessage })
         : 'New Chat';
@@ -97,12 +97,14 @@ export async function POST(request: Request) {
     }
 
     return Response.json({ success: true });
-
   } catch (error) {
     console.error('Chat history save error:', error);
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
-    return new ChatSDKError('bad_request:api', 'Failed to save chat history').toResponse();
+    return new ChatSDKError(
+      'bad_request:api',
+      'Failed to save chat history',
+    ).toResponse();
   }
 }

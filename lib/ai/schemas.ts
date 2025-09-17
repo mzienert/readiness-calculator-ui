@@ -16,7 +16,14 @@ export type DynamicWeighting = z.infer<typeof dynamicWeightingSchema>;
 // Assessment Question Response Schema
 export const assessmentResponseSchema = z.object({
   questionId: z.string(), // e.g., "1a", "1b", "2a", etc.
-  category: z.enum(['market_strategy', 'business_understanding', 'workforce_acumen', 'company_culture', 'role_of_technology', 'data']),
+  category: z.enum([
+    'market_strategy',
+    'business_understanding',
+    'workforce_acumen',
+    'company_culture',
+    'role_of_technology',
+    'data',
+  ]),
   score: z.number().min(1).max(5),
   response: z.string(), // user's actual response
   reasoning: z.string().optional(), // AI's reasoning for the score
@@ -25,42 +32,71 @@ export const assessmentResponseSchema = z.object({
 export type AssessmentResponse = z.infer<typeof assessmentResponseSchema>;
 
 // AI Strategy Tier Schema
-export const aiStrategySchema = z.enum(['efficiency', 'productivity', 'effectiveness', 'growth', 'expert']);
+export const aiStrategySchema = z.enum([
+  'efficiency',
+  'productivity',
+  'effectiveness',
+  'growth',
+  'expert',
+]);
 
 export type AIStrategy = z.infer<typeof aiStrategySchema>;
 
 // Agent State Schema
 export const agentStateSchema = z.object({
   currentAgent: z.enum(['qualifier', 'assessor', 'analyzer', 'reporter']),
-  phase: z.enum(['qualifying', 'assessing', 'analyzing', 'reporting', 'complete']),
-  
+  phase: z.enum([
+    'qualifying',
+    'assessing',
+    'analyzing',
+    'reporting',
+    'complete',
+  ]),
+
   // Qualifier Data
-  qualifier: z.object({
-    collected_responses: z.record(z.string(), z.string()).optional(), // Flexible responses from qualifier agent
-    needs_more_info: z.boolean().optional(),
-  }).optional(),
+  qualifier: z
+    .object({
+      collected_responses: z.record(z.string(), z.string()).optional(), // Flexible responses from qualifier agent
+      needs_more_info: z.boolean().optional(),
+    })
+    .optional(),
   dynamicWeighting: dynamicWeightingSchema.optional(),
-  
+
   // Assessment Data
-  assessor: z.object({
-    collected_responses: z.record(z.string(), z.string()).optional(), // Raw responses from assessor agent (flexible schema)
-    currentQuestionId: z.string().optional(),
-    assessment_complete: z.boolean().optional(),
-  }).optional(),
+  assessor: z
+    .object({
+      collected_responses: z.record(z.string(), z.string()).optional(), // Raw responses from assessor agent (flexible schema)
+      currentQuestionId: z.string().optional(),
+      assessment_complete: z.boolean().optional(),
+    })
+    .optional(),
   responses: z.array(assessmentResponseSchema).default([]), // Structured responses from analyzer agent (with scores)
-  currentCategory: z.enum(['market_strategy', 'business_understanding', 'workforce_acumen', 'company_culture', 'role_of_technology', 'data']).optional(),
-  
+  currentCategory: z
+    .enum([
+      'market_strategy',
+      'business_understanding',
+      'workforce_acumen',
+      'company_culture',
+      'role_of_technology',
+      'data',
+    ])
+    .optional(),
+
   // Analysis Results
   categoryScores: z.record(z.string(), z.number()).optional(), // category name -> total score
   overallScore: z.number().optional(),
   recommendedStrategy: aiStrategySchema.optional(),
-  roadmap: z.array(z.object({
-    phase: z.string(), // "Phase 1", "Phase 2", "Phase 3"
-    timeline: z.string(), // "3-6 months"
-    description: z.string(),
-    actions: z.array(z.string()),
-  })).optional(),
-  
+  roadmap: z
+    .array(
+      z.object({
+        phase: z.string(), // "Phase 1", "Phase 2", "Phase 3"
+        timeline: z.string(), // "3-6 months"
+        description: z.string(),
+        actions: z.array(z.string()),
+      }),
+    )
+    .optional(),
+
   // Metadata
   sessionId: z.string(),
   userId: z.string(),
@@ -85,7 +121,9 @@ export type QualifierResponse = z.infer<typeof qualifierResponseSchema>;
 // Orchestrator Action Schema
 export const orchestratorActionSchema = z.object({
   action: z.enum(['continue', 'handoff', 'complete', 'error']),
-  nextAgent: z.enum(['qualifier', 'assessor', 'analyzer', 'reporter']).optional(),
+  nextAgent: z
+    .enum(['qualifier', 'assessor', 'analyzer', 'reporter'])
+    .optional(),
   message: z.string().optional(),
   error: z.string().optional(),
 });

@@ -74,7 +74,6 @@ export class ChatPage {
     await expect(this.page.getByTestId(elementId)).not.toBeVisible();
   }
 
-
   public async getSelectedModel() {
     const modelId = await this.page.getByTestId('model-selector').innerText();
     return modelId;
@@ -164,7 +163,6 @@ export class ChatPage {
       .getByTestId('message-content')
       .innerText()
       .catch(() => null);
-
 
     const page = this.page;
 

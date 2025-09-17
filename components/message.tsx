@@ -36,9 +36,7 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
-
   useDataStream();
-
 
   return (
     <AnimatePresence>
@@ -71,11 +69,9 @@ const PurePreviewMessage = ({
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >
-
             {message.parts?.map((part, index) => {
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
-
 
               if (type === 'reasoning' && part.text?.trim().length > 0) {
                 return (
@@ -111,11 +107,14 @@ const PurePreviewMessage = ({
 
                       <div
                         data-testid="message-content"
-                        className={cn('justify-start items-start text-left rounded-xl px-3 py-2', {
-                          'bg-primary text-primary-foreground':
-                            message.role === 'user',
-                          'bg-transparent': message.role === 'assistant',
-                        })}
+                        className={cn(
+                          'justify-start items-start text-left rounded-xl px-3 py-2',
+                          {
+                            'bg-primary text-primary-foreground':
+                              message.role === 'user',
+                            'bg-transparent': message.role === 'assistant',
+                          },
+                        )}
                       >
                         <div className="prose prose-neutral dark:prose-invert max-w-none whitespace-pre-wrap">
                           {sanitizeText(part.text)}
@@ -141,9 +140,6 @@ const PurePreviewMessage = ({
                   );
                 }
               }
-
-
-
             })}
 
             {!isReadonly && (

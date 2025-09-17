@@ -6,12 +6,13 @@ import {
 } from './schemas';
 import type { CoreMessage } from 'ai';
 import type { AppDispatch, RootState } from '@/lib/store';
-import { 
-  initializeSession, 
+import {
+  initializeSession,
   updateSessionState,
   clearSession,
-  clearError 
+  clearError,
 } from '@/lib/store/slices/orchestrator';
+import { threadsApi, agentsApi } from '@/lib/services/api';
 import { v4 as uuidv4 } from 'uuid'; // Keep for session correlation
 
 export class AssessmentOrchestrator {
@@ -34,24 +35,15 @@ export class AssessmentOrchestrator {
    * Initialize a new assessment session (now dispatches to Redux)
    */
   async initializeNewSession(userId: string): Promise<void> {
-    // Create OpenAI thread via API call
-    const response = await fetch('/api/threads', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Create OpenAI thread via API service
+    const { threadId } = await threadsApi.create();
 
-    if (!response.ok) {
-      throw new Error(`Thread creation failed: ${response.status}`);
-    }
-
-    const { threadId } = await response.json();
-
-    this.dispatch(initializeSession({
-      userId,
-      threadId
-    }));
+    this.dispatch(
+      initializeSession({
+        userId,
+        threadId,
+      }),
+    );
   }
 
   /**
@@ -120,23 +112,15 @@ To get started, could you tell me a bit about your business? For example, how ma
 
       switch (currentSession.currentAgent) {
         case 'qualifier': {
-          // Call qualifier API instead of direct agent
-          const response = await fetch('/api/agents/qualifier', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              messages,
-              threadId: currentSession.threadId
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(`Qualifier API error: ${response.status}`);
+          // Call qualifier API via service layer
+          if (!currentSession.threadId) {
+            throw new Error('No thread ID available for qualifier');
           }
 
-          const result = await response.json();
+          const result = await agentsApi.qualifier({
+            messages,
+            threadId: currentSession.threadId,
+          });
 
           // Update Redux state with qualifier results
           const updates: Partial<AgentState> = {};
@@ -152,19 +136,10 @@ To get started, could you tell me a bit about your business? For example, how ma
           // Handle agent transition
           if (result.isComplete) {
             // Create new thread for assessor agent
-            const threadResponse = await fetch('/api/threads', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
-
-            if (!threadResponse.ok) {
-              throw new Error(`Thread creation failed: ${threadResponse.status}`);
-            }
-
-            const { threadId: newThreadId } = await threadResponse.json();
-            console.log(`🧵 [Orchestrator] Created new thread for assessor: ${newThreadId}`);
+            const { threadId: newThreadId } = await threadsApi.create();
+            console.log(
+              `🧵 [Orchestrator] Created new thread for assessor: ${newThreadId}`,
+            );
 
             updates.currentAgent = 'assessor';
             updates.phase = 'assessing';
@@ -175,28 +150,23 @@ To get started, could you tell me a bit about your business? For example, how ma
           // Dispatch updates to Redux
           this.dispatch(updateSessionState(updates));
 
-          return { response: result.response, threadId: currentSession.threadId };
+          return {
+            response: result.response,
+            threadId: currentSession.threadId,
+          };
         }
 
         case 'assessor': {
-          // Call assessor API with qualifier context
-          const response = await fetch('/api/agents/assessor', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              messages,
-              threadId: currentSession.threadId,
-              qualifier: currentSession.qualifier // Pass qualifier context for personalization
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(`Assessor API error: ${response.status}`);
+          // Call assessor API via service layer
+          if (!currentSession.threadId) {
+            throw new Error('No thread ID available for assessor');
           }
 
-          const result = await response.json();
+          const result = await agentsApi.assessor({
+            messages,
+            threadId: currentSession.threadId,
+            qualifier: currentSession.qualifier, // Pass qualifier context for personalization
+          });
 
           // Update Redux state with assessment results
           const updates: Partial<AgentState> = {};
@@ -217,7 +187,10 @@ To get started, could you tell me a bit about your business? For example, how ma
           // Dispatch updates to Redux
           this.dispatch(updateSessionState(updates));
 
-          return { response: result.response, threadId: currentSession.threadId };
+          return {
+            response: result.response,
+            threadId: currentSession.threadId,
+          };
         }
 
         case 'analyzer': {
@@ -241,7 +214,8 @@ To get started, could you tell me a bit about your business? For example, how ma
         }
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred';
       // Error handling will be added to orchestrator slice later
       console.error('Orchestrator error:', errorMessage);
       throw error;

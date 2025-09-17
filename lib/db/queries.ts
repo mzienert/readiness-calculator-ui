@@ -57,7 +57,6 @@ export async function createUser(email: string, password: string) {
   }
 }
 
-
 export async function saveChat({
   id,
   userId,
@@ -214,9 +213,6 @@ export async function getMessagesByChatId({ id }: { id: string }) {
     );
   }
 }
-
-
-
 
 export async function getMessageById({ id }: { id: string }) {
   try {
