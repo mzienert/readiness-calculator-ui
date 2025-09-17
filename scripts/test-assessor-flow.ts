@@ -10,8 +10,16 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const QUALIFIER_ASSISTANT_ID = 'asst_YpUQWu9pPY3PTNBH9ZVjV2mK';
-const ASSESSOR_ASSISTANT_ID = 'asst_wmitwNMH5YwodUGXryvV1CuA';
+const QUALIFIER_ASSISTANT_ID = process.env.QUALIFIER_ASSISTANT_ID;
+const ASSESSOR_ASSISTANT_ID = process.env.ASSESSOR_ASSISTANT_ID;
+
+if (!QUALIFIER_ASSISTANT_ID) {
+  throw new Error('QUALIFIER_ASSISTANT_ID environment variable is required');
+}
+
+if (!ASSESSOR_ASSISTANT_ID) {
+  throw new Error('ASSESSOR_ASSISTANT_ID environment variable is required');
+}
 
 interface QualifierResponse {
   message: string;

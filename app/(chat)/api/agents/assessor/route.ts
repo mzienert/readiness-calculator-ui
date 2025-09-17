@@ -10,7 +10,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const ASSISTANT_ID = 'asst_wmitwNMH5YwodUGXryvV1CuA';
+const ASSISTANT_ID = process.env.ASSESSOR_ASSISTANT_ID;
+
+if (!ASSISTANT_ID) {
+  throw new Error('ASSESSOR_ASSISTANT_ID environment variable is required');
+}
 
 interface AssessorRequest {
   messages: CoreMessage[];
