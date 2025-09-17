@@ -73,7 +73,7 @@ function AgentSection({
             isComplete
               ? 'bg-green-500 border-green-500 text-white'
               : isActive
-                ? 'bg-blue-500 border-blue-500 text-white animate-pulse'
+                ? 'bg-blue-500 border-blue-500 text-white'
                 : 'bg-background border-muted-foreground/30 text-muted-foreground',
           )}
         >
