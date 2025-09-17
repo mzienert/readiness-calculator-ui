@@ -43,6 +43,9 @@ export const selectRecentSessions = (state: RootState) =>
 export const selectQualifierData = (state: RootState) =>
   state.orchestrator.currentSession?.qualifier;
 
+export const selectAssessorData = (state: RootState) =>
+  state.orchestrator.currentSession?.assessor;
+
 export const selectDynamicWeighting = (state: RootState) =>
   state.orchestrator.currentSession?.dynamicWeighting;
 

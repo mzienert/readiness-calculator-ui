@@ -6,6 +6,7 @@ import {
   selectCurrentPhase,
   selectProgress,
   selectQualifierData,
+  selectAssessorData,
   selectResponses,
   selectAssessmentScore,
   selectStrategyRecommendation,
@@ -167,28 +168,85 @@ function QualifierContent() {
 }
 
 function AssessorContent() {
+  const assessor = useAppSelector(selectAssessorData);
   const responses = useAppSelector(selectResponses);
 
-  if (responses.length === 0)
+  if (!assessor?.collected_responses || Object.keys(assessor.collected_responses).length === 0)
     return (
       <p className="text-xs text-muted-foreground">
         Starting assessment questions...
       </p>
     );
 
+  const responseCount = Object.keys(assessor.collected_responses).length;
+  const totalQuestions = 15; // Approximate total questions
+
+  // Helper function to format key names nicely and truncate values
+  const formatKey = (key: string) => {
+    return key
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  const truncateValue = (value: string, maxLength: number = 40) => {
+    return value.length > maxLength ? value.substring(0, maxLength) + '...' : value;
+  };
+
+  // Get the most recent 3 responses
+  const recentResponses = Object.entries(assessor.collected_responses).slice(-3);
+
   return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium">
-        {responses.length} responses collected
-      </p>
-      {responses.slice(-2).map((response, idx) => (
-        <div key={idx} className="text-xs">
-          <p className="font-medium text-muted-foreground">
-            {response.category}
-          </p>
-          <p className="truncate">{response.questionId}</p>
+    <div className="space-y-3">
+      {/* Progress summary */}
+      <div className="flex items-center justify-between">
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Progress
+        </dt>
+        <dd className="text-sm font-medium text-foreground">
+          {responseCount} of ~{totalQuestions}
+        </dd>
+      </div>
+
+      {/* Current question indicator */}
+      {assessor.currentQuestionId && (
+        <div className="flex flex-col">
+          <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Current
+          </dt>
+          <dd className="text-sm font-medium text-foreground mt-0.5">
+            Question {assessor.currentQuestionId}
+          </dd>
         </div>
-      ))}
+      )}
+
+      {/* Recent responses (condensed) */}
+      {recentResponses.length > 0 && (
+        <div className="pt-1 border-t border-muted">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            Recent Answers
+          </p>
+          <div className="space-y-1">
+            {recentResponses.map(([key, value]) => (
+              <div key={key} className="text-xs">
+                <span className="font-medium text-muted-foreground">
+                  {formatKey(key)}:
+                </span>
+                <span className="ml-1 text-foreground">
+                  {truncateValue(value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!assessor.assessment_complete && (
+        <div className="pt-1 border-t border-muted">
+          <p className="text-xs text-muted-foreground italic">
+            Assessment in progress...
+          </p>
+        </div>
+      )}
     </div>
   );
 }
