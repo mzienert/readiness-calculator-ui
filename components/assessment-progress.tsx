@@ -64,12 +64,12 @@ function AgentSection({
   const Icon = agent.icon;
 
   return (
-    <div className="flex items-start gap-4">
+    <div className="relative flex items-start gap-4">
       {/* Progress indicator */}
       <div className="flex flex-col items-center">
         <div
           className={cn(
-            'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300',
+            'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative z-10',
             isComplete
               ? 'bg-green-500 border-green-500 text-white'
               : isActive
@@ -80,10 +80,10 @@ function AgentSection({
           <Icon className="size-5" />
         </div>
 
-        {/* Connecting line */}
+        {/* Connecting line - positioned absolutely to match parent height */}
         <div
           className={cn(
-            'w-0.5 h-16 transition-all duration-500',
+            'absolute top-12 left-6 w-0.5 bottom-0 transition-all duration-500',
             isComplete ? 'bg-green-500' : 'bg-muted-foreground/20',
           )}
         />
