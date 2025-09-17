@@ -124,9 +124,11 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Update Redux state with qualifier results
           const updates: Partial<AgentState> = {};
-          // Always update qualifier state with current response
+          // Merge new responses with existing ones for progressive updates
+          const existingResponses = currentSession.qualifier?.collected_responses || {};
+          const newResponses = result.qualifier || {};
           updates.qualifier = {
-            collected_responses: result.qualifier || {},
+            collected_responses: { ...existingResponses, ...newResponses },
             needs_more_info: !result.isComplete,
           };
           if (result.dynamicWeighting) {

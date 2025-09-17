@@ -174,9 +174,7 @@ export async function POST(request: NextRequest) {
     // Return in format expected by orchestrator
     const result = {
       response: assistantResponse.message,
-      qualifier: assistantResponse.needs_more_info
-        ? undefined
-        : assistantResponse.collected_responses,
+      qualifier: assistantResponse.collected_responses, // Always return collected responses for progressive updates
       isComplete: !assistantResponse.needs_more_info,
     };
 
