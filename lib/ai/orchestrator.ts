@@ -202,9 +202,11 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Update Redux state with assessment results
           const updates: Partial<AgentState> = {};
-          // Always update assessor state with current response
+          // Merge new responses with existing ones for progressive updates
+          const existingAssessorResponses = currentSession.assessor?.collected_responses || {};
+          const newAssessorResponses = result.assessmentData || {};
           updates.assessor = {
-            collected_responses: result.assessmentData || {},
+            collected_responses: { ...existingAssessorResponses, ...newAssessorResponses },
             currentQuestionId: result.currentQuestionId,
             assessment_complete: result.isComplete,
           };

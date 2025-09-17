@@ -68,13 +68,16 @@ export async function POST(request: NextRequest) {
     console.log(`🧵 [AssessorAgent] Using thread: ${threadId}`);
     const thread = { id: threadId };
 
-    // Add qualifier context as initial system message (always new thread for assessor)
-    if (qualifier) {
+    // Determine if this is the first message to this thread by checking message count
+    const isFirstMessage = messages.length <= 3; // Typically: initial greeting, qualifier→assessor transition, first user response
+
+    // Add qualifier context only on first message to the assessor thread
+    if (qualifier && isFirstMessage) {
       console.log(
-        '📤 [AssessorAgent] Adding qualifier context to new thread...',
+        '📤 [AssessorAgent] FIRST MESSAGE: Adding qualifier context to thread...',
       );
       const qualifierContext = `BUSINESS CONTEXT from qualification:
-${Object.entries(qualifier)
+${Object.entries(qualifier.collected_responses || {})
   .map(([key, value]) => `- ${key}: ${value}`)
   .join('\n')}
 
@@ -85,11 +88,13 @@ Please use this context to personalize your assessment questions and language. S
         content: qualifierContext,
       });
       console.log(`✅ [AssessorAgent] Added qualifier context to thread`);
+    } else if (qualifier) {
+      console.log(`📝 [AssessorAgent] CONTINUING THREAD: Skipping qualifier context (already provided)`);
     }
 
-    // Add the latest user message to the new thread
+    // Add the latest user message to the thread
     console.log(
-      '📤 [AssessorAgent] Adding latest user message to new thread...',
+      '📤 [AssessorAgent] Adding latest user message to thread...',
     );
     const latestUserMessage = messages.filter((m) => m.role === 'user').pop();
     if (latestUserMessage) {
