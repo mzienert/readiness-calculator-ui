@@ -47,9 +47,19 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`📥 [QualifierAgent] Received ${messages.length} messages`);
+    console.log(`🧵 [QualifierAgent] ThreadId provided: ${threadId || 'NONE'}`);
     console.log(
       `📝 [QualifierAgent] Last user message: "${messages[messages.length - 1]?.content}"`,
     );
+
+    // Log full message breakdown for debugging
+    const userMessages = messages.filter(m => m.role === 'user');
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    console.log(`📊 [QualifierAgent] Message breakdown:`, {
+      total: messages.length,
+      user: userMessages.length,
+      assistant: assistantMessages.length,
+    });
 
     // Use provided thread or create new one
     let thread;
@@ -66,22 +76,26 @@ export async function POST(request: NextRequest) {
     if (threadId) {
       // For existing threads, only add the latest user message
       console.log(
-        '📤 [QualifierAgent] Adding latest message to existing thread...',
+        '📤 [QualifierAgent] EXISTING THREAD: Adding only latest message...',
       );
       const latestUserMessage = messages.filter((m) => m.role === 'user').pop();
       if (latestUserMessage) {
+        console.log(`📝 [QualifierAgent] Latest user message content: "${latestUserMessage.content}"`);
         await openai.beta.threads.messages.create(thread.id, {
           role: 'user',
           content: latestUserMessage.content as string,
         });
-        console.log(`✅ [QualifierAgent] Added latest user message to thread`);
+        console.log(`✅ [QualifierAgent] Added 1 message to existing thread ${thread.id}`);
+      } else {
+        console.log(`⚠️ [QualifierAgent] No user message found to add to existing thread`);
       }
     } else {
       // For new threads, add all conversation messages
-      console.log('📤 [QualifierAgent] Adding all messages to new thread...');
+      console.log('📤 [QualifierAgent] NEW THREAD: Adding ALL conversation messages...');
       let userMessageCount = 0;
       for (const message of messages) {
         if (message.role === 'user') {
+          console.log(`📝 [QualifierAgent] Adding message ${userMessageCount + 1}: "${message.content}"`);
           await openai.beta.threads.messages.create(thread.id, {
             role: 'user',
             content: message.content as string,
@@ -90,8 +104,9 @@ export async function POST(request: NextRequest) {
         }
       }
       console.log(
-        `✅ [QualifierAgent] Added ${userMessageCount} user messages to thread`,
+        `✅ [QualifierAgent] Added ${userMessageCount} user messages to NEW thread ${thread.id}`,
       );
+      console.log(`⚠️ [QualifierAgent] WARNING: This should only happen on first message!`);
     }
 
     // Run the assistant
@@ -134,10 +149,10 @@ export async function POST(request: NextRequest) {
 
     // Get the assistant's response
     console.log('📨 [QualifierAgent] Fetching assistant response...');
-    const assistantMessages = await openai.beta.threads.messages.list(
+    const threadMessages = await openai.beta.threads.messages.list(
       thread.id,
     );
-    const lastMessage = assistantMessages.data[0];
+    const lastMessage = threadMessages.data[0];
 
     // Get token usage from the run
     const tokenUsage = runStatus.usage ? {
@@ -170,12 +185,14 @@ export async function POST(request: NextRequest) {
       needs_more_info: assistantResponse.needs_more_info,
     });
 
-    // Clean up thread only if we created it (not provided from orchestrator)
+    // Thread lifecycle management
     if (!threadId) {
-      console.log(`🗑️ [QualifierAgent] Cleaning up thread: ${thread.id}`);
+      console.log(`🗑️ [QualifierAgent] DELETING thread ${thread.id} (no threadId provided)`);
+      console.log(`⚠️ [QualifierAgent] This means next request will replay entire conversation!`);
       await openai.beta.threads.delete(thread.id);
     } else {
-      console.log(`💾 [QualifierAgent] Preserving shared thread: ${thread.id}`);
+      console.log(`💾 [QualifierAgent] PRESERVING thread ${thread.id} (threadId provided: ${threadId})`);
+      console.log(`✅ [QualifierAgent] Next request will only add new messages to this thread`);
     }
 
     // Return in format expected by orchestrator

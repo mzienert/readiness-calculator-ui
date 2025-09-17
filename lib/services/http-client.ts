@@ -16,7 +16,7 @@ export class HttpClient {
   private defaultHeaders: Record<string, string>;
   private defaultTimeout: number;
 
-  constructor(baseURL = '', defaultTimeout = 10000) {
+  constructor(baseURL = '', defaultTimeout = 30000) {
     this.baseURL = baseURL;
     this.defaultTimeout = defaultTimeout;
     this.defaultHeaders = {

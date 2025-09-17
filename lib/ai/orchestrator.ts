@@ -92,28 +92,45 @@ To get started, could you tell me a bit about your business? For example, how ma
     threadId?: string;
   }> {
     try {
+      console.log(`🔄 [Orchestrator] Processing message - User: ${userId}, Messages: ${messages.length}`);
+      console.log(`📝 [Orchestrator] Latest message: "${messages[messages.length - 1]?.content}"`);
+
       this.dispatch(clearError());
 
       // Handle initial greeting for new assessments
       if (this.isNewAssessment(messages)) {
+        console.log(`🎯 [Orchestrator] New assessment detected (${messages.length} messages)`);
         await this.initializeNewSession(userId);
         const response = this.getInitialGreeting();
         const currentSession = this.getCurrentSession();
+        console.log(`✅ [Orchestrator] Initial session created - ThreadID: ${currentSession?.threadId}`);
         return { response, threadId: currentSession?.threadId };
       }
 
       // Get current session from Redux state
       let currentSession = this.getCurrentSession();
+      console.log(`📊 [Orchestrator] Current session state:`, {
+        exists: !!currentSession,
+        agent: currentSession?.currentAgent,
+        phase: currentSession?.phase,
+        threadId: currentSession?.threadId,
+      });
 
       // If no session exists, create one
       if (!currentSession) {
+        console.log(`⚠️ [Orchestrator] No session found, creating new one`);
         await this.initializeNewSession(userId);
         currentSession = this.getCurrentSession()!;
+        console.log(`✅ [Orchestrator] New session created - ThreadID: ${currentSession.threadId}`);
       }
 
       switch (currentSession.currentAgent) {
         case 'qualifier': {
           // Call qualifier API via service layer
+          console.log(`🤖 [Orchestrator] Calling qualifier agent`);
+          console.log(`🧵 [Orchestrator] Using threadId: ${currentSession.threadId}`);
+          console.log(`📤 [Orchestrator] Sending ${messages.length} messages to qualifier`);
+
           if (!currentSession.threadId) {
             throw new Error('No thread ID available for qualifier');
           }
@@ -121,6 +138,13 @@ To get started, could you tell me a bit about your business? For example, how ma
           const result = await agentsApi.qualifier({
             messages,
             threadId: currentSession.threadId,
+          });
+
+          console.log(`📥 [Orchestrator] Qualifier response:`, {
+            responseLength: result.response.length,
+            isComplete: result.isComplete,
+            hasQualifier: !!result.qualifier,
+            hasTokenUsage: !!result.tokenUsage,
           });
 
           // Update Redux state with qualifier results
