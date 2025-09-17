@@ -1,5 +1,6 @@
 import { apiClient } from './http-client';
 import type { CoreMessage } from 'ai';
+import type { TokenUsage } from '@/lib/ai/schemas';
 
 export interface ThreadResponse {
   threadId: string;
@@ -15,6 +16,7 @@ export interface QualifierResponse {
   qualifier?: any;
   isComplete: boolean;
   dynamicWeighting?: any;
+  tokenUsage?: TokenUsage;
 }
 
 export interface AssessorRequest {
@@ -28,6 +30,7 @@ export interface AssessorResponse {
   assessmentData?: any;
   currentQuestionId?: string;
   isComplete: boolean;
+  tokenUsage?: TokenUsage;
 }
 
 export interface ChatHistoryRequest {

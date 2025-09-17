@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { AgentState } from '@/lib/ai/schemas';
+import type { AgentState, TokenUsage } from '@/lib/ai/schemas';
 import type { CoreMessage } from 'ai';
 
 interface OrchestratorState {
@@ -75,6 +75,11 @@ const orchestratorSlice = createSlice({
         currentAgent: 'qualifier',
         phase: 'qualifying',
         responses: [],
+        tokenUsage: {
+          prompt_tokens: 0,
+          completion_tokens: 0,
+          total_tokens: 0,
+        },
         sessionId: crypto.randomUUID(),
         userId: action.payload.userId,
         threadId: action.payload.threadId,
@@ -96,6 +101,15 @@ const orchestratorSlice = createSlice({
 
     clearError: (state) => {
       state.error = null;
+    },
+
+    // Token usage tracking
+    addTokenUsage: (state, action: PayloadAction<TokenUsage>) => {
+      if (state.currentSession) {
+        state.currentSession.tokenUsage.prompt_tokens += action.payload.prompt_tokens;
+        state.currentSession.tokenUsage.completion_tokens += action.payload.completion_tokens;
+        state.currentSession.tokenUsage.total_tokens += action.payload.total_tokens;
+      }
     },
   },
 
@@ -139,6 +153,7 @@ export const {
   updateSessionState,
   clearSession,
   clearError,
+  addTokenUsage,
 } = orchestratorSlice.actions;
 
 export default orchestratorSlice.reducer;

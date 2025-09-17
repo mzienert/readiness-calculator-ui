@@ -13,6 +13,15 @@ export const dynamicWeightingSchema = z.object({
 
 export type DynamicWeighting = z.infer<typeof dynamicWeightingSchema>;
 
+// Token Usage Tracking Schema
+export const tokenUsageSchema = z.object({
+  prompt_tokens: z.number().default(0), // Tokens sent to OpenAI
+  completion_tokens: z.number().default(0), // Tokens received from OpenAI
+  total_tokens: z.number().default(0), // Total tokens used
+});
+
+export type TokenUsage = z.infer<typeof tokenUsageSchema>;
+
 // Assessment Question Response Schema
 export const assessmentResponseSchema = z.object({
   questionId: z.string(), // e.g., "1a", "1b", "2a", etc.
@@ -96,6 +105,13 @@ export const agentStateSchema = z.object({
       }),
     )
     .optional(),
+
+  // Token Usage Tracking
+  tokenUsage: tokenUsageSchema.default({
+    prompt_tokens: 0,
+    completion_tokens: 0,
+    total_tokens: 0,
+  }),
 
   // Metadata
   sessionId: z.string(),

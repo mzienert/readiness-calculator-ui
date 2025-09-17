@@ -139,6 +139,13 @@ export async function POST(request: NextRequest) {
     );
     const lastMessage = assistantMessages.data[0];
 
+    // Get token usage from the run
+    const tokenUsage = runStatus.usage ? {
+      prompt_tokens: runStatus.usage.prompt_tokens || 0,
+      completion_tokens: runStatus.usage.completion_tokens || 0,
+      total_tokens: runStatus.usage.total_tokens || 0,
+    } : undefined;
+
     if (
       lastMessage.role !== 'assistant' ||
       lastMessage.content[0].type !== 'text'
@@ -176,6 +183,7 @@ export async function POST(request: NextRequest) {
       response: assistantResponse.message,
       qualifier: assistantResponse.collected_responses, // Always return collected responses for progressive updates
       isComplete: !assistantResponse.needs_more_info,
+      tokenUsage,
     };
 
     const endTime = Date.now();

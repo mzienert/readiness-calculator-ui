@@ -11,6 +11,7 @@ import {
   updateSessionState,
   clearSession,
   clearError,
+  addTokenUsage,
 } from '@/lib/store/slices/orchestrator';
 import { threadsApi, agentsApi } from '@/lib/services/api';
 import { v4 as uuidv4 } from 'uuid'; // Keep for session correlation
@@ -149,6 +150,11 @@ To get started, could you tell me a bit about your business? For example, how ma
             // TODO: Add transition message about starting assessment
           }
 
+          // Track token usage if provided
+          if (result.tokenUsage) {
+            this.dispatch(addTokenUsage(result.tokenUsage));
+          }
+
           // Dispatch updates to Redux
           this.dispatch(updateSessionState(updates));
 
@@ -184,6 +190,11 @@ To get started, could you tell me a bit about your business? For example, how ma
             updates.currentAgent = 'analyzer';
             updates.phase = 'analyzing';
             // TODO: Add transition message about starting analysis
+          }
+
+          // Track token usage if provided
+          if (result.tokenUsage) {
+            this.dispatch(addTokenUsage(result.tokenUsage));
           }
 
           // Dispatch updates to Redux

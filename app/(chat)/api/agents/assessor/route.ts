@@ -146,6 +146,13 @@ Please use this context to personalize your assessment questions and language. S
     );
     const lastMessage = assistantMessages.data[0];
 
+    // Get token usage from the run
+    const tokenUsage = runStatus.usage ? {
+      prompt_tokens: runStatus.usage.prompt_tokens || 0,
+      completion_tokens: runStatus.usage.completion_tokens || 0,
+      total_tokens: runStatus.usage.total_tokens || 0,
+    } : undefined;
+
     if (
       lastMessage.role !== 'assistant' ||
       lastMessage.content[0].type !== 'text'
@@ -220,6 +227,7 @@ Please use this context to personalize your assessment questions and language. S
       assessmentData: assistantResponse.collected_responses, // Always include collected responses
       currentQuestionId: assistantResponse.current_question_id,
       isComplete: assistantResponse.assessment_complete,
+      tokenUsage,
     };
 
     const endTime = Date.now();
