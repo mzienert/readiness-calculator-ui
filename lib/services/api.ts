@@ -33,6 +33,25 @@ export interface AssessorResponse {
   tokenUsage?: TokenUsage;
 }
 
+export interface AnalyzerRequest {
+  messages: CoreMessage[];
+  threadId?: string;
+  qualifier?: any;
+  assessmentData?: any;
+}
+
+export interface AnalyzerResponse {
+  response: string;
+  analysisData?: {
+    scoring: any;
+    strategy_recommendation: any;
+    roadmap: any;
+    concerns_analysis: any;
+  };
+  isComplete: boolean;
+  tokenUsage?: TokenUsage;
+}
+
 export interface ChatHistoryRequest {
   chatId: string;
   messages: any[];
@@ -82,6 +101,17 @@ export const agentsApi = {
   async assessor(request: AssessorRequest): Promise<AssessorResponse> {
     const response = await apiClient.post<AssessorResponse>(
       '/api/agents/assessor',
+      request,
+    );
+    return response.data;
+  },
+
+  /**
+   * Send message to analyzer agent
+   */
+  async analyzer(request: AnalyzerRequest): Promise<AnalyzerResponse> {
+    const response = await apiClient.post<AnalyzerResponse>(
+      '/api/agents/analyzer',
       request,
     );
     return response.data;

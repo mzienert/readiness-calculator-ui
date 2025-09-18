@@ -256,10 +256,71 @@ To get started, could you tell me a bit about your business? For example, how ma
         }
 
         case 'analyzer': {
-          // TODO: Implement AnalysisAgent processing
+          // Call analyzer API via service layer
+          if (!currentSession.threadId) {
+            throw new Error('No thread ID available for analyzer');
+          }
+
+          console.log(`🧠 [Orchestrator] Calling analyzer with assessment data:`, {
+            hasQualifier: !!currentSession.qualifier,
+            hasAssessment: !!currentSession.assessor,
+            qualifierResponses: currentSession.qualifier?.collected_responses,
+            assessmentResponses: currentSession.assessor?.collected_responses,
+          });
+
+          const analyzerParams = {
+            messages,
+            threadId: currentSession.threadId,
+            qualifier: currentSession.qualifier, // Pass qualifier context
+            assessmentData: currentSession.assessor?.collected_responses, // Pass assessment responses
+          };
+
+          console.log(`📤 [Orchestrator] EXACT ANALYZER PARAMS:`, {
+            messagesCount: analyzerParams.messages.length,
+            threadId: analyzerParams.threadId,
+            hasQualifierData: !!analyzerParams.qualifier,
+            hasAssessmentData: !!analyzerParams.assessmentData,
+            lastMessage: analyzerParams.messages[analyzerParams.messages.length - 1],
+          });
+
+          const result = await agentsApi.analyzer(analyzerParams);
+
+          console.log(`📥 [Orchestrator] Analyzer response:`, {
+            responseLength: result.response.length,
+            isComplete: result.isComplete,
+            hasAnalysisData: !!result.analysisData,
+            hasTokenUsage: !!result.tokenUsage,
+          });
+
+          // Update Redux state with analysis results
+          const updates: Partial<AgentState> = {};
+          updates.analyzer = {
+            scoring: result.analysisData?.scoring || {},
+            strategy_recommendation: result.analysisData?.strategy_recommendation || {},
+            roadmap: result.analysisData?.roadmap || {},
+            concerns_analysis: result.analysisData?.concerns_analysis || {},
+            analysis_complete: result.isComplete,
+          };
+
+          // Handle agent transition when analysis is complete
+          if (result.isComplete) {
+            updates.currentAgent = 'reporter';
+            updates.phase = 'reporting';
+            console.log(`🎯 [Orchestrator] TRANSITION: Analysis complete, switching to reporter`);
+            // TODO: Add transition message about generating reports
+          }
+
+          // Track token usage if provided
+          if (result.tokenUsage) {
+            this.dispatch(addTokenUsage(result.tokenUsage));
+          }
+
+          // Dispatch updates to Redux
+          this.dispatch(updateSessionState(updates));
+
           return {
-            response:
-              'Analysis phase not yet implemented. This would generate scores and recommendations.',
+            response: result.response,
+            threadId: currentSession.threadId,
           };
         }
 

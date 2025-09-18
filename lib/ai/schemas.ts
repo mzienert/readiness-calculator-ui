@@ -79,6 +79,17 @@ export const agentStateSchema = z.object({
       assessment_complete: z.boolean().optional(),
     })
     .optional(),
+
+  // Analysis Data
+  analyzer: z
+    .object({
+      scoring: z.record(z.string(), z.any()).optional(), // Scoring results from analyzer agent
+      strategy_recommendation: z.record(z.string(), z.any()).optional(), // Strategy recommendation
+      roadmap: z.record(z.string(), z.any()).optional(), // Phased roadmap
+      concerns_analysis: z.record(z.string(), z.any()).optional(), // Concerns and mitigation strategies
+      analysis_complete: z.boolean().optional(),
+    })
+    .optional(),
   responses: z.array(assessmentResponseSchema).default([]), // Structured responses from analyzer agent (with scores)
   currentCategory: z
     .enum([

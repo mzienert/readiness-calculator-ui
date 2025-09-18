@@ -89,6 +89,9 @@ This document tracks the specific implementation steps, action items, and develo
 - ⏳ **Concern Analysis**: Implement concern identification and mitigation strategies
 - ⏳ **Test Script Creation**: Build test script for assessor→analyzer flow verification
 
+**Optimization Tasks (Future Improvements):**
+- ⏳ **Context Passing Optimization**: Refactor to use Redux state instead of manually passing qualifier/assessor data between agents (data already available in state)
+
 **ReportingAgent Development (Phase 3B - FUTURE):**
 - ⏳ **ReportingAgent OpenAI Assistant Creation**: Create OpenAI Assistant for report generation
 - ⏳ **Beautiful.ai Integration**: Implement Beautiful.ai MCP integration for professional reports
