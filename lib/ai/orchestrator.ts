@@ -171,6 +171,14 @@ To get started, could you tell me a bit about your business? For example, how ma
             updates.currentAgent = 'assessor';
             updates.phase = 'assessing';
             updates.threadId = newThreadId; // Use new thread for assessor
+
+            console.log(`🎯 [Orchestrator] TRANSITION: Qualifier complete, switching to assessor`);
+            console.log(`🧠 [Orchestrator] Context prepared for assessor:`, {
+              qualifierData: updates.qualifier,
+              dynamicWeighting: updates.dynamicWeighting,
+              newThreadId: newThreadId,
+            });
+
             // TODO: Add transition message about starting assessment
           }
 
@@ -194,11 +202,26 @@ To get started, could you tell me a bit about your business? For example, how ma
             throw new Error('No thread ID available for assessor');
           }
 
-          const result = await agentsApi.assessor({
+          console.log(`🧠 [Orchestrator] Passing qualifier context to assessor:`, {
+            hasQualifier: !!currentSession.qualifier,
+            qualifierResponses: currentSession.qualifier?.collected_responses,
+            dynamicWeighting: currentSession.dynamicWeighting,
+          });
+
+          const assessorParams = {
             messages,
             threadId: currentSession.threadId,
             qualifier: currentSession.qualifier, // Pass qualifier context for personalization
+          };
+
+          console.log(`📤 [Orchestrator] EXACT ASSESSOR PARAMS:`, {
+            messagesCount: assessorParams.messages.length,
+            threadId: assessorParams.threadId,
+            qualifierData: assessorParams.qualifier,
+            lastMessage: assessorParams.messages[assessorParams.messages.length - 1],
           });
+
+          const result = await agentsApi.assessor(assessorParams);
 
           // Update Redux state with assessment results
           const updates: Partial<AgentState> = {};
