@@ -452,3 +452,52 @@ interface AgentState {
 - **Rapid Iteration**: Change assessment questions/data without code deployment
 - **Schema Evolution**: Add new data fields by updating assistant instructions
 - **Future-Proof**: Application adapts to any schema changes automatically
+
+## Testing & Development Infrastructure
+
+### Mock Agent System
+
+To enable rapid UI development and deterministic testing without LLM dependencies, the system implements an environment-based mock agent system:
+
+#### Architecture Overview
+
+```typescript
+// Environment-based mocking toggle
+MOCK_AGENTS=true // in .env.local
+
+// HTTP interceptor pattern (transparent to application code)
+if (process.env.MOCK_AGENTS === 'true') {
+  apiClient.interceptors.request.use(mockAgentInterceptor);
+}
+```
+
+#### Mock Response Scenarios
+
+**Qualifier Scenarios:**
+- **Quick Complete**: Returns `isComplete: true` on first response
+- **Multi-Step**: Requires 2-3 interactions to complete
+- **Error Case**: Returns parsing errors or network failures
+
+**Assessor Scenarios:**
+- **Fast Assessment**: Completes after 3-4 questions
+- **Full Assessment**: Goes through all 12 questions systematically
+- **Partial Complete**: Gets stuck mid-assessment for testing recovery
+
+**Analyzer Scenarios:**
+- **Various Strategies**: Different scoring leading to different AI strategies (Efficiency → Expert)
+- **Edge Cases**: Missing data, parsing issues, incomplete assessments
+
+#### Implementation Benefits
+
+- **Fast Iteration**: Test UI/state changes without waiting for LLM responses
+- **Deterministic Testing**: Predictable responses for automated testing
+- **State Transition Verification**: Test Redux state management without LLM variability
+- **Error Handling**: Test edge cases and failure scenarios systematically
+- **Performance Testing**: Validate orchestrator logic at speed
+
+#### Integration Points
+
+- **Zero Code Changes**: Interceptor pattern requires no changes to orchestrator or service layer
+- **Realistic Flow**: Still goes through full HTTP request cycle with different responses
+- **Easy Configuration**: Simple environment variable toggle
+- **Scenario Selection**: Can implement UI for selecting different mock scenarios during development
