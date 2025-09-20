@@ -96,3 +96,31 @@ export function getTextFromMessage(message: ChatMessage): string {
     .map((part) => part.text)
     .join('');
 }
+
+/**
+ * Environment variable utility with get-or-throw pattern
+ * Ensures required environment variables are available and provides clear error messages
+ */
+export function getEnvOrThrow(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Environment variable ${key} is required but not defined`);
+  }
+  return value;
+}
+
+/**
+ * Get environment variable with optional default value
+ */
+export function getEnv(key: string, defaultValue?: string): string | undefined {
+  return process.env[key] || defaultValue;
+}
+
+/**
+ * Get boolean environment variable with default false
+ */
+export function getEnvBoolean(key: string, defaultValue = false): boolean {
+  const value = process.env[key];
+  if (!value) return defaultValue;
+  return value.toLowerCase() === 'true';
+}
