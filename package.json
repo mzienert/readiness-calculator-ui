@@ -21,7 +21,9 @@
     "test:assessor-flow": "tsx scripts/test-assessor-flow.ts",
     "test:analyzer-flow": "tsx scripts/test-analyzer-flow.ts",
     "test:analyzer": "tsx scripts/test-analyzer-direct.ts",
-    "test:complete": "tsx scripts/test-complete-flow.ts"
+    "test:complete": "tsx scripts/test-complete-flow.ts",
+    "eval:qualifier": "tsx evals/qualifier-eval.ts",
+    "eval:create-dataset": "tsx evals/create-openai-dataset.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.24",
