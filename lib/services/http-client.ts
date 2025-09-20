@@ -1,20 +1,10 @@
-interface RequestConfig {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: any;
-  timeout?: number;
-}
-
-interface ApiResponse<T = any> {
-  data: T;
-  status: number;
-  headers: Headers;
-}
+import { HttpMethods, type RequestConfig, type ApiResponse } from './http-methods';
 
 export class HttpClient {
   private baseURL: string;
   private defaultHeaders: Record<string, string>;
   private defaultTimeout: number;
+  private httpMethods: HttpMethods;
 
   constructor(baseURL = '', defaultTimeout = 60000) {
     this.baseURL = baseURL;
@@ -22,6 +12,7 @@ export class HttpClient {
     this.defaultHeaders = {
       'Content-Type': 'application/json',
     };
+    this.httpMethods = new HttpMethods((url: string, config?: RequestConfig) => this.makeRequest(url, config));
   }
 
   /**
@@ -114,58 +105,44 @@ export class HttpClient {
     }
   }
 
-  /**
-   * GET request
-   */
   async get<T>(
     url: string,
     config: Omit<RequestConfig, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>(url, { ...config, method: 'GET' });
+    return this.httpMethods.get<T>(url, config);
   }
 
-  /**
-   * POST request
-   */
   async post<T>(
     url: string,
     body?: any,
     config: Omit<RequestConfig, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>(url, { ...config, method: 'POST', body });
+    return this.httpMethods.post<T>(url, body, config);
   }
 
-  /**
-   * PUT request
-   */
   async put<T>(
     url: string,
     body?: any,
     config: Omit<RequestConfig, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>(url, { ...config, method: 'PUT', body });
+    return this.httpMethods.put<T>(url, body, config);
   }
 
-  /**
-   * DELETE request
-   */
   async delete<T>(
     url: string,
     config: Omit<RequestConfig, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>(url, { ...config, method: 'DELETE' });
+    return this.httpMethods.delete<T>(url, config);
   }
 
-  /**
-   * PATCH request
-   */
   async patch<T>(
     url: string,
     body?: any,
     config: Omit<RequestConfig, 'method' | 'body'> = {},
   ): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>(url, { ...config, method: 'PATCH', body });
+    return this.httpMethods.patch<T>(url, body, config);
   }
+
 }
 
 // Default instance for internal API calls
