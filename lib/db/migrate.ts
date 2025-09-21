@@ -6,7 +6,8 @@ import { getEnvOrThrow } from '../utils';
 
 // Only load .env.local for local development
 // On Vercel, environment variables are injected directly into process.env
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL_ENV) {
+// We detect Vercel by checking for VERCEL_URL (which Vercel always sets)
+if (!process.env.VERCEL_URL) {
   config({
     path: '.env.local',
   });
