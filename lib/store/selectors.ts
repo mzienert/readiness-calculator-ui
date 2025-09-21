@@ -61,10 +61,10 @@ export const selectAssessmentComplete = (state: RootState) =>
   state.orchestrator.currentSession?.phase === 'complete';
 
 export const selectAssessmentScore = (state: RootState) =>
-  state.orchestrator.currentSession?.assessmentScore;
+  state.orchestrator.currentSession?.analyzer?.scoring;
 
 export const selectStrategyRecommendation = (state: RootState) =>
-  state.orchestrator.currentSession?.strategyRecommendation;
+  state.orchestrator.currentSession?.analyzer?.strategy_recommendation;
 
 // Session status selectors
 export const selectHasActiveSession = (state: RootState) =>
@@ -122,7 +122,7 @@ export const selectSessionSummary = (state: RootState) => {
     responsesCount: session.responses?.length || 0,
     isComplete: session.phase === 'complete',
     hasQualifier: Boolean(session.qualifier),
-    hasScore: Boolean(session.assessmentScore),
+    hasScore: Boolean(session.analyzer?.scoring),
   };
 };
 

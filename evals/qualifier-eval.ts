@@ -194,7 +194,7 @@ function checkIndustryMatch(
     tourism: ['tourism', 'hotel', 'tour', 'hospitality', 'travel']
   };
 
-  const keywords = industryKeywords[expectedType] || [expectedType];
+  const keywords = (industryKeywords as Record<string, string[]>)[expectedType] || [expectedType];
   return keywords.some(keyword => actualText.includes(keyword));
 }
 
@@ -228,7 +228,7 @@ async function runQualifierEval(scenario: EvalScenario): Promise<EvalResult> {
 
     // Run assistant
     const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: ASSISTANT_ID,
+      assistant_id: ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
 

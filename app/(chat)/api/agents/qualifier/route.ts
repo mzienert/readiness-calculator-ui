@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     // Run the assistant
     console.log(`🤖 [QualifierAgent] Running assistant ${ASSISTANT_ID}...`);
     const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: ASSISTANT_ID,
+      assistant_id: ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
     console.log(`🏃 [QualifierAgent] Run started: ${run.id}`);

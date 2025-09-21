@@ -6,8 +6,6 @@ import {
   json,
   uuid,
   text,
-  primaryKey,
-  foreignKey,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -46,20 +44,3 @@ export const message = pgTable('Message_v2', {
 
 export type DBMessage = InferSelectModel<typeof message>;
 
-export const stream = pgTable(
-  'Stream',
-  {
-    id: uuid('id').notNull().defaultRandom(),
-    chatId: uuid('chatId').notNull(),
-    createdAt: timestamp('createdAt').notNull(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.id] }),
-    chatRef: foreignKey({
-      columns: [table.chatId],
-      foreignColumns: [chat.id],
-    }),
-  }),
-);
-
-export type Stream = InferSelectModel<typeof stream>;

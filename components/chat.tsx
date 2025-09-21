@@ -8,7 +8,6 @@ import type { VisibilityType } from './visibility-selector';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
-import { useAutoResume } from '@/hooks/use-auto-resume';
 import type { ChatMessage } from '@/lib/types';
 import { AssessmentProgress } from './assessment-progress';
 import { useOrchestratedChat } from '@/hooks/use-orchestrated-chat';
@@ -19,14 +18,12 @@ export function Chat({
   initialVisibilityType,
   isReadonly,
   session,
-  autoResume,
 }: {
   id: string;
   initialMessages: ChatMessage[];
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
-  autoResume: boolean;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -42,9 +39,6 @@ export function Chat({
       initialMessages,
       userId: session.user.id,
     });
-
-  // Dummy resumeStream for compatibility
-  const resumeStream = () => Promise.resolve();
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
@@ -62,13 +56,6 @@ export function Chat({
       window.history.replaceState({}, '', `/chat/${id}`);
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
-
-  useAutoResume({
-    autoResume,
-    initialMessages,
-    resumeStream,
-    setMessages,
-  });
 
   return (
     <>

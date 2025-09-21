@@ -55,7 +55,7 @@ async function testQualifierAssistant() {
       // Run the assistant
       console.log('🤖 Running assistant...');
       const run = await openai.beta.threads.runs.create(thread.id, {
-        assistant_id: ASSISTANT_ID,
+        assistant_id: ASSISTANT_ID!,
         response_format: { type: 'json_object' },
       });
 

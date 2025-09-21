@@ -86,7 +86,7 @@ async function testQualifierToAssessorFlow() {
       // Run qualifier assistant
       console.log('🤖 Running qualifier assistant...');
       const run = await openai.beta.threads.runs.create(qualifierThread.id, {
-        assistant_id: QUALIFIER_ASSISTANT_ID,
+        assistant_id: QUALIFIER_ASSISTANT_ID!,
         response_format: { type: 'json_object' },
       });
 
@@ -191,7 +191,7 @@ Please use this context to personalize your assessment questions and language. S
       // Run assessor assistant
       console.log('🤖 Running assessor assistant...');
       const run = await openai.beta.threads.runs.create(assessorThread.id, {
-        assistant_id: ASSESSOR_ASSISTANT_ID,
+        assistant_id: ASSESSOR_ASSISTANT_ID!,
         response_format: { type: 'json_object' },
       });
 

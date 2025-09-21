@@ -113,7 +113,7 @@ Please use this context to personalize your assessment questions and language. S
     console.log(`🤖 [AssessorAgent] Running assistant ${ASSISTANT_ID}...`);
     console.log(`🔧 [AssessorAgent] Using response_format: json_object`);
     const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: ASSISTANT_ID,
+      assistant_id: ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
     console.log(`🏃 [AssessorAgent] Run started: ${run.id}`);

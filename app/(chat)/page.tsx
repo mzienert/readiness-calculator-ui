@@ -25,7 +25,6 @@ export default async function Page() {
         initialVisibilityType="private"
         isReadonly={false}
         session={session}
-        autoResume={false}
       />
       <DataStreamHandler />
     </>

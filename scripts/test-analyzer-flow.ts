@@ -46,7 +46,7 @@ interface AnalyzerResponse {
   analysis_complete: boolean;
   scoring: {
     [category: string]: {
-      [questionKey: string]: number;
+      [questionKey: string]: number | string;
       total: number;
       level: string;
     };
@@ -94,7 +94,7 @@ async function testFullAssessmentToAnalysisFlow() {
     });
 
     const qualifierRun = await openai.beta.threads.runs.create(qualifierThread.id, {
-      assistant_id: QUALIFIER_ASSISTANT_ID,
+      assistant_id: QUALIFIER_ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
 
@@ -176,7 +176,7 @@ Please complete the assessment and let me know we're ready for analysis.`;
     });
 
     const assessorRun = await openai.beta.threads.runs.create(assessorThread.id, {
-      assistant_id: ASSESSOR_ASSISTANT_ID,
+      assistant_id: ASSESSOR_ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
 
@@ -241,7 +241,7 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
 
     console.log('🤖 Running analyzer assistant...');
     const analyzerRun = await openai.beta.threads.runs.create(analyzerThread.id, {
-      assistant_id: ANALYZER_ASSISTANT_ID,
+      assistant_id: ANALYZER_ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
 

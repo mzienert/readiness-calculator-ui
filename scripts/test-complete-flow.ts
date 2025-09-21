@@ -88,7 +88,7 @@ async function testCompleteFlow() {
     });
 
     const qualifierRun = await openai.beta.threads.runs.create(qualifierThread.id, {
-      assistant_id: QUALIFIER_ASSISTANT_ID,
+      assistant_id: QUALIFIER_ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
 
@@ -150,7 +150,7 @@ Please use this context to personalize your assessment questions and language. S
 
       console.log('🤖 Running assessor assistant...');
       const run = await openai.beta.threads.runs.create(assessorThread.id, {
-        assistant_id: ASSESSOR_ASSISTANT_ID,
+        assistant_id: ASSESSOR_ASSISTANT_ID!,
         response_format: { type: 'json_object' },
       });
 
@@ -245,7 +245,7 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
       });
 
       const analyzerRun = await openai.beta.threads.runs.create(analyzerThread.id, {
-        assistant_id: ANALYZER_ASSISTANT_ID,
+        assistant_id: ANALYZER_ASSISTANT_ID!,
         response_format: { type: 'json_object' },
       });
 

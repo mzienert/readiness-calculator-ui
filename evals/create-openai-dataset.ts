@@ -219,15 +219,15 @@ OpenAI will provide:
 // Main execution
 function main() {
   console.log('🚀 Creating OpenAI Platform Eval Setup');
-  console.log('=' * 50);
+  console.log('='.repeat(50));
 
   try {
     const datasetPath = createJSONLFile();
     const instructionsPath = createUploadInstructions(datasetPath);
 
-    console.log('\n' + '=' * 50);
+    console.log('\n' + '='.repeat(50));
     console.log('✅ OpenAI Platform Eval Setup Complete!');
-    console.log('=' * 50);
+    console.log('='.repeat(50));
     console.log('');
     console.log('📁 Files created:');
     console.log(`  • Dataset: ${datasetPath}`);

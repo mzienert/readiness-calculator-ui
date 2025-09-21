@@ -41,11 +41,7 @@ export function useOrchestratedChat({
     messages: initialMessages,
     generateId: uuidv4,
 
-    // We'll override the transport behavior
-    api: '/api/dummy', // This won't actually be called
-
     // Custom send function that processes through orchestrator
-    sendExtraMessageFields: true,
   });
 
   // Override the sendMessage function to use orchestrator + new chat-history endpoint

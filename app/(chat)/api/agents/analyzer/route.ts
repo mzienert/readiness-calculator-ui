@@ -28,7 +28,7 @@ interface AnalyzerResponse {
   analysis_complete: boolean;
   scoring: {
     [category: string]: {
-      [questionKey: string]: number;
+      [questionKey: string]: number | string;
       total: number;
       level: string;
     };
@@ -150,7 +150,7 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
     console.log(`🤖 [AnalyzerAgent] Running assistant ${ASSISTANT_ID}...`);
     console.log(`🔧 [AnalyzerAgent] Using response_format: json_object`);
     const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: ASSISTANT_ID,
+      assistant_id: ASSISTANT_ID!,
       response_format: { type: 'json_object' },
     });
     console.log(`🏃 [AnalyzerAgent] Run started: ${run.id}`);
