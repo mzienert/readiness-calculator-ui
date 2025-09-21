@@ -11,7 +11,7 @@ import {
   selectAssessmentScore,
   selectStrategyRecommendation,
 } from '@/lib/store/selectors';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Users, FileText, BarChart3, FileBarChart } from 'lucide-react';
@@ -188,8 +188,8 @@ function AssessorContent() {
       .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  const truncateValue = (value: string, maxLength: number = 40) => {
-    return value.length > maxLength ? value.substring(0, maxLength) + '...' : value;
+  const truncateValue = (value: string, maxLength = 40) => {
+    return value.length > maxLength ? `${value.substring(0, maxLength)}...` : value;
   };
 
   // Get the most recent 3 responses

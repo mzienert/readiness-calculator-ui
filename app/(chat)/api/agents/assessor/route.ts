@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { ChatSDKError } from '@/lib/errors';
 import type { CoreMessage } from 'ai';

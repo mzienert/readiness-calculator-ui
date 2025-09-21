@@ -116,7 +116,7 @@ async function testQualifierToAssessorFlow() {
           lastMessage.role === 'assistant' &&
           lastMessage.content[0].type === 'text'
         ) {
-          const responseText = lastMessage.content[0].text.value;
+          const responseText = (lastMessage(content[0] as any)).text.value;
           const response: QualifierResponse = JSON.parse(responseText);
 
           console.log(`🤖 Qualifier: ${response.message}`);
@@ -221,7 +221,7 @@ Please use this context to personalize your assessment questions and language. S
           lastMessage.role === 'assistant' &&
           lastMessage.content[0].type === 'text'
         ) {
-          const responseText = lastMessage.content[0].text.value;
+          const responseText = (lastMessage(content[0] as any)).text.value;
 
           try {
             const response: AssessorResponse = JSON.parse(responseText);

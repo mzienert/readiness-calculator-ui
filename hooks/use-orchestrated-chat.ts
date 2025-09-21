@@ -1,7 +1,7 @@
 'use client';
 
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { v4 as uuidv4 } from 'uuid';
 import { AssessmentOrchestrator } from '@/lib/ai/orchestrator';

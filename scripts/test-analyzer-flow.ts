@@ -110,7 +110,7 @@ async function testFullAssessmentToAnalysisFlow() {
     }
 
     const qualifierMessages = await openai.beta.threads.messages.list(qualifierThread.id);
-    const qualifierResponseText = qualifierMessages.data[0].content[0].text.value;
+    const qualifierResponseText = (qualifierMessages.data[0](content[0] as any)).text.value;
     const qualifierData: QualifierResponse = JSON.parse(qualifierResponseText);
 
     console.log(`🤖 Qualifier Response: ${qualifierData.message}`);
@@ -192,7 +192,7 @@ Please complete the assessment and let me know we're ready for analysis.`;
     }
 
     const assessorMessages = await openai.beta.threads.messages.list(assessorThread.id);
-    const assessorResponseText = assessorMessages.data[0].content[0].text.value;
+    const assessorResponseText = (assessorMessages.data[0](content[0] as any)).text.value;
     const assessmentData: AssessorResponse = JSON.parse(assessorResponseText);
 
     console.log(`🤖 Assessor Response: ${assessmentData.message}`);
@@ -261,7 +261,7 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
 
     if (analyzerStatus.status === 'completed') {
       const analyzerMessages = await openai.beta.threads.messages.list(analyzerThread.id);
-      const analyzerResponseText = analyzerMessages.data[0].content[0].text.value;
+      const analyzerResponseText = (analyzerMessages.data[0](content[0] as any)).text.value;
 
       try {
         const analysisResults: AnalyzerResponse = JSON.parse(analyzerResponseText);

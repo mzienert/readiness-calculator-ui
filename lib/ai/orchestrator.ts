@@ -1,8 +1,6 @@
 // Removed direct agent imports - now using API calls
-import {
-  type AgentState,
-  type DynamicWeighting,
-  agentStateSchema,
+import type {
+  AgentState,
 } from './schemas';
 import type { CoreMessage } from 'ai';
 import type { AppDispatch, RootState } from '@/lib/store';
@@ -14,7 +12,6 @@ import {
   addTokenUsage,
 } from '@/lib/store/slices/orchestrator';
 import { threadsApi, agentsApi } from '@/lib/services/api';
-import { v4 as uuidv4 } from 'uuid'; // Keep for session correlation
 
 export class AssessmentOrchestrator {
   private dispatch: AppDispatch;

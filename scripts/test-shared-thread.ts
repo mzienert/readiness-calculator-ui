@@ -46,7 +46,7 @@ async function testSharedThread() {
 
   const firstResult = await firstResponse.json();
   console.log('First response:', {
-    responsePreview: firstResult.response.substring(0, 100) + '...',
+    responsePreview: `${firstResult.response.substring(0, 100)}...`,
     isComplete: firstResult.isComplete,
   });
   console.log('');
@@ -82,7 +82,7 @@ async function testSharedThread() {
 
   const secondResult = await secondResponse.json();
   console.log('Second response:', {
-    responsePreview: secondResult.response.substring(0, 100) + '...',
+    responsePreview: `${secondResult.response.substring(0, 100)}...`,
     isComplete: secondResult.isComplete,
     qualifier: secondResult.qualifier,
   });
@@ -95,7 +95,7 @@ async function testSharedThread() {
   messages.data.reverse().forEach((msg, index) => {
     const content =
       msg.content[0].type === 'text'
-        ? msg.content[0].text.value.substring(0, 50) + '...'
+        ? `${msg(content[0] as any).text.value.substring(0, 50)}...`
         : '[non-text content]';
     console.log(`  ${index + 1}. ${msg.role}: ${content}`);
   });

@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 // OpenAI Evals expects JSONL format (one JSON object per line)
 interface OpenAIEvalEntry {
@@ -225,7 +225,7 @@ function main() {
     const datasetPath = createJSONLFile();
     const instructionsPath = createUploadInstructions(datasetPath);
 
-    console.log('\n' + '='.repeat(50));
+    console.log(`\n${'='.repeat(50)}`);
     console.log('✅ OpenAI Platform Eval Setup Complete!');
     console.log('='.repeat(50));
     console.log('');

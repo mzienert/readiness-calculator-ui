@@ -104,7 +104,7 @@ async function testCompleteFlow() {
     }
 
     const qualifierMessages = await openai.beta.threads.messages.list(qualifierThread.id);
-    const qualifierResponseText = qualifierMessages.data[0].content[0].text.value;
+    const qualifierResponseText = qualifierMessages.data[0](content[0] as any)).text.value;
     const qualifierData: QualifierResponse = JSON.parse(qualifierResponseText);
 
     console.log(`🤖 Qualifier: ${qualifierData.message.substring(0, 100)}...`);
@@ -170,7 +170,7 @@ Please use this context to personalize your assessment questions and language. S
         const lastMessage = messages.data[0];
 
         if (lastMessage.role === 'assistant' && lastMessage.content[0].type === 'text') {
-          const responseText = lastMessage.content[0].text.value;
+          const responseText = (lastMessage(content[0] as any)).text.value;
 
           try {
             const response: AssessorResponse = JSON.parse(responseText);
@@ -262,7 +262,7 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
 
       if (analyzerStatus.status === 'completed') {
         const analyzerMessages = await openai.beta.threads.messages.list(analyzerThread.id);
-        const analyzerResponseText = analyzerMessages.data[0].content[0].text.value;
+        const analyzerResponseText = analyzerMessages.data[0](content[0] as any)).text.value;
 
         try {
           const analysisResults: AnalyzerResponse = JSON.parse(analyzerResponseText);

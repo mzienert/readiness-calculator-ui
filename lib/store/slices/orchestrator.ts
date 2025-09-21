@@ -1,6 +1,5 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import type { AgentState, TokenUsage } from '@/lib/ai/schemas';
-import type { CoreMessage } from 'ai';
 
 interface OrchestratorState {
   // Current session state

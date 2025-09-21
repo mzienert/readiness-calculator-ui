@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     }
 
     // Check if chat exists, create if needed
-    let chat = await getChatById({ id: chatId });
+    const chat = await getChatById({ id: chatId });
     if (!chat) {
       // Find first user message for title generation
       const firstUserMessage = messages.find((m) => m.role === 'user');

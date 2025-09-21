@@ -203,10 +203,10 @@ function checkSizeMatch(
   actualResponses: { [key: string]: string }
 ): boolean {
   const actualText = Object.values(actualResponses).join(' ');
-  const expectedNumber = parseInt(expectedCount.match(/\d+/)?.[0] || '0');
+  const expectedNumber = Number.parseInt(expectedCount.match(/\d+/)?.[0] || '0');
 
   // Extract numbers from actual responses
-  const actualNumbers = actualText.match(/\d+/g)?.map(n => parseInt(n)) || [];
+  const actualNumbers = actualText.match(/\d+/g)?.map(n => Number.parseInt(n)) || [];
 
   // Check if expected number appears or is within reasonable range
   return actualNumbers.some(num => Math.abs(num - expectedNumber) <= 2);
@@ -345,7 +345,7 @@ async function runAllQualifierEvals(): Promise<void> {
   }
 
   // Summary report
-  console.log('\n' + '='.repeat(80));
+  console.log(`\n${'='.repeat(80)}`);
   console.log('📊 QUALIFIER AGENT EVALUATION SUMMARY');
   console.log('='.repeat(80));
   console.log(`Total Scenarios: ${evalScenarios.length}`);

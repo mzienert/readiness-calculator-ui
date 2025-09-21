@@ -143,7 +143,7 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
       const lastMessage = messages.data[0];
 
       if (lastMessage.role === 'assistant' && lastMessage.content[0].type === 'text') {
-        const responseText = lastMessage.content[0].text.value;
+        const responseText = (lastMessage(content[0] as any)).text.value;
         console.log(`📄 Raw response (${responseText.length} chars)`);
         console.log('');
 
