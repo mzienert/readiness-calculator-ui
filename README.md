@@ -53,8 +53,11 @@ La Plata County, Colorado SMBs with diverse technology readiness levels (non-exi
 - **[NextAuth.js](https://authjs.dev)** - Authentication system
 
 ### Data & Infrastructure
-- **[Neon PostgreSQL](https://neon.tech)** - Primary database with staging/production separation
-- **[Drizzle ORM](https://orm.drizzle.team)** - Type-safe database operations
+- **[Neon PostgreSQL](https://neon.tech)** - Primary database with automatic environment separation
+  - **Production**: Main branch for production deployments (`VERCEL_ENV=production`)
+  - **Staging**: Dedicated branch for development, preview builds, and ephemeral environments
+  - **Environment Detection**: `VERCEL_ENV`-based routing with `getEnvOrThrow` pattern
+- **[Drizzle ORM](https://orm.drizzle.team)** - Type-safe database operations with environment-aware connections
 - **[Redis](https://redis.io)** - Resumable chat streams (optional), planned for caching and session management
 - **[Vercel](https://vercel.com)** - Hosting, deployment, and serverless functions
 
@@ -91,12 +94,21 @@ openssl rand -base64 32
 # Or visit: https://generate-secret.vercel.app/32
 ```
 
-**POSTGRES_URL** (required for database):
-- Follow [Vercel Postgres setup guide](https://vercel.com/docs/storage/vercel-postgres/quickstart)
-- Or use any PostgreSQL connection string format:
-  ```
-  postgresql://user:password@host:port/database
-  ```
+**Database Configuration** (required):
+The application uses environment-aware database routing with two connection strings:
+
+- **POSTGRES_URL_PRODUCTION**: Production database (Neon main branch)
+- **POSTGRES_URL_STAGING**: Staging database (Neon staging branch)
+
+**Environment Routing**:
+- **Production deployments** (`VERCEL_ENV=production`) → Production database
+- **Preview deployments & local development** → Staging database
+- **Ephemeral builds** → Staging database
+
+**Setup**:
+1. Create a [Neon](https://neon.tech) project with two branches: `main` and `staging`
+2. Add both connection strings to your `.env.local` file
+3. Configure Vercel environment variables for proper environment separation
 
 **REDIS_URL** (optional for resumable chat streams):
 - If configured, enables chat streams to resume after interruption

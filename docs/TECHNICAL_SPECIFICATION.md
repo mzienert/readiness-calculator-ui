@@ -109,7 +109,7 @@ A specialized AI readiness assessment system for La Plata County SMBs that:
 ┌─────────────────────────────────────────────────────────────┐
 │                   Data Layer                                │
 ├─────────────────────────────────────────────────────────────┤
-│ • PostgreSQL (Neon) - assessment data & anonymized insights │
+│ • PostgreSQL (Neon) - assessment data with env separation   │
 │ • Drizzle ORM - type-safe database operations              │
 │ • Redis - caching & session management                      │
 │ • Vercel Blob - file storage (reports, uploads)            │
@@ -490,7 +490,11 @@ Start by greeting them and explaining you're the assessment specialist.`;
 ### Infrastructure
 
 - **Vercel** for hosting and deployment with staging/production environments
-- **Neon PostgreSQL** for primary database (separate staging/production instances)
+- **Neon PostgreSQL** with automatic environment separation:
+  - **Production Branch**: Main database for production deployments (`VERCEL_ENV=production`)
+  - **Staging Branch**: Isolated database for development, preview builds, and ephemeral environments
+  - **Environment Detection**: `VERCEL_ENV`-based routing with `getEnvOrThrow` utility pattern
+  - **Connection Management**: Drizzle ORM with environment-aware database connections
 - **Vercel Blob** for file storage (reports, uploads)
 - **Redis Cloud** for caching layer
 - **Beautiful.ai** for professional report generation via MCP integration
@@ -510,7 +514,10 @@ Start by greeting them and explaining you're the assessment specialist.`;
 ### Prerequisites
 
 - Node.js 18+ with npm
-- PostgreSQL database (Neon recommended with staging/production separation)
+- PostgreSQL database with environment separation:
+  - **Neon Project**: Two branches (main for production, staging for development)
+  - **Environment Variables**: `POSTGRES_URL_PRODUCTION` and `POSTGRES_URL_STAGING`
+  - **Automatic Routing**: Based on `VERCEL_ENV` environment detection
 - Redis instance for caching
 - OpenAI API key for multi-agent AI features
 - Beautiful.ai account for professional report generation
