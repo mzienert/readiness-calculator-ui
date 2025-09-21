@@ -2,17 +2,23 @@ import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
+import { getEnvOrThrow } from '../utils';
 
-config({
-  path: '.env.local',
-});
+// Only load .env.local for local development
+// On Vercel, environment variables are injected directly into process.env
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL_ENV) {
+  config({
+    path: '.env.local',
+  });
+}
 
 const runMigrate = async () => {
-  if (!process.env.POSTGRES_URL) {
-    throw new Error('POSTGRES_URL is not defined');
-  }
+  // Use production database for production environment, staging for everything else
+  const databaseUrl = process.env.VERCEL_ENV === 'production'
+    ? getEnvOrThrow('POSTGRES_URL_PRODUCTION')
+    : getEnvOrThrow('POSTGRES_URL_STAGING');
 
-  const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
+  const connection = postgres(databaseUrl, { max: 1 });
   const db = drizzle(connection);
 
   console.log('⏳ Running migrations...');
