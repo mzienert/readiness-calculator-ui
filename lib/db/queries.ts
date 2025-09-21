@@ -27,13 +27,18 @@ import {
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
+import { getEnvOrThrow } from '../utils';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+// Use production database for production environment, staging for everything else
+const databaseUrl = process.env.VERCEL_ENV === 'production'
+  ? getEnvOrThrow('POSTGRES_URL_PRODUCTION')
+  : getEnvOrThrow('POSTGRES_URL_STAGING');
+
+const client = postgres(databaseUrl);
 const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
