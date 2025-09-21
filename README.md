@@ -158,6 +158,12 @@ The app will be available at [localhost:3000](http://localhost:3000).
 - **Cost Visibility**: Clear compute costs per agent vs data operations
 - **Maintenance Friendly**: Changes to AI logic don't affect persistence layer
 
+### Future Enhancements
+- **🔄 Resumable Chat Streams**: Redis-based stream resumption for network interruption recovery
+  - Allows clients to resume AI responses after connection drops
+  - Improves user experience during unstable connections
+  - Requires Redis infrastructure and resumable-stream integration
+
 ### Controlled Rollout Strategy
 - **Authentication Required**: No unauthenticated access to chat functionality
 - **Initial deployment**: 5 selected La Plata County SMBs
