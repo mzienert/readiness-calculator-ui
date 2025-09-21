@@ -51,6 +51,10 @@ export function useOrchestratedChat({
   // Override the sendMessage function to use orchestrator + new chat-history endpoint
   const sendMessage = useCallback(
     async (message: any) => {
+      console.log('🎯🎯🎯 [useOrchestratedChat] SENDMESSAGE CALLED!!!');
+      console.log('🎯🎯🎯 [useOrchestratedChat] message:', message);
+      console.log('🎯🎯🎯 [useOrchestratedChat] isProcessing:', isProcessing);
+
       if (isProcessing) {
         toast({
           type: 'error',
@@ -86,7 +90,13 @@ export function useOrchestratedChat({
         );
 
         // Process through CLIENT-SIDE orchestrator (calls agent endpoints)
+        console.log('🎯 [useOrchestratedChat] About to call orchestrator.processMessage');
+        console.log('🎯 [useOrchestratedChat] coreMessages:', coreMessages.length);
+        console.log('🎯 [useOrchestratedChat] userId:', userId);
+
         const result = await orchestrator.processMessage(coreMessages, userId);
+
+        console.log('🎯 [useOrchestratedChat] orchestrator.processMessage returned:', result);
 
         // Create orchestrator response message
         const assistantMessage: ChatMessage = {

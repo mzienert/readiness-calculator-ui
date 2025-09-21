@@ -1,6 +1,7 @@
 import { apiClient } from './http-client';
 import type { CoreMessage } from 'ai';
 import type { TokenUsage } from '@/lib/ai/schemas';
+import { isMockingEnabled, mockAgentsApi, mockThreadsApi } from './mock-agents';
 
 export interface ThreadResponse {
   threadId: string;
@@ -68,12 +69,9 @@ export interface ModelsResponse {
 }
 
 /**
- * API service for thread management
+ * Real threads API implementation
  */
-export const threadsApi = {
-  /**
-   * Create a new OpenAI thread
-   */
+const realThreadsApi = {
   async create(): Promise<ThreadResponse> {
     const response = await apiClient.post<ThreadResponse>('/api/threads');
     return response.data;
@@ -81,12 +79,14 @@ export const threadsApi = {
 };
 
 /**
- * API service for agent interactions
+ * API service for thread management
  */
-export const agentsApi = {
-  /**
-   * Send message to qualifier agent
-   */
+export const threadsApi = isMockingEnabled() ? mockThreadsApi : realThreadsApi;
+
+/**
+ * Real agents API implementation
+ */
+const realAgentsApi = {
   async qualifier(request: QualifierRequest): Promise<QualifierResponse> {
     const response = await apiClient.post<QualifierResponse>(
       '/api/agents/qualifier',
@@ -95,9 +95,6 @@ export const agentsApi = {
     return response.data;
   },
 
-  /**
-   * Send message to assessor agent
-   */
   async assessor(request: AssessorRequest): Promise<AssessorResponse> {
     const response = await apiClient.post<AssessorResponse>(
       '/api/agents/assessor',
@@ -106,9 +103,6 @@ export const agentsApi = {
     return response.data;
   },
 
-  /**
-   * Send message to analyzer agent
-   */
   async analyzer(request: AnalyzerRequest): Promise<AnalyzerResponse> {
     const response = await apiClient.post<AnalyzerResponse>(
       '/api/agents/analyzer',
@@ -117,6 +111,11 @@ export const agentsApi = {
     return response.data;
   },
 };
+
+/**
+ * API service for agent interactions
+ */
+export const agentsApi = isMockingEnabled() ? mockAgentsApi : realAgentsApi;
 
 /**
  * API service for chat history management

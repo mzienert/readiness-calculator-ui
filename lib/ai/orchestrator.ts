@@ -92,6 +92,7 @@ To get started, could you tell me a bit about your business? For example, how ma
     threadId?: string;
   }> {
     try {
+      console.log(`🚨 [Orchestrator] ORCHESTRATOR PROCESSMESSAGE CALLED!!!`);
       console.log(`🔄 [Orchestrator] Processing message - User: ${userId}, Messages: ${messages.length}`);
       console.log(`📝 [Orchestrator] Latest message: "${messages[messages.length - 1]?.content}"`);
 
@@ -135,10 +136,15 @@ To get started, could you tell me a bit about your business? For example, how ma
             throw new Error('No thread ID available for qualifier');
           }
 
+          console.log('🔍 [Orchestrator] About to call agentsApi.qualifier');
+          console.log('🔍 [Orchestrator] agentsApi.qualifier function:', agentsApi.qualifier.toString().substring(0, 100));
+
           const result = await agentsApi.qualifier({
             messages,
             threadId: currentSession.threadId,
           });
+
+          console.log('🔍 [Orchestrator] agentsApi.qualifier returned:', typeof result);
 
           console.log(`📥 [Orchestrator] Qualifier response:`, {
             responseLength: result.response.length,
