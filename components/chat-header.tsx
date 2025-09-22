@@ -56,19 +56,6 @@ function PureChatHeader({
           className="order-1 md:order-2"
         />
       )}
-
-      <Button
-        className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-3 md:ml-auto"
-        asChild
-      >
-        <Link
-          href={`https://vercel.com/new/clone?repository-url=https://github.com/mzienert/readiness-calculator-ui&env=AUTH_SECRET,OPENAI_API_KEY&envDescription=Learn more about how to get the API Keys for the application&demo-title=AI Readiness Calculator&demo-description=AI-powered assessment platform for La Plata County SMBs&products=[{"type":"integration","protocol":"ai","productSlug":"openai","integrationSlug":"openai"},{"type":"integration","protocol":"storage","productSlug":"neon","integrationSlug":"neon"},{"type":"integration","protocol":"storage","productSlug":"upstash-kv","integrationSlug":"upstash"}]`}
-          target="_noblank"
-        >
-          <VercelIcon size={16} />
-          Deploy with Vercel
-        </Link>
-      </Button>
     </header>
   );
 }
