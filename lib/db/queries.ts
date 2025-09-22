@@ -84,6 +84,7 @@ export async function saveChat({
       threadId,
     });
   } catch (error) {
+    console.error('Database error in saveChat:', error);
     throw new ChatSDKError('bad_request:database', 'Failed to save chat');
   }
 }

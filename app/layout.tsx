@@ -1,5 +1,6 @@
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ReduxProvider } from '@/components/redux-provider';
@@ -84,6 +85,7 @@ export default async function RootLayout({
           </ThemeProvider>
         </ReduxProvider>
       </body>
+      <Analytics />
     </html>
   );
 }
