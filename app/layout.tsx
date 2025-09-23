@@ -84,8 +84,8 @@ export default async function RootLayout({
             <SessionProvider>{children}</SessionProvider>
           </ThemeProvider>
         </ReduxProvider>
+        <Analytics />
       </body>
-      <Analytics />
     </html>
   );
 }

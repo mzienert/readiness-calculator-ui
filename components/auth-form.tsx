@@ -1,19 +1,24 @@
 import Form from 'next/form';
+import { useState } from 'react';
 
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { PasswordRequirements } from './password-requirements';
 
 export function AuthForm({
   action,
   children,
   defaultEmail = '',
+  showPasswordRequirements = false,
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
   >;
   children: React.ReactNode;
   defaultEmail?: string;
+  showPasswordRequirements?: boolean;
 }) {
+  const [password, setPassword] = useState('');
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
       <div className="flex flex-col gap-2">
@@ -51,7 +56,12 @@ export function AuthForm({
           className="bg-muted text-md md:text-sm"
           type="password"
           required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
+        {showPasswordRequirements && (
+          <PasswordRequirements password={password} className="mt-2" />
+        )}
       </div>
 
       {children}
