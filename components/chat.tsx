@@ -11,6 +11,7 @@ import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import type { ChatMessage } from '@/lib/types';
 import { AssessmentProgress } from './assessment-progress';
 import { useOrchestratedChat } from '@/hooks/use-orchestrated-chat';
+import { AssessmentReport } from './ui/assessment-report';
 
 export function Chat({
   id,
@@ -76,6 +77,11 @@ export function Chat({
             regenerate={regenerate}
             isReadonly={isReadonly}
           />
+
+          {/* Assessment Report - appears when analysis is complete */}
+          <div className="px-4 mx-auto w-full md:max-w-3xl">
+            <AssessmentReport />
+          </div>
 
           <div className="sticky bottom-0 flex gap-2 px-4 pb-4 mx-auto w-full bg-background md:pb-6 md:max-w-3xl z-[1] border-t-0">
             {!isReadonly && (

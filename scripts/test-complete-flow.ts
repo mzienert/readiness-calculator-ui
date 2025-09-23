@@ -104,7 +104,7 @@ async function testCompleteFlow() {
     }
 
     const qualifierMessages = await openai.beta.threads.messages.list(qualifierThread.id);
-    const qualifierResponseText = qualifierMessages.data[0](content[0] as any)).text.value;
+    const qualifierResponseText = (qualifierMessages.data[0].content[0] as any).text.value;
     const qualifierData: QualifierResponse = JSON.parse(qualifierResponseText);
 
     console.log(`🤖 Qualifier: ${qualifierData.message.substring(0, 100)}...`);

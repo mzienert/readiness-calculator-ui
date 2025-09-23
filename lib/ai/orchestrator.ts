@@ -305,12 +305,12 @@ To get started, could you tell me a bit about your business? For example, how ma
             analysis_complete: result.isComplete,
           };
 
-          // Handle agent transition when analysis is complete
+          // Handle completion when analysis is complete (temporary solution)
           if (result.isComplete) {
-            updates.currentAgent = 'reporter';
-            updates.phase = 'reporting';
-            console.log(`🎯 [Orchestrator] TRANSITION: Analysis complete, switching to reporter`);
-            // TODO: Add transition message about generating reports
+            updates.currentAgent = 'analyzer'; // Stay on analyzer since we're showing temp report
+            updates.phase = 'complete';
+            console.log(`🎯 [Orchestrator] ANALYSIS COMPLETE: Showing temporary assessment report`);
+            // Note: Beautiful.ai integration will be added later to replace this
           }
 
           // Track token usage if provided

@@ -60,11 +60,46 @@ export const selectResponsesCount = (state: RootState) =>
 export const selectAssessmentComplete = (state: RootState) =>
   state.orchestrator.currentSession?.phase === 'complete';
 
-export const selectAssessmentScore = (state: RootState) =>
-  state.orchestrator.currentSession?.analyzer?.scoring;
+export const selectAssessmentScore = (state: RootState) => {
+  const scoring = state.orchestrator.currentSession?.analyzer?.scoring;
+  if (!scoring) return null;
+
+  // Transform analyzer scoring data to the format expected by existing components
+  const categoryScores: Record<string, number> = {};
+  let overallScore = 0;
+
+  Object.entries(scoring).forEach(([key, data]: [string, any]) => {
+    if (key !== 'overall_score' && key !== 'dynamic_weighting_applied' && data?.total) {
+      categoryScores[key] = data.total;
+    }
+  });
+
+  overallScore = scoring.overall_score || 0;
+
+  return {
+    overallScore,
+    categoryScores,
+  };
+};
 
 export const selectStrategyRecommendation = (state: RootState) =>
   state.orchestrator.currentSession?.analyzer?.strategy_recommendation;
+
+// Additional analyzer data selectors
+export const selectAnalyzerData = (state: RootState) =>
+  state.orchestrator.currentSession?.analyzer;
+
+export const selectAnalyzerScoring = (state: RootState) =>
+  state.orchestrator.currentSession?.analyzer?.scoring;
+
+export const selectAnalyzerRoadmap = (state: RootState) =>
+  state.orchestrator.currentSession?.analyzer?.roadmap;
+
+export const selectAnalyzerConcerns = (state: RootState) =>
+  state.orchestrator.currentSession?.analyzer?.concerns_analysis;
+
+export const selectAnalysisComplete = (state: RootState) =>
+  state.orchestrator.currentSession?.analyzer?.analysis_complete;
 
 // Session status selectors
 export const selectHasActiveSession = (state: RootState) =>
