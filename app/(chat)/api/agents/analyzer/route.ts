@@ -228,14 +228,17 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
         responseText.substring(0, 200),
       );
 
-      // Try to fix common JSON issues
+      // Try to fix common JSON issues - remove problematic characters instead of escaping
       try {
         const cleanedResponse = responseText
-          .replace(/\n/g, '\\n') // Escape newlines
-          .replace(/\r/g, '\\r') // Escape carriage returns
-          .replace(/\t/g, '\\t'); // Escape tabs
+          .replace(/\n/g, ' ') // Replace newlines with spaces
+          .replace(/\r/g, ' ') // Replace carriage returns with spaces
+          .replace(/\t/g, ' ') // Replace tabs with spaces
+          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+          .trim(); // Remove leading/trailing whitespace
 
         console.log('🔧 [AnalyzerAgent] Attempting to parse cleaned JSON...');
+        console.log('🔧 [AnalyzerAgent] Cleaned response preview:', cleanedResponse.substring(0, 200));
         assistantResponse = JSON.parse(cleanedResponse);
         console.log('✅ [AnalyzerAgent] Successfully parsed cleaned JSON');
       } catch (secondParseError) {
