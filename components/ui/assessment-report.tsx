@@ -121,13 +121,13 @@ export function AssessmentReport() {
           {analyzerData && scoring && (
             <div className="inline-flex items-center gap-4 p-4 bg-card rounded-lg border shadow-sm">
               <div className="text-3xl font-bold text-foreground">
-                {/* Calculate total from individual category scores */}
-                {Object.values(scoring).reduce((total: number, category: any) => total + (category?.score || 0), 0)}/60
+                {/* Use overall_score from the data */}
+                {scoring.overall_score || 0}/60
               </div>
               <div className="text-left">
                 <div className="text-sm text-muted-foreground">Overall Readiness Score</div>
                 <div className="text-lg font-semibold text-foreground">
-                  {Math.round((Object.values(scoring).reduce((total: number, category: any) => total + (category?.score || 0), 0) / 60) * 100)}% Ready
+                  {Math.round(((scoring.overall_score || 0) / 60) * 100)}% Ready
                 </div>
               </div>
             </div>
@@ -156,7 +156,9 @@ export function AssessmentReport() {
             Category Breakdown
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
-            {scoring && Object.entries(scoring).map(([category, data]: [string, any]) => (
+            {scoring && Object.entries(scoring)
+              .filter(([key]) => key !== 'overall_score' && key !== 'dynamic_weighting_applied')
+              .map(([category, data]: [string, any]) => (
               <Card key={category} className="bg-card border">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -165,21 +167,21 @@ export function AssessmentReport() {
                     </h4>
                     <Badge
                       variant="outline"
-                      className={cn("font-semibold border", getScoreColor(data?.score || 0))}
+                      className={cn("font-semibold border", getScoreColor(data?.total || 0))}
                     >
-                      {data?.score || 0}/10
+                      {data?.total || 0}/10
                     </Badge>
                   </div>
-                  <div className="text-sm text-muted-foreground mb-2">{data?.rationale || 'No details available'}</div>
+                  <div className="text-sm text-muted-foreground mb-2">{data?.level || 'No details available'}</div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className={cn(
                         "h-2 rounded-full transition-all duration-300",
-                        (data?.score || 0) >= 8 ? "bg-green-600" :
-                        (data?.score || 0) >= 6 ? "bg-blue-600" :
-                        (data?.score || 0) >= 4 ? "bg-yellow-600" : "bg-red-600"
+                        (data?.total || 0) >= 8 ? "bg-green-600" :
+                        (data?.total || 0) >= 6 ? "bg-blue-600" :
+                        (data?.total || 0) >= 4 ? "bg-yellow-600" : "bg-red-600"
                       )}
-                      style={{ width: `${((data?.score || 0) / 10) * 100}%` }}
+                      style={{ width: `${((data?.total || 0) / 10) * 100}%` }}
                     />
                   </div>
                 </CardContent>
@@ -187,19 +189,37 @@ export function AssessmentReport() {
             ))}
           </div>
 
-          {/* Focus Areas */}
-          <div className="mt-6">
-            {strategy?.focus_areas?.length && (
+          {/* Constraining and Enabling Factors */}
+          <div className="grid gap-4 md:grid-cols-2 mt-6">
+            {strategy?.constraining_factors?.length > 0 && (
+              <Card className="bg-destructive/5 border-destructive/20">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold text-destructive mb-2 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Areas to Address
+                  </h4>
+                  <ul className="space-y-1">
+                    {strategy.constraining_factors.map((factor: string, index: number) => (
+                      <li key={index} className="text-sm text-destructive/80">
+                        • {factor}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {strategy?.enabling_factors?.length > 0 && (
               <Card className="bg-green-50 border-green-200">
                 <CardContent className="p-4">
                   <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
                     <CheckCircle className="h-4 w-4" />
-                    Key Focus Areas
+                    Your Strengths
                   </h4>
                   <ul className="space-y-1">
-                    {strategy.focus_areas.map((area: string, index: number) => (
+                    {strategy.enabling_factors.map((factor: string, index: number) => (
                       <li key={index} className="text-sm text-green-600">
-                        • {area}
+                        • {factor}
                       </li>
                     ))}
                   </ul>
@@ -219,103 +239,65 @@ export function AssessmentReport() {
               Implementation Roadmap
             </h3>
             <div className="space-y-4">
-              {roadmap && (
-                <>
-                  {roadmap.immediate && (
-                    <Card className="bg-card border-l-4 border-l-primary">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className="flex-shrink-0">
-                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                              Phase 1
-                            </Badge>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-card-foreground">Immediate</h4>
-                              <span className="text-sm text-muted-foreground">(0-3 months)</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">• {roadmap.immediate}</p>
-                          </div>
+              {roadmap && Object.entries(roadmap).map(([phase, data]: [string, any], index) => (
+                <Card key={phase} className="bg-card border-l-4 border-l-primary">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                          Phase {index + 1}
+                        </Badge>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-card-foreground">{data?.focus || phase.replace('_', ' ')}</h4>
+                          <span className="text-sm text-muted-foreground">({data?.timeline || 'TBD'})</span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {roadmap.short_term && (
-                    <Card className="bg-card border-l-4 border-l-primary">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className="flex-shrink-0">
-                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                              Phase 2
-                            </Badge>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-card-foreground">Short Term</h4>
-                              <span className="text-sm text-muted-foreground">(3-6 months)</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">• {roadmap.short_term}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {roadmap.long_term && (
-                    <Card className="bg-card border-l-4 border-l-primary">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className="flex-shrink-0">
-                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                              Phase 3
-                            </Badge>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-card-foreground">Long Term</h4>
-                              <span className="text-sm text-muted-foreground">(6+ months)</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">• {roadmap.long_term}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
-              )}
+                        {data?.specific_recommendations?.length > 0 ? (
+                          <ul className="space-y-1">
+                            {data.specific_recommendations.map((rec: string, recIndex: number) => (
+                              <li key={recIndex} className="text-sm text-muted-foreground">
+                                • {rec}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">• {data?.focus || 'No specific recommendations provided'}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         )}
 
         <Separator />
 
-        {/* Implementation Barriers */}
-        {concerns?.implementation_barriers?.length && (
+        {/* Concerns Analysis */}
+        {concerns && (concerns.identified_concerns?.length > 0 || Object.keys(concerns.mitigation_strategies || {}).length > 0) && (
           <div>
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
-              Implementation Considerations
+              Addressing Your Concerns
             </h3>
             <div className="space-y-3">
-              <Card className="bg-yellow-50 border-yellow-200">
-                <CardContent className="p-4">
-                  <h4 className="font-medium text-yellow-800 mb-2">
-                    Risk Tolerance: {concerns.risk_tolerance ? formatCategoryName(concerns.risk_tolerance) : 'Not specified'}
-                  </h4>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-yellow-800">Implementation Barriers:</p>
-                    <ul className="space-y-1">
-                      {concerns.implementation_barriers.map((barrier: string, index: number) => (
-                        <li key={index} className="text-sm text-yellow-700">
-                          • {formatCategoryName(barrier)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+              {concerns.identified_concerns?.map((concern: string, index: number) => {
+                const mitigation = concerns.mitigation_strategies?.[concern];
+                return (
+                  <Card key={index} className="bg-yellow-50 border-yellow-200">
+                    <CardContent className="p-4">
+                      <h4 className="font-medium text-yellow-800 mb-2">
+                        {formatCategoryName(concern)}
+                      </h4>
+                      {mitigation && (
+                        <p className="text-sm text-yellow-700">{mitigation}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         )}

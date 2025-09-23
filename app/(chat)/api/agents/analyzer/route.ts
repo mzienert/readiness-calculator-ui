@@ -283,6 +283,11 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
     // Preserve thread (don't delete) for continued conversation
     console.log(`💾 [AnalyzerAgent] Preserving thread: ${thread.id}`);
 
+    // PRODUCTION DEBUG: Log the parsed assistant response
+    console.log('🔍 [AnalyzerAgent] PRODUCTION DEBUG - Parsed assistantResponse:', assistantResponse);
+    console.log('🔍 [AnalyzerAgent] PRODUCTION DEBUG - assistantResponse.scoring:', assistantResponse.scoring);
+    console.log('🔍 [AnalyzerAgent] PRODUCTION DEBUG - assistantResponse.strategy_recommendation:', assistantResponse.strategy_recommendation);
+
     // Return in format expected by orchestrator
     const result = {
       response: assistantResponse.message,
@@ -295,6 +300,9 @@ Please analyze this data using the 6-category scoring framework with dynamic wei
       isComplete: assistantResponse.analysis_complete,
       tokenUsage,
     };
+
+    // PRODUCTION DEBUG: Log the final result being returned
+    console.log('🔍 [AnalyzerAgent] PRODUCTION DEBUG - Final result.analysisData:', result.analysisData);
 
     const endTime = Date.now();
     const duration = endTime - startTime;

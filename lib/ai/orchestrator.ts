@@ -295,6 +295,12 @@ To get started, could you tell me a bit about your business? For example, how ma
             hasTokenUsage: !!result.tokenUsage,
           });
 
+          // PRODUCTION DEBUG: Log the exact analysis data structure
+          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Raw analysisData:', result.analysisData);
+          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Scoring data:', result.analysisData?.scoring);
+          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Strategy data:', result.analysisData?.strategy_recommendation);
+          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Roadmap data:', result.analysisData?.roadmap);
+
           // Update Redux state with analysis results
           const updates: Partial<AgentState> = {};
           updates.analyzer = {
@@ -304,6 +310,9 @@ To get started, could you tell me a bit about your business? For example, how ma
             concerns_analysis: result.analysisData?.concerns_analysis || {},
             analysis_complete: result.isComplete,
           };
+
+          // PRODUCTION DEBUG: Log what we're storing in Redux
+          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Updates to store:', updates.analyzer);
 
           // Handle completion when analysis is complete (temporary solution)
           if (result.isComplete) {
