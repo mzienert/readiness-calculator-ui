@@ -13,6 +13,22 @@ export function PasswordRequirements({ password = '', className }: PasswordRequi
       text: 'At least 6 characters',
       met: password.length >= 6,
     },
+    {
+      text: 'One uppercase letter',
+      met: /[A-Z]/.test(password),
+    },
+    {
+      text: 'One lowercase letter',
+      met: /[a-z]/.test(password),
+    },
+    {
+      text: 'One number',
+      met: /[0-9]/.test(password),
+    },
+    {
+      text: 'One special character',
+      met: /[^A-Za-z0-9]/.test(password),
+    },
   ];
 
   return (
@@ -21,9 +37,9 @@ export function PasswordRequirements({ password = '', className }: PasswordRequi
         Password requirements:
       </p>
       <ul className="space-y-1">
-        {requirements.map((requirement, index) => (
+        {requirements.map((requirement) => (
           <li
-            key={index}
+            key={requirement.text}
             className={cn(
               'text-sm flex items-center gap-2',
               requirement.met
