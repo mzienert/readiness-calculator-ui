@@ -48,33 +48,33 @@ export function AssessmentReport() {
 
   // Helper function to get strategy color
   const getStrategyColor = (strategy: string) => {
-    if (!strategy) return 'bg-gray-100 text-gray-800 border-gray-300';
+    if (!strategy) return 'bg-muted text-muted-foreground border-muted';
     switch (strategy.toLowerCase()) {
       case 'efficiency strategy':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-green-50 text-green-700 border-green-200';
       case 'productivity strategy':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'effectiveness strategy':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'growth strategy':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
+        return 'bg-orange-50 text-orange-700 border-orange-200';
       case 'expert strategy':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-red-50 text-red-700 border-red-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-muted text-muted-foreground border-muted';
     }
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-lg">
+    <Card className="w-full max-w-4xl mx-auto bg-card border shadow-sm">
       <CardHeader className="text-center pb-6">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <CheckCircle className="h-8 w-8 text-green-500" />
-          <CardTitle className="text-2xl font-bold text-gray-800">
+          <CheckCircle className="h-8 w-8 text-green-600" />
+          <CardTitle className="text-2xl font-bold text-foreground">
             AI Readiness Assessment Complete
           </CardTitle>
         </div>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Your personalized AI adoption strategy and roadmap
         </p>
       </CardHeader>
@@ -83,13 +83,13 @@ export function AssessmentReport() {
         {/* Hero Section - Overall Score & Strategy */}
         <div className="text-center space-y-4">
           {scoring.overall_score && (
-            <div className="inline-flex items-center gap-4 p-4 bg-white rounded-lg border shadow-sm">
-              <div className="text-3xl font-bold text-gray-800">
+            <div className="inline-flex items-center gap-4 p-4 bg-card rounded-lg border shadow-sm">
+              <div className="text-3xl font-bold text-foreground">
                 {scoring.overall_score}/60
               </div>
               <div className="text-left">
-                <div className="text-sm text-gray-600">Overall Readiness Score</div>
-                <div className="text-lg font-semibold text-gray-800">
+                <div className="text-sm text-muted-foreground">Overall Readiness Score</div>
+                <div className="text-lg font-semibold text-foreground">
                   {Math.round((scoring.overall_score / 60) * 100)}% Ready
                 </div>
               </div>
@@ -104,7 +104,7 @@ export function AssessmentReport() {
               <TrendingUp className="h-5 w-5 mr-2" />
               Recommended: {strategy?.primary_strategy || 'Strategy TBD'}
             </Badge>
-            <p className="text-gray-700 max-w-2xl leading-relaxed">
+            <p className="text-muted-foreground max-w-2xl leading-relaxed">
               {strategy?.rationale || 'Analysis in progress...'}
             </p>
           </div>
@@ -122,10 +122,10 @@ export function AssessmentReport() {
             {Object.entries(scoring)
               .filter(([key]) => key !== 'overall_score' && key !== 'dynamic_weighting_applied')
               .map(([category, data]: [string, any]) => (
-                <Card key={category} className="bg-white border">
+                <Card key={category} className="bg-card border">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-gray-800">
+                      <h4 className="font-medium text-card-foreground">
                         {formatCategoryName(category)}
                       </h4>
                       <Badge
@@ -135,14 +135,14 @@ export function AssessmentReport() {
                         {data.total}/10
                       </Badge>
                     </div>
-                    <div className="text-sm text-gray-600 mb-2">{data.level}</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="text-sm text-muted-foreground mb-2">{data.level}</div>
+                    <div className="w-full bg-muted rounded-full h-2">
                       <div
                         className={cn(
                           "h-2 rounded-full transition-all duration-300",
-                          data.total >= 8 ? "bg-green-500" :
-                          data.total >= 6 ? "bg-blue-500" :
-                          data.total >= 4 ? "bg-yellow-500" : "bg-red-500"
+                          data.total >= 8 ? "bg-green-600" :
+                          data.total >= 6 ? "bg-blue-600" :
+                          data.total >= 4 ? "bg-yellow-600" : "bg-red-600"
                         )}
                         style={{ width: `${(data.total / 10) * 100}%` }}
                       />
@@ -155,15 +155,15 @@ export function AssessmentReport() {
           {/* Constraining and Enabling Factors */}
           <div className="grid gap-4 md:grid-cols-2 mt-6">
             {strategy?.constraining_factors && strategy.constraining_factors.length > 0 && (
-              <Card className="bg-red-50 border-red-200">
+              <Card className="bg-destructive/5 border-destructive/20">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+                  <h4 className="font-semibold text-destructive mb-2 flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" />
                     Areas to Address
                   </h4>
                   <ul className="space-y-1">
                     {strategy.constraining_factors.map((factor: string, index: number) => (
-                      <li key={index} className="text-sm text-red-700">
+                      <li key={index} className="text-sm text-destructive/80">
                         • {factor}
                       </li>
                     ))}
@@ -175,13 +175,13 @@ export function AssessmentReport() {
             {strategy?.enabling_factors && strategy.enabling_factors.length > 0 && (
               <Card className="bg-green-50 border-green-200">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                  <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
                     <CheckCircle className="h-4 w-4" />
                     Your Strengths
                   </h4>
                   <ul className="space-y-1">
                     {strategy.enabling_factors.map((factor: string, index: number) => (
-                      <li key={index} className="text-sm text-green-700">
+                      <li key={index} className="text-sm text-green-600">
                         • {factor}
                       </li>
                     ))}
@@ -203,23 +203,23 @@ export function AssessmentReport() {
             </h3>
             <div className="space-y-4">
               {Object.entries(roadmap).map(([phase, data]: [string, any], index) => (
-                <Card key={phase} className="bg-white border-l-4 border-l-blue-500">
+                <Card key={phase} className="bg-card border-l-4 border-l-primary">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
                           Phase {index + 1}
                         </Badge>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-semibold text-gray-800">{data.focus}</h4>
-                          <span className="text-sm text-gray-500">({data.timeline})</span>
+                          <h4 className="font-semibold text-card-foreground">{data.focus}</h4>
+                          <span className="text-sm text-muted-foreground">({data.timeline})</span>
                         </div>
                         {data.specific_recommendations && (
                           <ul className="space-y-1">
                             {data.specific_recommendations.map((rec: string, recIndex: number) => (
-                              <li key={recIndex} className="text-sm text-gray-700">
+                              <li key={recIndex} className="text-sm text-muted-foreground">
                                 • {rec}
                               </li>
                             ))}
@@ -247,13 +247,13 @@ export function AssessmentReport() {
               {concerns.identified_concerns.map((concern: string, index: number) => {
                 const mitigation = concerns.mitigation_strategies?.[concern];
                 return (
-                  <Card key={index} className="bg-amber-50 border-amber-200">
+                  <Card key={index} className="bg-yellow-50 border-yellow-200">
                     <CardContent className="p-4">
-                      <h4 className="font-medium text-amber-800 mb-2">
+                      <h4 className="font-medium text-yellow-800 mb-2">
                         {formatCategoryName(concern)}
                       </h4>
                       {mitigation && (
-                        <p className="text-sm text-amber-700">{mitigation}</p>
+                        <p className="text-sm text-yellow-700">{mitigation}</p>
                       )}
                     </CardContent>
                   </Card>
