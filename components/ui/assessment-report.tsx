@@ -28,6 +28,26 @@ export function AssessmentReport() {
     return null;
   }
 
+  // Production debugging - log to console and show debug info
+  console.log('🚀 PRODUCTION AssessmentReport - isComplete:', isComplete);
+  console.log('🚀 PRODUCTION AssessmentReport - analyzerData exists:', !!analyzerData);
+  console.log('🚀 PRODUCTION AssessmentReport - scoring exists:', !!scoring);
+  console.log('🚀 PRODUCTION AssessmentReport - strategy exists:', !!strategy);
+  console.log('🚀 PRODUCTION AssessmentReport - roadmap exists:', !!roadmap);
+  console.log('🚀 PRODUCTION AssessmentReport - concerns exists:', !!concerns);
+
+  // Show debug data in a visible way for production
+  const debugInfo = {
+    isComplete,
+    hasAnalyzerData: !!analyzerData,
+    hasScoring: !!scoring,
+    hasStrategy: !!strategy,
+    hasRoadmap: !!roadmap,
+    hasConcerns: !!concerns,
+    scoringKeys: scoring ? Object.keys(scoring) : [],
+    strategyKeys: strategy ? Object.keys(strategy) : [],
+  };
+
 
   // Helper function to format category names
   const formatCategoryName = (key: string) => {
@@ -81,6 +101,20 @@ export function AssessmentReport() {
       </CardHeader>
 
       <CardContent className="space-y-8">
+        {/* Temporary Debug Info for Production */}
+        <Card className="bg-red-50 border-red-200">
+          <CardContent className="p-4">
+            <h4 className="font-semibold text-red-800 mb-2">Debug Info (Production)</h4>
+            <pre className="text-xs text-red-700 whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
+            {analyzerData && (
+              <details className="mt-2">
+                <summary className="text-sm font-medium text-red-800 cursor-pointer">Raw Analyzer Data</summary>
+                <pre className="text-xs text-red-700 whitespace-pre-wrap mt-2">{JSON.stringify(analyzerData, null, 2)}</pre>
+              </details>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Hero Section - Overall Score & Strategy */}
         <div className="text-center space-y-4">
           {/* Calculate overall score from available data */}
