@@ -108,7 +108,7 @@ export function AssessmentReport() {
               Recommended: {strategy?.tier ? `${strategy.tier} Strategy` : 'Strategy TBD'}
             </Badge>
             <p className="text-muted-foreground max-w-2xl leading-relaxed">
-              {strategy?.focus_areas?.length > 0 ? `Focus areas: ${strategy.focus_areas.join(', ')}` : 'Analysis in progress...'}
+              {strategy?.focus_areas?.length ? `Focus areas: ${strategy.focus_areas.join(', ')}` : 'Analysis in progress...'}
             </p>
           </div>
         </div>
@@ -155,7 +155,7 @@ export function AssessmentReport() {
 
           {/* Focus Areas */}
           <div className="mt-6">
-            {strategy?.focus_areas && strategy.focus_areas.length > 0 && (
+            {strategy?.focus_areas?.length && (
               <Card className="bg-green-50 border-green-200">
                 <CardContent className="p-4">
                   <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
@@ -258,7 +258,7 @@ export function AssessmentReport() {
         <Separator />
 
         {/* Implementation Barriers */}
-        {concerns && concerns.implementation_barriers && concerns.implementation_barriers.length > 0 && (
+        {concerns?.implementation_barriers?.length && (
           <div>
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
