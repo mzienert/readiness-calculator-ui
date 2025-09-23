@@ -8,6 +8,7 @@ import {
   selectAnalyzerConcerns,
   selectStrategyRecommendation,
   selectAnalysisComplete,
+  selectAssessmentScore,
 } from '@/lib/store/selectors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,17 @@ export function AssessmentReport() {
   const concerns = useAppSelector(selectAnalyzerConcerns);
   const strategy = useAppSelector(selectStrategyRecommendation);
   const isComplete = useAppSelector(selectAnalysisComplete);
+
+  // Debug: Compare with the progress component's selector
+  const assessmentScore = useAppSelector(selectAssessmentScore);
+
+  // PRODUCTION DEBUG: Compare selectors
+  console.log('🔍 [AssessmentReport] SELECTOR COMPARISON:');
+  console.log('- Raw scoring:', scoring);
+  console.log('- Transformed assessmentScore:', assessmentScore);
+  console.log('- Raw strategy:', strategy);
+  console.log('- Raw roadmap:', roadmap);
+  console.log('- Raw concerns:', concerns);
 
   // Only render if analysis is complete and we have data
   if (!isComplete || !analyzerData) {
@@ -191,7 +203,7 @@ export function AssessmentReport() {
 
           {/* Constraining and Enabling Factors */}
           <div className="grid gap-4 md:grid-cols-2 mt-6">
-            {strategy?.constraining_factors?.length > 0 && (
+            {strategy?.constraining_factors?.length && (
               <Card className="bg-destructive/5 border-destructive/20">
                 <CardContent className="p-4">
                   <h4 className="font-semibold text-destructive mb-2 flex items-center gap-2">
@@ -209,7 +221,7 @@ export function AssessmentReport() {
               </Card>
             )}
 
-            {strategy?.enabling_factors?.length > 0 && (
+            {strategy?.enabling_factors?.length && (
               <Card className="bg-green-50 border-green-200">
                 <CardContent className="p-4">
                   <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
