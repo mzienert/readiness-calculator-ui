@@ -12,6 +12,7 @@ import {
   addTokenUsage,
 } from '@/lib/store/slices/orchestrator';
 import { threadsApi, agentsApi } from '@/lib/services/api';
+import { analyticsApi } from '@/lib/services/analytics';
 
 export class AssessmentOrchestrator {
   private dispatch: AppDispatch;
@@ -165,6 +166,13 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Handle agent transition
           if (result.isComplete) {
+            // Save anonymized qualifier snapshot
+            await analyticsApi.saveSnapshot({
+              sessionId: currentSession.sessionId,
+              agentType: 'qualifier',
+              snapshotData: updates.qualifier || {},
+            });
+
             // Create new thread for assessor agent
             const { threadId: newThreadId } = await threadsApi.create();
             console.log(
@@ -239,6 +247,13 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Handle agent transition when assessment is complete
           if (result.isComplete) {
+            // Save anonymized assessor snapshot
+            await analyticsApi.saveSnapshot({
+              sessionId: currentSession.sessionId,
+              agentType: 'assessor',
+              snapshotData: updates.assessor || {},
+            });
+
             updates.currentAgent = 'analyzer';
             updates.phase = 'analyzing';
             // TODO: Add transition message about starting analysis
@@ -316,6 +331,13 @@ To get started, could you tell me a bit about your business? For example, how ma
 
           // Handle completion when analysis is complete (temporary solution)
           if (result.isComplete) {
+            // Save anonymized analyzer snapshot
+            await analyticsApi.saveSnapshot({
+              sessionId: currentSession.sessionId,
+              agentType: 'analyzer',
+              snapshotData: updates.analyzer || {},
+            });
+
             updates.currentAgent = 'analyzer'; // Stay on analyzer since we're showing temp report
             updates.phase = 'complete';
             console.log(`🎯 [Orchestrator] ANALYSIS COMPLETE: Showing temporary assessment report`);
