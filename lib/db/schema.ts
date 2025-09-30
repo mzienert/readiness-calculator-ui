@@ -44,3 +44,15 @@ export const message = pgTable('Message_v2', {
 
 export type DBMessage = InferSelectModel<typeof message>;
 
+export const assessmentSnapshot = pgTable('AssessmentSnapshot', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  sessionId: varchar('sessionId', { length: 128 }).notNull(),
+  agentType: varchar('agentType', {
+    enum: ['qualifier', 'assessor', 'analyzer'],
+  }).notNull(),
+  snapshotData: json('snapshotData').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export type AssessmentSnapshot = InferSelectModel<typeof assessmentSnapshot>;
+
