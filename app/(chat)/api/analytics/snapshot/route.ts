@@ -1,5 +1,4 @@
-import { db } from '@/lib/db';
-import { assessmentSnapshot } from '@/lib/db/schema';
+import { saveAssessmentSnapshot } from '@/lib/db/queries';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -24,15 +23,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert anonymized snapshot into database
-    const [snapshot] = await db
-      .insert(assessmentSnapshot)
-      .values({
-        sessionId,
-        agentType,
-        snapshotData,
-        createdAt: new Date(),
-      })
-      .returning();
+    const snapshot = await saveAssessmentSnapshot({
+      sessionId,
+      agentType,
+      snapshotData,
+    });
 
     console.log(`📊 [Analytics] Saved ${agentType} snapshot for session ${sessionId}`);
 

@@ -22,6 +22,8 @@ import {
   message,
   type DBMessage,
   type Chat,
+  assessmentSnapshot,
+  type AssessmentSnapshot,
 } from './schema';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
@@ -305,6 +307,35 @@ export async function getMessageCountByUserId({
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get message count by user id',
+    );
+  }
+}
+
+export async function saveAssessmentSnapshot({
+  sessionId,
+  agentType,
+  snapshotData,
+}: {
+  sessionId: string;
+  agentType: 'qualifier' | 'assessor' | 'analyzer';
+  snapshotData: Record<string, any>;
+}): Promise<AssessmentSnapshot> {
+  try {
+    const [snapshot] = await db
+      .insert(assessmentSnapshot)
+      .values({
+        sessionId,
+        agentType,
+        snapshotData,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return snapshot;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to save assessment snapshot',
     );
   }
 }
