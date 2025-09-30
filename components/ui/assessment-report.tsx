@@ -28,12 +28,12 @@ export function AssessmentReport() {
   const assessmentScore = useAppSelector(selectAssessmentScore);
 
   // PRODUCTION DEBUG: Compare selectors
-  console.log('🔍 [AssessmentReport] SELECTOR COMPARISON:');
-  console.log('- Raw scoring:', scoring);
-  console.log('- Transformed assessmentScore:', assessmentScore);
-  console.log('- Raw strategy:', strategy);
-  console.log('- Raw roadmap:', roadmap);
-  console.log('- Raw concerns:', concerns);
+  // console.log('🔍 [AssessmentReport] SELECTOR COMPARISON:');
+  // console.log('- Raw scoring:', scoring);
+  // console.log('- Transformed assessmentScore:', assessmentScore);
+  // console.log('- Raw strategy:', strategy);
+  // console.log('- Raw roadmap:', roadmap);
+  // console.log('- Raw concerns:', concerns);
 
   // Only render if analysis is complete and we have data
   if (!isComplete || !analyzerData) {
@@ -114,7 +114,7 @@ export function AssessmentReport() {
 
       <CardContent className="space-y-8">
         {/* Temporary Debug Info for Production */}
-        <Card className="bg-red-50 border-red-200">
+        {/* <Card className="bg-red-50 border-red-200">
           <CardContent className="p-4">
             <h4 className="font-semibold text-red-800 mb-2">Debug Info (Production)</h4>
             <pre className="text-xs text-red-700 whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
@@ -125,7 +125,7 @@ export function AssessmentReport() {
               </details>
             )}
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Hero Section - Overall Score & Strategy */}
         <div className="text-center space-y-4">
@@ -148,13 +148,13 @@ export function AssessmentReport() {
           <div className="flex flex-col items-center gap-3">
             <Badge
               variant="outline"
-              className={cn("text-lg px-4 py-2 font-semibold border-2", getStrategyColor(strategy?.tier + ' Strategy' || ''))}
+              className={cn("text-lg px-4 py-2 font-semibold border-2", getStrategyColor(strategy?.primary_strategy || ''))}
             >
               <TrendingUp className="h-5 w-5 mr-2" />
-              Recommended: {strategy?.tier ? `${strategy.tier} Strategy` : 'Strategy TBD'}
+              Recommended: {strategy?.primary_strategy || 'Strategy TBD'}
             </Badge>
             <p className="text-muted-foreground max-w-2xl leading-relaxed">
-              {strategy?.focus_areas?.length ? `Focus areas: ${strategy.focus_areas.join(', ')}` : 'Analysis in progress...'}
+              {strategy?.rationale || 'Analysis in progress...'}
             </p>
           </div>
         </div>
