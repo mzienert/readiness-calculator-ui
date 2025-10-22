@@ -155,6 +155,7 @@ export function useOrchestratedChat({
   return {
     ...chat,
     sendMessage,
+    status: isProcessing ? 'submitted' : chat.status,
     isProcessing,
   };
 }
