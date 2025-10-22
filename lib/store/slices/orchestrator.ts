@@ -1,63 +1,34 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import type { AgentState, TokenUsage } from '@/lib/ai/schemas';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
+// Simplified state for UI + SDK session mirroring
 interface OrchestratorState {
-  // Current session state
-  currentSession: AgentState | null;
+  // Session data (mirrored from SDK for UI)
+  currentAgent: string | null;
+  currentPhase: string | null;
+  sessionData: {
+    qualifier?: any;
+    assessor?: any;
+    analyzer?: any;
+  } | null;
 
-  // Processing state
-  isProcessing: boolean;
-  error: string | null;
-
-  // UI state
+  // Pure UI state
   showProgress: boolean;
   sidebarOpen: boolean;
-
-  // History (if needed)
-  recentSessions: string[];
 }
 
 const initialState: OrchestratorState = {
-  currentSession: null,
-  isProcessing: false,
-  error: null,
+  currentAgent: null,
+  currentPhase: null,
+  sessionData: null,
   showProgress: true,
   sidebarOpen: false,
-  recentSessions: [],
 };
-
-// Database thunks (placeholders for future implementation)
-export const loadSessionFromDB = createAsyncThunk(
-  'orchestrator/loadSessionFromDB',
-  async (sessionId: string) => {
-    // TODO: Implement database loading
-    console.log('Loading session from DB:', sessionId);
-    return null; // Return AgentState | null
-  },
-);
-
-export const saveSessionToDB = createAsyncThunk(
-  'orchestrator/saveSessionToDB',
-  async (state: AgentState) => {
-    // TODO: Implement database persistence
-    console.log('Saving session to DB:', state.sessionId);
-    return state;
-  },
-);
-
-export const resetSessionInDB = createAsyncThunk(
-  'orchestrator/resetSessionInDB',
-  async (sessionId: string) => {
-    // TODO: Implement database reset
-    console.log('Resetting session in DB:', sessionId);
-  },
-);
 
 const orchestratorSlice = createSlice({
   name: 'orchestrator',
   initialState,
   reducers: {
-    // UI actions
+    // UI actions (unchanged)
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;
     },
@@ -65,94 +36,35 @@ const orchestratorSlice = createSlice({
       state.showProgress = action.payload;
     },
 
-    // Session management
-    initializeSession: (
+    // NEW: Sync session data from SDK
+    setSessionData: (
       state,
-      action: PayloadAction<{ userId: string; threadId?: string }>,
+      action: PayloadAction<{
+        currentAgent: string;
+        currentPhase: string;
+        data: any;
+      }>,
     ) => {
-      state.currentSession = {
-        currentAgent: 'qualifier',
-        phase: 'qualifying',
-        responses: [],
-        tokenUsage: {
-          prompt_tokens: 0,
-          completion_tokens: 0,
-          total_tokens: 0,
-        },
-        sessionId: crypto.randomUUID(),
-        userId: action.payload.userId,
-        threadId: action.payload.threadId,
-        startedAt: new Date().toISOString(),
-      };
-      state.error = null;
-    },
+      state.currentAgent = action.payload.currentAgent;
+      state.currentPhase = action.payload.currentPhase;
 
-    updateSessionState: (state, action: PayloadAction<Partial<AgentState>>) => {
-      if (state.currentSession) {
-        Object.assign(state.currentSession, action.payload);
+      // Store agent-specific data
+      const agentName = action.payload.currentAgent.toLowerCase() as 'qualifier' | 'assessor' | 'analyzer';
+      if (!state.sessionData) {
+        state.sessionData = {};
       }
+      state.sessionData[agentName] = action.payload.data;
     },
 
     clearSession: (state) => {
-      state.currentSession = null;
-      state.error = null;
+      state.currentAgent = null;
+      state.currentPhase = null;
+      state.sessionData = null;
     },
-
-    clearError: (state) => {
-      state.error = null;
-    },
-
-    // Token usage tracking
-    addTokenUsage: (state, action: PayloadAction<TokenUsage>) => {
-      if (state.currentSession) {
-        state.currentSession.tokenUsage.prompt_tokens += action.payload.prompt_tokens;
-        state.currentSession.tokenUsage.completion_tokens += action.payload.completion_tokens;
-        state.currentSession.tokenUsage.total_tokens += action.payload.total_tokens;
-      }
-    },
-  },
-
-  extraReducers: (builder) => {
-    builder
-      // Load session from DB
-      .addCase(loadSessionFromDB.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.currentSession = action.payload;
-        }
-      })
-      .addCase(loadSessionFromDB.rejected, (state, action) => {
-        state.error = action.error.message || 'Failed to load session';
-      })
-
-      // Save session to DB
-      .addCase(saveSessionToDB.fulfilled, (state, action) => {
-        state.currentSession = action.payload;
-        if (!state.recentSessions.includes(action.payload.sessionId)) {
-          state.recentSessions.unshift(action.payload.sessionId);
-        }
-      })
-      .addCase(saveSessionToDB.rejected, (state, action) => {
-        state.error = action.error.message || 'Failed to save session';
-      })
-
-      // Reset session in DB
-      .addCase(resetSessionInDB.fulfilled, (state) => {
-        state.currentSession = null;
-      })
-      .addCase(resetSessionInDB.rejected, (state, action) => {
-        state.error = action.error.message || 'Failed to reset session';
-      });
   },
 });
 
-export const {
-  toggleSidebar,
-  setShowProgress,
-  initializeSession,
-  updateSessionState,
-  clearSession,
-  clearError,
-  addTokenUsage,
-} = orchestratorSlice.actions;
+export const { toggleSidebar, setShowProgress, setSessionData, clearSession } =
+  orchestratorSlice.actions;
 
 export default orchestratorSlice.reducer;

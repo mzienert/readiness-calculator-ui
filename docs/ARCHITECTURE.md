@@ -16,7 +16,8 @@ The Readiness Calculator UI is a Next.js 15 application built for AI-powered rea
 - **Authentication**: NextAuth.js
 - **State Management**: Redux Toolkit with React-Redux
 - **Deployment**: Vercel
-- **AI**: OpenAI API
+- **AI**: OpenAI Agents SDK (JavaScript/TypeScript)
+- **Structured Outputs**: Zod for schema validation
 
 ## Authentication
 
@@ -130,14 +131,126 @@ interface OrchestratorState {
 }
 ```
 
-#### 4. Clean Multi-Agent Architecture with Separated Concerns
+#### 4. OpenAI Agents SDK Architecture (Current Implementation)
 
-The system uses a clean architecture pattern that separates orchestration, AI processing, and data persistence:
+**Migration Date:** October 2025  
+**Status:** ✅ Complete
 
-- **Client-Side Orchestrator**: Coordinates agent API calls and manages Redux state transitions
-- **Dedicated Agent APIs**: Each agent has its own endpoint for specific AI processing logic
-- **Pure Data Layer**: Dedicated endpoint for chat creation and message persistence
-- **Real-Time UI Updates**: Redux integration provides immediate feedback during orchestration
+The system now uses the **OpenAI Agents SDK** for declarative multi-agent orchestration, eliminating ~1,480 lines of manual orchestration code while providing superior functionality.
+
+##### SDK Benefits
+
+- **Automatic Handoffs**: Agents automatically hand off to each other based on completion criteria
+- **Built-in Session Management**: SDK manages conversation history and context via `RunState`
+- **Type-Safe Structured Outputs**: Zod schemas ensure type safety and validation
+- **Simplified Code**: Single unified API endpoint replaces 3 individual agent routes
+- **No Manual JSON Parsing**: SDK handles all structured output parsing
+- **Better Error Handling**: SDK provides robust error recovery
+
+##### Agent Definitions
+
+Agents are defined declaratively in `lib/agents/index.ts`:
+
+```typescript
+import { Agent } from '@openai/agents';
+import { z } from 'zod';
+
+// Define structured output schema with Zod
+const QualifierOutputSchema = z.object({
+  message: z.string(),
+  employee_count: z.string(),
+  revenue_band: z.string(),
+  // ... other fields
+});
+
+// Create agent with schema
+export const qualifierAgent = new Agent({
+  name: 'Qualifier',
+  instructions: '...', // From agent_config.json
+  model: 'gpt-4o-mini',
+  outputType: QualifierOutputSchema,
+  handoffs: [assessorAgent], // Automatic handoff target
+});
+```
+
+##### Unified API Endpoint
+
+All agents are accessed through a single endpoint (`/api/assessment`) that:
+1. Authenticates the user
+2. Manages SDK session state
+3. Runs the appropriate agent
+4. Handles automatic handoffs
+5. Returns structured, validated data
+
+```typescript
+// Single endpoint replaces 3 old routes
+export async function POST(request: NextRequest) {
+  const session = await auth();
+  const { message, sessionId } = await request.json();
+  
+  // Get or create SDK session
+  const state = getSession(sessionId);
+  const agent = state ? state._currentAgent : agents.qualifier;
+  
+  // Run agent (handoffs happen automatically)
+  const result = await run(agent, input);
+  
+  // Save state and return
+  setSession(sessionId, result.state);
+  return Response.json({
+    message: result.finalOutput.message,
+    data: result.finalOutput,
+    currentAgent: result.lastAgent.name,
+  });
+}
+```
+
+##### State Management
+
+**Redux Role (Simplified):**
+- Redux now only mirrors essential SDK session data for UI components
+- No complex orchestration logic - just UI state and data display
+- SDK `RunState` is the source of truth for conversation history
+
+**Before SDK:** 389 lines of manual orchestration  
+**After SDK:** 62 lines of simplified UI state mirroring
+
+##### Configuration Management
+
+Agent instructions stored in `lib/agents/agent_config.json` for easy editing:
+
+```json
+{
+  "agents": {
+    "qualifier": {
+      "name": "Qualifier",
+      "model": "gpt-4o-mini",
+      "instructions": "...",
+      "handoffDescription": "..."
+    }
+  }
+}
+```
+
+Future enhancement: Store in database for non-technical user editing via admin UI.
+
+---
+
+#### 5. Legacy Architecture (Pre-SDK, Deprecated)
+
+<details>
+<summary>Click to view legacy manual orchestration architecture (deprecated October 2025)</summary>
+
+The system previously used a manual orchestration pattern with separated concerns:
+
+- **Client-Side Orchestrator** (`lib/ai/orchestrator.ts` - DELETED): Coordinated agent API calls and managed Redux state transitions
+- **Dedicated Agent APIs** (`app/(chat)/api/agents/**/route.ts` - DELETED): Each agent had its own endpoint
+- **Pure Data Layer**: Dedicated endpoint for chat creation and message persistence (still used)
+- **Real-Time UI Updates**: Redux integration provided feedback during orchestration
+
+This approach required ~1,480 lines of code for manual thread management, JSON parsing, handoff logic, and state coordination - all now handled automatically by the SDK.
+
+</details>
 - **Cost Optimization**: Client-side coordination with targeted API calls for AI processing
 
 **Architecture Components**:

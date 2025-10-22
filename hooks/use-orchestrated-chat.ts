@@ -1,14 +1,12 @@
 'use client';
 
-import { useChat, type UseChatHelpers } from '@ai-sdk/react';
+import { useChat } from '@ai-sdk/react';
 import { useCallback, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { v4 as uuidv4 } from 'uuid';
-import { AssessmentOrchestrator } from '@/lib/ai/orchestrator';
 import { useAppDispatch } from '@/lib/store/hooks';
-import { store } from '@/lib/store';
+import { setSessionData } from '@/lib/store/slices/orchestrator';
 import type { ChatMessage } from '@/lib/types';
-import type { CoreMessage } from 'ai';
 import { toast } from '@/components/toast';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from '@/components/sidebar-history';
@@ -25,32 +23,21 @@ export function useOrchestratedChat({
   initialMessages,
   userId,
 }: UseOrchestratedChatProps) {
-  // Redux integration for client-side orchestrator
   const dispatch = useAppDispatch();
   const { mutate } = useSWRConfig();
-  const [orchestrator] = useState(
-    () => new AssessmentOrchestrator(dispatch, () => store.getState()),
-  );
-
-  // Track processing state
   const [isProcessing, setIsProcessing] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  // Use the regular useChat hook but intercept its behavior
+  // Use standard useChat hook
   const chat = useChat<ChatMessage>({
     id,
     messages: initialMessages,
     generateId: uuidv4,
-
-    // Custom send function that processes through orchestrator
   });
 
-  // Override the sendMessage function to use orchestrator + new chat-history endpoint
+  // New sendMessage using SDK endpoint
   const sendMessage = useCallback(
     async (message: any) => {
-      console.log('🎯🎯🎯 [useOrchestratedChat] SENDMESSAGE CALLED!!!');
-      console.log('🎯🎯🎯 [useOrchestratedChat] message:', message);
-      console.log('🎯🎯🎯 [useOrchestratedChat] isProcessing:', isProcessing);
-
       if (isProcessing) {
         toast({
           type: 'error',
@@ -62,82 +49,143 @@ export function useOrchestratedChat({
       setIsProcessing(true);
 
       try {
+        // Extract text from message
+        let messageText = '';
+        if (message.content) {
+          messageText = message.content;
+        } else if (message.parts && message.parts.length > 0) {
+          const textPart = message.parts.find((p: any) => p.type === 'text');
+          messageText = textPart?.text || '';
+        }
+
+        if (!messageText) {
+          toast({
+            type: 'error',
+            description: 'Please enter a message.',
+          });
+          setIsProcessing(false);
+          return;
+        }
+
         // Create user message
         const userMessage: ChatMessage = {
           id: message.id || uuidv4(),
           role: 'user',
           parts: message.parts || [
-            { type: 'text', text: message.content || '' },
+            { type: 'text', text: messageText },
           ],
           metadata: { createdAt: new Date().toISOString() },
         };
 
-        // Add user message to chat immediately for UI responsiveness
+        // Add user message to UI immediately
         chat.setMessages([...chat.messages, userMessage]);
 
-        // Get conversation context for orchestrator
-        const coreMessages: CoreMessage[] = [...chat.messages, userMessage].map(
-          (msg) => ({
-            role: msg.role,
-            content: msg.parts
-              .map((part) => (part.type === 'text' ? part.text : ''))
-              .join(''),
+        // Call unified SDK endpoint
+        const response = await fetch('/api/assessment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: messageText,
+            sessionId: sessionId,
+            chatId: id,
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('❌ [Chat Hook] API returned error:', response.status, response.statusText);
+          throw new Error('Assessment API failed');
+        }
+
+        const result = await response.json();
+        
+        console.log('✅ [Chat Hook] Received response from API');
+        console.log('📥 [Chat Hook] Response details:', {
+          currentAgent: result.currentAgent,
+          sessionId: result.sessionId,
+          isComplete: result.isComplete,
+          messageLength: result.message?.length || 0,
+          dataKeys: Object.keys(result.data || {}),
+        });
+        console.log('📄 [Chat Hook] Full response:', JSON.stringify(result, null, 2));
+
+        // Update session ID
+        setSessionId(result.sessionId);
+        console.log('🆔 [Chat Hook] Session ID updated:', result.sessionId);
+
+        // Update Redux with session data (for UI components)
+        console.log('📦 [Chat Hook] Dispatching to Redux...');
+        dispatch(
+          setSessionData({
+            currentAgent: result.currentAgent,
+            currentPhase: result.currentAgent.toLowerCase(),
+            data: result.data,
           }),
         );
+        console.log('✅ [Chat Hook] Redux updated with:', {
+          currentAgent: result.currentAgent,
+          currentPhase: result.currentAgent.toLowerCase(),
+          dataKeys: Object.keys(result.data || {}),
+        });
 
-        // Process through CLIENT-SIDE orchestrator (calls agent endpoints)
-        console.log('🎯 [useOrchestratedChat] About to call orchestrator.processMessage');
-        console.log('🎯 [useOrchestratedChat] coreMessages:', coreMessages.length);
-        console.log('🎯 [useOrchestratedChat] userId:', userId);
-
-        const result = await orchestrator.processMessage(coreMessages, userId);
-
-        console.log('🎯 [useOrchestratedChat] orchestrator.processMessage returned:', result);
-
-        // Create orchestrator response message
+        // Create assistant message
         const assistantMessage: ChatMessage = {
           id: uuidv4(),
           role: 'assistant',
-          parts: [{ type: 'text', text: result.response }],
+          parts: [{ type: 'text', text: result.message }],
           metadata: { createdAt: new Date().toISOString() },
         };
-
-        // Save both messages to database via API service
-        await chatApi.saveHistory({
-          chatId: id,
-          messages: [userMessage, assistantMessage],
-          selectedVisibilityType: 'private',
-          threadId: result.threadId,
+        console.log('💬 [Chat Hook] Created assistant message:', {
+          id: assistantMessage.id,
+          messagePreview: result.message.substring(0, 100) + '...',
         });
 
-        // Update chat with final messages
-        chat.setMessages([...chat.messages, userMessage, assistantMessage]);
+        // Save to database
+        console.log('💾 [Chat Hook] Saving to database...');
+        try {
+          await chatApi.saveHistory({
+            chatId: id,
+            messages: [userMessage, assistantMessage],
+            selectedVisibilityType: 'private',
+            threadId: result.sessionId,
+          });
+          console.log('✅ [Chat Hook] Messages saved to database');
+        } catch (dbError) {
+          console.error('❌ [Chat Hook] Database save failed:', dbError);
+          // Don't throw - message still shows in UI
+        }
 
-        // Trigger SWR revalidation for chat history
+        // Update UI with final messages
+        console.log('🖼️  [Chat Hook] Updating UI with messages...');
+        chat.setMessages([...chat.messages, userMessage, assistantMessage]);
+        console.log('✅ [Chat Hook] UI updated with', chat.messages.length + 2, 'total messages');
+
+        // Trigger SWR revalidation
+        console.log('🔄 [Chat Hook] Triggering SWR revalidation...');
         mutate(unstable_serialize(getChatHistoryPaginationKey));
+        console.log('✅ [Chat Hook] Complete! Ready for next message.');
       } catch (error) {
-        console.error('Orchestrated chat error:', error);
+        console.error('❌ [Chat Hook] Chat error:', error);
+        console.error('❌ [Chat Hook] Error details:', {
+          type: typeof error,
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         toast({
           type: 'error',
-          description:
-            'I apologize, but I encountered an error. Please try again.',
+          description: 'I apologize, but I encountered an error. Please try again.',
         });
       } finally {
+        console.log('🏁 [Chat Hook] Request processing finished');
         setIsProcessing(false);
       }
     },
-    [chat, orchestrator, userId, isProcessing, id, mutate],
+    [chat, userId, isProcessing, id, mutate, sessionId, dispatch],
   );
-
-  // Create a custom status that reflects our processing state
-  const status: UseChatHelpers<ChatMessage>['status'] = isProcessing
-    ? 'streaming'
-    : 'ready';
 
   return {
     ...chat,
     sendMessage,
-    status,
+    status: isProcessing ? 'streaming' : 'ready',
     isProcessing,
   };
 }

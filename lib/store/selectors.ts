@@ -1,141 +1,109 @@
 import type { RootState } from './index';
-import { createSelector } from '@reduxjs/toolkit';
 
-// Basic session selectors
-export const selectCurrentSession = (state: RootState) =>
-  state.orchestrator.currentSession;
-
+// Keep exact same selector names for component compatibility
 export const selectCurrentAgent = (state: RootState) =>
-  state.orchestrator.currentSession?.currentAgent;
+  state.orchestrator.currentAgent;
 
 export const selectCurrentPhase = (state: RootState) =>
-  state.orchestrator.currentSession?.phase;
+  state.orchestrator.currentPhase;
 
-export const selectSessionId = (state: RootState) =>
-  state.orchestrator.currentSession?.sessionId;
-
-export const selectUserId = (state: RootState) =>
-  state.orchestrator.currentSession?.userId;
-
-export const selectStartedAt = (state: RootState) =>
-  state.orchestrator.currentSession?.startedAt;
-
-// Processing and error selectors
-export const selectIsProcessing = (state: RootState) =>
-  state.orchestrator.isProcessing;
-
-export const selectError = (state: RootState) => state.orchestrator.error;
-
-export const selectHasError = (state: RootState) =>
-  Boolean(state.orchestrator.error);
-
-// UI state selectors
 export const selectShowProgress = (state: RootState) =>
   state.orchestrator.showProgress;
 
 export const selectSidebarOpen = (state: RootState) =>
   state.orchestrator.sidebarOpen;
 
-export const selectRecentSessions = (state: RootState) =>
-  state.orchestrator.recentSessions;
-
-// Assessment data selectors
+// Qualifier data selector (unchanged signature)
 export const selectQualifierData = (state: RootState) =>
-  state.orchestrator.currentSession?.qualifier;
+  state.orchestrator.sessionData?.qualifier;
 
+// Assessor data selector (unchanged signature)
 export const selectAssessorData = (state: RootState) =>
-  state.orchestrator.currentSession?.assessor;
+  state.orchestrator.sessionData?.assessor;
 
-export const selectDynamicWeighting = (state: RootState) =>
-  state.orchestrator.currentSession?.dynamicWeighting;
+// Analyzer data selector (unchanged signature)
+export const selectAnalyzerData = (state: RootState) =>
+  state.orchestrator.sessionData?.analyzer;
 
-export const selectResponses = createSelector(
-  [(state: RootState) => state.orchestrator.currentSession?.responses],
-  (responses) => responses || [],
-);
+export const selectAnalyzerScoring = (state: RootState) =>
+  state.orchestrator.sessionData?.analyzer?.scoring;
 
-export const selectResponsesCount = (state: RootState) =>
-  state.orchestrator.currentSession?.responses?.length || 0;
-
-export const selectAssessmentComplete = (state: RootState) =>
-  state.orchestrator.currentSession?.phase === 'complete';
-
-export const selectAssessmentScore = (state: RootState) => {
-  const scoring = state.orchestrator.currentSession?.analyzer?.scoring;
-  if (!scoring) return null;
-
-  // Transform analyzer scoring data to the format expected by existing components
-  const categoryScores: Record<string, number> = {};
-  let overallScore = 0;
-
-  Object.entries(scoring).forEach(([key, data]: [string, any]) => {
-    if (key !== 'overall_score' && key !== 'dynamic_weighting_applied' && data?.total) {
-      categoryScores[key] = data.total;
-    }
-  });
-
-  overallScore = scoring.overall_score || 0;
-
+export const selectStrategyRecommendation = (state: RootState) => {
+  const analyzer = state.orchestrator.sessionData?.analyzer;
+  if (!analyzer) return null;
+  
   return {
-    overallScore,
-    categoryScores,
+    primary_strategy: analyzer.primary_strategy,
+    rationale: analyzer.strategy_rationale,
   };
 };
 
-export const selectStrategyRecommendation = (state: RootState) =>
-  state.orchestrator.currentSession?.analyzer?.strategy_recommendation;
+export const selectAnalyzerRoadmap = (state: RootState) => {
+  const analyzer = state.orchestrator.sessionData?.analyzer;
+  if (!analyzer) return null;
+  
+  return {
+    'Phase 1': {
+      timeline: analyzer.phase_1_timeline,
+      focus: analyzer.phase_1_focus,
+    },
+    'Phase 2': {
+      timeline: analyzer.phase_2_timeline,
+      focus: analyzer.phase_2_focus,
+    },
+    'Phase 3': {
+      timeline: analyzer.phase_3_timeline,
+      focus: analyzer.phase_3_focus,
+    },
+  };
+};
 
-// Additional analyzer data selectors
-export const selectAnalyzerData = (state: RootState) =>
-  state.orchestrator.currentSession?.analyzer;
-
-export const selectAnalyzerScoring = (state: RootState) =>
-  state.orchestrator.currentSession?.analyzer?.scoring;
-
-export const selectAnalyzerRoadmap = (state: RootState) =>
-  state.orchestrator.currentSession?.analyzer?.roadmap;
-
-export const selectAnalyzerConcerns = (state: RootState) =>
-  state.orchestrator.currentSession?.analyzer?.concerns_analysis;
+export const selectAnalyzerConcerns = (state: RootState) => {
+  // For now, return null since concerns were removed from simplified schema
+  // Can be re-added later if needed
+  return null;
+};
 
 export const selectAnalysisComplete = (state: RootState) =>
-  state.orchestrator.currentSession?.analyzer?.analysis_complete;
+  state.orchestrator.sessionData?.analyzer?.analysis_complete;
 
-// Session status selectors
-export const selectHasActiveSession = (state: RootState) =>
-  Boolean(state.orchestrator.currentSession);
+// Assessment score selector (adapted for flattened schema)
+export const selectAssessmentScore = (state: RootState) => {
+  const analyzer = state.orchestrator.sessionData?.analyzer;
+  if (!analyzer) return null;
 
-export const selectSessionAge = (state: RootState) => {
-  const session = state.orchestrator.currentSession;
-  if (!session?.startedAt) return null;
-  return Date.now() - new Date(session.startedAt).getTime();
+  const categoryScores: Record<string, number> = {
+    market_strategy: analyzer.market_strategy_score || 0,
+    business_understanding: analyzer.business_understanding_score || 0,
+    workforce_acumen: analyzer.workforce_acumen_score || 0,
+    company_culture: analyzer.company_culture_score || 0,
+    role_of_technology: analyzer.role_of_technology_score || 0,
+    data: analyzer.data_score || 0,
+  };
+
+  const overallScore = analyzer.overall_score || 0;
+
+  return { overallScore, categoryScores };
 };
 
-export const selectIsNewSession = (state: RootState) => {
-  const age = selectSessionAge(state);
-  if (age === null) return false;
-  return age < 5 * 60 * 1000; // Less than 5 minutes old
-};
-
-// Computed progress selector
+// Progress selector (adapt to new structure)
 export const selectProgress = (state: RootState) => {
-  if (!state.orchestrator.currentSession) return null;
+  if (!state.orchestrator.currentAgent) return null;
 
-  const session = state.orchestrator.currentSession;
-  const phaseMap = {
-    qualifying: { step: 1, name: 'Business Context' },
-    assessing: { step: 2, name: 'Assessment Questions' },
-    analyzing: { step: 3, name: 'Analysis & Scoring' },
-    reporting: { step: 4, name: 'Report Generation' },
+  const phaseMap: Record<string, { step: number; name: string }> = {
+    qualifier: { step: 1, name: 'Business Context' },
+    assessor: { step: 2, name: 'Assessment Questions' },
+    analyzer: { step: 3, name: 'Analysis & Scoring' },
     complete: { step: 4, name: 'Complete' },
   };
 
+  const agent = state.orchestrator.currentAgent.toLowerCase();
+  const currentPhase = phaseMap[agent] || phaseMap.qualifier;
   const totalSteps = 4;
-  const currentPhase = phaseMap[session.phase];
 
   return {
-    phase: session.phase,
-    currentAgent: session.currentAgent,
+    phase: agent,
+    currentAgent: state.orchestrator.currentAgent,
     completedSteps: currentPhase.step - 1,
     totalSteps,
     progress: Math.round(((currentPhase.step - 1) / totalSteps) * 100),
@@ -143,58 +111,15 @@ export const selectProgress = (state: RootState) => {
   };
 };
 
-// Combined selectors for complex UI needs
-export const selectSessionSummary = (state: RootState) => {
-  const session = state.orchestrator.currentSession;
-  if (!session) return null;
-
-  return {
-    sessionId: session.sessionId,
-    userId: session.userId,
-    currentAgent: session.currentAgent,
-    phase: session.phase,
-    startedAt: session.startedAt,
-    responsesCount: session.responses?.length || 0,
-    isComplete: session.phase === 'complete',
-    hasQualifier: Boolean(session.qualifier),
-    hasScore: Boolean(session.analyzer?.scoring),
-  };
+// Responses selector (return empty array for compatibility)
+export const selectResponses = (state: RootState) => {
+  return [];
 };
 
+// UI state selector (unchanged)
 export const selectUIState = (state: RootState) => ({
-  isProcessing: state.orchestrator.isProcessing,
-  error: state.orchestrator.error,
   showProgress: state.orchestrator.showProgress,
   sidebarOpen: state.orchestrator.sidebarOpen,
-  hasActiveSession: Boolean(state.orchestrator.currentSession),
+  hasActiveSession: Boolean(state.orchestrator.currentAgent),
 });
 
-// Category-specific response selectors
-export const selectResponsesByCategory = createSelector(
-  [selectResponses],
-  (responses) =>
-    responses.reduce(
-      (acc, response) => {
-        if (!acc[response.category]) {
-          acc[response.category] = [];
-        }
-        acc[response.category].push(response);
-        return acc;
-      },
-      {} as Record<string, typeof responses>,
-    ),
-);
-
-export const selectCategoryScores = createSelector(
-  [selectResponsesByCategory],
-  (responsesByCategory) =>
-    Object.entries(responsesByCategory).reduce(
-      (acc, [category, responses]) => {
-        const avgScore =
-          responses.reduce((sum, r) => sum + r.score, 0) / responses.length;
-        acc[category] = Math.round(avgScore * 10) / 10; // Round to 1 decimal
-        return acc;
-      },
-      {} as Record<string, number>,
-    ),
-);
