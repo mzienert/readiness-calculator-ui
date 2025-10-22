@@ -269,12 +269,11 @@ function ReporterContent() {
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <Badge variant="default" className="text-xs">
-          {strategy.tier} Tier
+          {strategy.primary_strategy}
         </Badge>
       </div>
-      <p className="text-xs">{strategy.primaryFocus}</p>
       <p className="text-xs text-muted-foreground">
-        {strategy.nextSteps?.slice(0, 1)[0]}
+        {strategy.rationale}
       </p>
     </div>
   );
