@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { isDevelopmentEnvironment } from './lib/constants';
+import { isDevelopmentEnvironment } from './lib/env';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -42,7 +42,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  runtime: 'nodejs',
   matcher: [
     '/',
     '/chat/:id',
