@@ -1,34 +1,37 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { AgentState } from '@/lib/ai/schemas';
 
-// Simplified state for UI + SDK session mirroring
+// Restored original state structure
 interface OrchestratorState {
-  // Session data (mirrored from SDK for UI)
-  currentAgent: string | null;
-  currentPhase: string | null;
-  sessionData: {
-    qualifier?: any;
-    assessor?: any;
-    analyzer?: any;
-  } | null;
-
-  // Pure UI state
+  // Current session state (using original AgentState format)
+  currentSession: AgentState | null;
+  
+  // Processing state
+  isProcessing: boolean;
+  error: string | null;
+  
+  // UI state
   showProgress: boolean;
   sidebarOpen: boolean;
+  
+  // History
+  recentSessions: string[];
 }
 
 const initialState: OrchestratorState = {
-  currentAgent: null,
-  currentPhase: null,
-  sessionData: null,
+  currentSession: null,
+  isProcessing: false,
+  error: null,
   showProgress: true,
   sidebarOpen: false,
+  recentSessions: [],
 };
 
 const orchestratorSlice = createSlice({
   name: 'orchestrator',
   initialState,
   reducers: {
-    // UI actions (unchanged)
+    // UI actions
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;
     },
@@ -36,35 +39,63 @@ const orchestratorSlice = createSlice({
       state.showProgress = action.payload;
     },
 
-    // NEW: Sync session data from SDK
-    setSessionData: (
+    // Session management
+    initializeSession: (
       state,
-      action: PayloadAction<{
-        currentAgent: string;
-        currentPhase: string;
-        data: any;
-      }>,
+      action: PayloadAction<{ userId: string; threadId?: string }>
     ) => {
-      state.currentAgent = action.payload.currentAgent;
-      state.currentPhase = action.payload.currentPhase;
+      state.currentSession = {
+        currentAgent: 'qualifier',
+        phase: 'qualifying',
+        responses: [],
+        tokenUsage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+        sessionId: crypto.randomUUID(),
+        userId: action.payload.userId,
+        threadId: action.payload.threadId,
+        startedAt: new Date().toISOString(),
+      };
+      state.error = null;
+    },
 
-      // Store agent-specific data
-      const agentName = action.payload.currentAgent.toLowerCase() as 'qualifier' | 'assessor' | 'analyzer';
-      if (!state.sessionData) {
-        state.sessionData = {};
+    updateSessionState: (state, action: PayloadAction<Partial<AgentState>>) => {
+      if (state.currentSession) {
+        // Merge updates into existing session
+        Object.assign(state.currentSession, action.payload);
+      } else {
+        // Initialize session with the provided data
+        state.currentSession = action.payload as AgentState;
       }
-      state.sessionData[agentName] = action.payload.data;
     },
 
     clearSession: (state) => {
-      state.currentAgent = null;
-      state.currentPhase = null;
-      state.sessionData = null;
+      state.currentSession = null;
+      state.error = null;
+    },
+
+    clearError: (state) => {
+      state.error = null;
+    },
+
+    setProcessing: (state, action: PayloadAction<boolean>) => {
+      state.isProcessing = action.payload;
+    },
+
+    setError: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
     },
   },
 });
 
-export const { toggleSidebar, setShowProgress, setSessionData, clearSession } =
+export const { 
+  toggleSidebar, 
+  setShowProgress, 
+  initializeSession,
+  updateSessionState,
+  clearSession,
+  clearError,
+  setProcessing,
+  setError,
+} =
   orchestratorSlice.actions;
 
 export default orchestratorSlice.reducer;

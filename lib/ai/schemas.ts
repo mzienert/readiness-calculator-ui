@@ -77,6 +77,8 @@ export const agentStateSchema = z.object({
       collected_responses: z.record(z.string(), z.string()).optional(), // Raw responses from assessor agent (flexible schema)
       currentQuestionId: z.string().optional(),
       assessment_complete: z.boolean().optional(),
+      questions_asked: z.number().optional(), // Number of questions asked so far
+      total_questions: z.number().optional(), // Total estimated questions
     })
     .optional(),
 

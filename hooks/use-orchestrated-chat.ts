@@ -4,8 +4,10 @@ import { useChat } from '@ai-sdk/react';
 import { useCallback, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { v4 as uuidv4 } from 'uuid';
-import { useAppDispatch } from '@/lib/store/hooks';
-import { setSessionData } from '@/lib/store/slices/orchestrator';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { updateSessionState } from '@/lib/store/slices/orchestrator';
+import { selectCurrentSession } from '@/lib/store/selectors';
+import { SessionStateManager } from '@/lib/agents/session-state-manager';
 import type { ChatMessage } from '@/lib/types';
 import { toast } from '@/components/toast';
 import { unstable_serialize } from 'swr/infinite';
@@ -25,6 +27,7 @@ export function useOrchestratedChat({
 }: UseOrchestratedChatProps) {
   const dispatch = useAppDispatch();
   const { mutate } = useSWRConfig();
+  const currentSession = useAppSelector(selectCurrentSession);
   const [isProcessing, setIsProcessing] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -112,20 +115,24 @@ export function useOrchestratedChat({
         setSessionId(result.sessionId);
         console.log('🆔 [Chat Hook] Session ID updated:', result.sessionId);
 
-        // Update Redux with session data (for UI components)
-        console.log('📦 [Chat Hook] Dispatching to Redux...');
-        dispatch(
-          setSessionData({
-            currentAgent: result.currentAgent,
-            currentPhase: result.currentAgent.toLowerCase(),
-            data: result.data,
-          }),
+        // Transform SDK response to Redux format using SessionStateManager
+        console.log('📦 [Chat Hook] Transforming SDK response with SessionStateManager...');
+        const reduxUpdates = SessionStateManager.accumulate(
+          currentSession,
+          result, // SDK response: { message, data, currentAgent, sessionId, isComplete }
+          userId
         );
-        console.log('✅ [Chat Hook] Redux updated with:', {
-          currentAgent: result.currentAgent,
-          currentPhase: result.currentAgent.toLowerCase(),
-          dataKeys: Object.keys(result.data || {}),
+        
+        console.log('✅ [Chat Hook] Transformed data:', {
+          hasQualifier: !!reduxUpdates.qualifier,
+          hasAssessor: !!reduxUpdates.assessor,
+          hasAnalyzer: !!reduxUpdates.analyzer,
+          phase: reduxUpdates.phase,
         });
+
+        // Dispatch transformed data to Redux
+        dispatch(updateSessionState(reduxUpdates));
+        console.log('✅ [Chat Hook] Redux updated successfully');
 
         // Create assistant message
         const assistantMessage: ChatMessage = {

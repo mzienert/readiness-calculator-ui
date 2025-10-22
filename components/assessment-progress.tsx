@@ -169,31 +169,17 @@ function QualifierContent() {
 
 function AssessorContent() {
   const assessor = useAppSelector(selectAssessorData);
-  const responses = useAppSelector(selectResponses);
 
-  if (!assessor?.collected_responses || Object.keys(assessor.collected_responses).length === 0)
+  if (!assessor)
     return (
       <p className="text-xs text-muted-foreground">
         Starting assessment questions...
       </p>
     );
 
-  const responseCount = Object.keys(assessor.collected_responses).length;
-  const totalQuestions = 15; // Approximate total questions
-
-  // Helper function to format key names nicely and truncate values
-  const formatKey = (key: string) => {
-    return key
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (l) => l.toUpperCase());
-  };
-
-  const truncateValue = (value: string, maxLength = 40) => {
-    return value.length > maxLength ? `${value.substring(0, maxLength)}...` : value;
-  };
-
-  // Get the most recent 3 responses
-  const recentResponses = Object.entries(assessor.collected_responses).slice(-3);
+  // Track progress using questions_asked from SDK
+  const questionsAsked = assessor.questions_asked || 0;
+  const totalQuestions = assessor.total_questions || 12;
 
   return (
     <div className="space-y-3">
@@ -203,40 +189,29 @@ function AssessorContent() {
           Progress
         </dt>
         <dd className="text-sm font-medium text-foreground">
-          {responseCount} of ~{totalQuestions}
+          {questionsAsked} of ~{totalQuestions}
         </dd>
       </div>
 
-      {/* Current question indicator */}
-      {assessor.currentQuestionId && (
-        <div className="flex flex-col">
-          <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Current
-          </dt>
-          <dd className="text-sm font-medium text-foreground mt-0.5">
-            Question {assessor.currentQuestionId}
-          </dd>
+      {/* Progress bar */}
+      {questionsAsked > 0 && (
+        <div className="w-full bg-muted rounded-full h-2">
+          <div
+            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${Math.min((questionsAsked / totalQuestions) * 100, 100)}%` }}
+          />
         </div>
       )}
 
-      {/* Recent responses (condensed) */}
-      {recentResponses.length > 0 && (
-        <div className="pt-1 border-t border-muted">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-            Recent Answers
-          </p>
-          <div className="space-y-1">
-            {recentResponses.map(([key, value]) => (
-              <div key={key} className="text-xs">
-                <span className="font-medium text-muted-foreground">
-                  {formatKey(key)}:
-                </span>
-                <span className="ml-1 text-foreground">
-                  {truncateValue(value)}
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* Current question indicator */}
+      {assessor.currentQuestionId && (
+        <div className="flex flex-col pt-1 border-t border-muted">
+          <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Current Question
+          </dt>
+          <dd className="text-sm font-medium text-foreground mt-0.5">
+            {assessor.currentQuestionId}
+          </dd>
         </div>
       )}
 
