@@ -95,44 +95,23 @@ export function useOrchestratedChat({
         });
 
         if (!response.ok) {
-          console.error('❌ [Chat Hook] API returned error:', response.status, response.statusText);
-          throw new Error('Assessment API failed');
+          throw new Error(`Assessment API failed: ${response.status}`);
         }
 
         const result = await response.json();
-        
-        console.log('✅ [Chat Hook] Received response from API');
-        console.log('📥 [Chat Hook] Response details:', {
-          currentAgent: result.currentAgent,
-          sessionId: result.sessionId,
-          isComplete: result.isComplete,
-          messageLength: result.message?.length || 0,
-          dataKeys: Object.keys(result.data || {}),
-        });
-        console.log('📄 [Chat Hook] Full response:', JSON.stringify(result, null, 2));
 
         // Update session ID
         setSessionId(result.sessionId);
-        console.log('🆔 [Chat Hook] Session ID updated:', result.sessionId);
 
         // Transform SDK response to Redux format using SessionStateManager
-        console.log('📦 [Chat Hook] Transforming SDK response with SessionStateManager...');
         const reduxUpdates = SessionStateManager.accumulate(
           currentSession,
-          result, // SDK response: { message, data, currentAgent, sessionId, isComplete }
+          result,
           userId
         );
-        
-        console.log('✅ [Chat Hook] Transformed data:', {
-          hasQualifier: !!reduxUpdates.qualifier,
-          hasAssessor: !!reduxUpdates.assessor,
-          hasAnalyzer: !!reduxUpdates.analyzer,
-          phase: reduxUpdates.phase,
-        });
 
         // Dispatch transformed data to Redux
         dispatch(updateSessionState(reduxUpdates));
-        console.log('✅ [Chat Hook] Redux updated successfully');
 
         // Create assistant message
         const assistantMessage: ChatMessage = {
@@ -141,13 +120,8 @@ export function useOrchestratedChat({
           parts: [{ type: 'text', text: result.message }],
           metadata: { createdAt: new Date().toISOString() },
         };
-        console.log('💬 [Chat Hook] Created assistant message:', {
-          id: assistantMessage.id,
-          messagePreview: result.message.substring(0, 100) + '...',
-        });
 
         // Save to database
-        console.log('💾 [Chat Hook] Saving to database...');
         try {
           await chatApi.saveHistory({
             chatId: id,
@@ -155,34 +129,23 @@ export function useOrchestratedChat({
             selectedVisibilityType: 'private',
             threadId: result.sessionId,
           });
-          console.log('✅ [Chat Hook] Messages saved to database');
         } catch (dbError) {
-          console.error('❌ [Chat Hook] Database save failed:', dbError);
+          console.error('Failed to save chat history:', dbError);
           // Don't throw - message still shows in UI
         }
 
         // Update UI with final messages
-        console.log('🖼️  [Chat Hook] Updating UI with messages...');
         chat.setMessages([...chat.messages, userMessage, assistantMessage]);
-        console.log('✅ [Chat Hook] UI updated with', chat.messages.length + 2, 'total messages');
 
         // Trigger SWR revalidation
-        console.log('🔄 [Chat Hook] Triggering SWR revalidation...');
         mutate(unstable_serialize(getChatHistoryPaginationKey));
-        console.log('✅ [Chat Hook] Complete! Ready for next message.');
       } catch (error) {
-        console.error('❌ [Chat Hook] Chat error:', error);
-        console.error('❌ [Chat Hook] Error details:', {
-          type: typeof error,
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        });
+        console.error('Chat error:', error);
         toast({
           type: 'error',
           description: 'I apologize, but I encountered an error. Please try again.',
         });
       } finally {
-        console.log('🏁 [Chat Hook] Request processing finished');
         setIsProcessing(false);
       }
     },
