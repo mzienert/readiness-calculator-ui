@@ -155,7 +155,6 @@ export function useOrchestratedChat({
   return {
     ...chat,
     sendMessage,
-    status: isProcessing ? 'streaming' : 'ready',
     isProcessing,
   };
 }

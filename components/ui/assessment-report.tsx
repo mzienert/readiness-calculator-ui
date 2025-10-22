@@ -201,7 +201,8 @@ export function AssessmentReport() {
             ))}
           </div>
 
-          {/* Constraining and Enabling Factors */}
+          {/* Constraining and Enabling Factors - Temporarily disabled until SDK provides this data */}
+          {/* 
           <div className="grid gap-4 md:grid-cols-2 mt-6">
             {strategy?.constraining_factors?.length && (
               <Card className="bg-destructive/5 border-destructive/20">
@@ -239,6 +240,7 @@ export function AssessmentReport() {
               </Card>
             )}
           </div>
+          */}
         </div>
 
         <Separator />
