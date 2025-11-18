@@ -165,19 +165,21 @@ This document tracks the specific implementation steps, action items, and develo
 - 🔄 Create assessment framework for La Plata County SMB context (continuous improvement)
 
 **Data & Analytics (Event-Driven System):**
-- ⏳ **BRAINSTORMING SESSION REQUIRED**: Data capture strategy decisions
-  - Response storage format (raw vs structured vs hybrid)
+- ✅ **Basic Data Collection Implementation (Phase 1 - MVP)**: Completed anonymized snapshot storage
+  - ✅ Database schema: `AssessmentSnapshot` table with anonymized sessionId
+  - ✅ Storage format: JSON snapshots preserving flexible schema design
+  - ✅ Data processing: Immediate capture after each agent completes (qualifier, assessor, analyzer)
+  - ✅ Privacy-first implementation: No userId or chatId stored, only anonymous sessionId
+  - ✅ API endpoint: `/api/analytics/snapshot` for snapshot persistence
+  - ✅ Service layer: `analyticsApi.saveSnapshot()` with error handling
+  - ✅ Orchestrator hooks: Automatic data collection at agent transitions
+- ⏳ **Advanced Analytics (Phase 2 - Future)**: Deferred until sufficient data collected
   - Response normalization approach for aggregation
-  - Data processing timing (post-response vs post-survey)
   - Keyword extraction and text analysis level
   - Aggregation strategy for meaningful insights
-- ⏳ Design event-driven data collection architecture with configurable hooks
-- ⏳ Implement AssessmentEvent interface and data anonymization layer
-- ⏳ Build privacy-first data capture system (no PII, no business identity)
-- ⏳ Create event stream processing for real-time pattern detection
-- ⏳ Implement batch analytics pipeline for trend analysis and reporting
-- ⏳ Implement pre-anonymization removal window (session-based deletion before data anonymization)
-- ⏳ Create internal business intelligence dashboard for insights
+  - Event stream processing for real-time pattern detection
+  - Batch analytics pipeline for trend analysis and reporting
+  - Internal business intelligence dashboard for insights
 
 **Beautiful.ai Integration:**
 - ⏳ Set up Beautiful.ai MCP server integration

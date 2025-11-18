@@ -35,9 +35,10 @@ import { getEnvOrThrow } from '../utils';
 // https://authjs.dev/reference/adapter/drizzle
 
 // Use production database for production environment, staging for everything else
-const databaseUrl = process.env.VERCEL_ENV === 'production'
-  ? getEnvOrThrow('POSTGRES_URL_PRODUCTION')
-  : getEnvOrThrow('POSTGRES_URL_STAGING');
+const databaseUrl =
+  process.env.VERCEL_ENV === 'production'
+    ? getEnvOrThrow('POSTGRES_URL_PRODUCTION')
+    : getEnvOrThrow('POSTGRES_URL_STAGING');
 
 const client = postgres(databaseUrl);
 const db = drizzle(client);
@@ -339,4 +340,3 @@ export async function saveAssessmentSnapshot({
     );
   }
 }
-

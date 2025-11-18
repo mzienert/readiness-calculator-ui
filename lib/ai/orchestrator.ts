@@ -1,7 +1,5 @@
 // Removed direct agent imports - now using API calls
-import type {
-  AgentState,
-} from './schemas';
+import type { AgentState } from './schemas';
 import type { CoreMessage } from 'ai';
 import type { AppDispatch, RootState } from '@/lib/store';
 import {
@@ -91,18 +89,26 @@ To get started, could you tell me a bit about your business? For example, how ma
   }> {
     try {
       console.log(`🚨 [Orchestrator] ORCHESTRATOR PROCESSMESSAGE CALLED!!!`);
-      console.log(`🔄 [Orchestrator] Processing message - User: ${userId}, Messages: ${messages.length}`);
-      console.log(`📝 [Orchestrator] Latest message: "${messages[messages.length - 1]?.content}"`);
+      console.log(
+        `🔄 [Orchestrator] Processing message - User: ${userId}, Messages: ${messages.length}`,
+      );
+      console.log(
+        `📝 [Orchestrator] Latest message: "${messages[messages.length - 1]?.content}"`,
+      );
 
       this.dispatch(clearError());
 
       // Handle initial greeting for new assessments
       if (this.isNewAssessment(messages)) {
-        console.log(`🎯 [Orchestrator] New assessment detected (${messages.length} messages)`);
+        console.log(
+          `🎯 [Orchestrator] New assessment detected (${messages.length} messages)`,
+        );
         await this.initializeNewSession(userId);
         const response = this.getInitialGreeting();
         const currentSession = this.getCurrentSession();
-        console.log(`✅ [Orchestrator] Initial session created - ThreadID: ${currentSession?.threadId}`);
+        console.log(
+          `✅ [Orchestrator] Initial session created - ThreadID: ${currentSession?.threadId}`,
+        );
         return { response, threadId: currentSession?.threadId };
       }
 
@@ -120,29 +126,41 @@ To get started, could you tell me a bit about your business? For example, how ma
         console.log(`⚠️ [Orchestrator] No session found, creating new one`);
         await this.initializeNewSession(userId);
         currentSession = this.getCurrentSession()!;
-        console.log(`✅ [Orchestrator] New session created - ThreadID: ${currentSession.threadId}`);
+        console.log(
+          `✅ [Orchestrator] New session created - ThreadID: ${currentSession.threadId}`,
+        );
       }
 
       switch (currentSession.currentAgent) {
         case 'qualifier': {
           // Call qualifier API via service layer
           console.log(`🤖 [Orchestrator] Calling qualifier agent`);
-          console.log(`🧵 [Orchestrator] Using threadId: ${currentSession.threadId}`);
-          console.log(`📤 [Orchestrator] Sending ${messages.length} messages to qualifier`);
+          console.log(
+            `🧵 [Orchestrator] Using threadId: ${currentSession.threadId}`,
+          );
+          console.log(
+            `📤 [Orchestrator] Sending ${messages.length} messages to qualifier`,
+          );
 
           if (!currentSession.threadId) {
             throw new Error('No thread ID available for qualifier');
           }
 
           console.log('🔍 [Orchestrator] About to call agentsApi.qualifier');
-          console.log('🔍 [Orchestrator] agentsApi.qualifier function:', agentsApi.qualifier.toString().substring(0, 100));
+          console.log(
+            '🔍 [Orchestrator] agentsApi.qualifier function:',
+            agentsApi.qualifier.toString().substring(0, 100),
+          );
 
           const result = await agentsApi.qualifier({
             messages,
             threadId: currentSession.threadId,
           });
 
-          console.log('🔍 [Orchestrator] agentsApi.qualifier returned:', typeof result);
+          console.log(
+            '🔍 [Orchestrator] agentsApi.qualifier returned:',
+            typeof result,
+          );
 
           console.log(`📥 [Orchestrator] Qualifier response:`, {
             responseLength: result.response.length,
@@ -154,7 +172,8 @@ To get started, could you tell me a bit about your business? For example, how ma
           // Update Redux state with qualifier results
           const updates: Partial<AgentState> = {};
           // Merge new responses with existing ones for progressive updates
-          const existingResponses = currentSession.qualifier?.collected_responses || {};
+          const existingResponses =
+            currentSession.qualifier?.collected_responses || {};
           const newResponses = result.qualifier || {};
           updates.qualifier = {
             collected_responses: { ...existingResponses, ...newResponses },
@@ -183,7 +202,9 @@ To get started, could you tell me a bit about your business? For example, how ma
             updates.phase = 'assessing';
             updates.threadId = newThreadId; // Use new thread for assessor
 
-            console.log(`🎯 [Orchestrator] TRANSITION: Qualifier complete, switching to assessor`);
+            console.log(
+              `🎯 [Orchestrator] TRANSITION: Qualifier complete, switching to assessor`,
+            );
             console.log(`🧠 [Orchestrator] Context prepared for assessor:`, {
               qualifierData: updates.qualifier,
               dynamicWeighting: updates.dynamicWeighting,
@@ -213,11 +234,14 @@ To get started, could you tell me a bit about your business? For example, how ma
             throw new Error('No thread ID available for assessor');
           }
 
-          console.log(`🧠 [Orchestrator] Passing qualifier context to assessor:`, {
-            hasQualifier: !!currentSession.qualifier,
-            qualifierResponses: currentSession.qualifier?.collected_responses,
-            dynamicWeighting: currentSession.dynamicWeighting,
-          });
+          console.log(
+            `🧠 [Orchestrator] Passing qualifier context to assessor:`,
+            {
+              hasQualifier: !!currentSession.qualifier,
+              qualifierResponses: currentSession.qualifier?.collected_responses,
+              dynamicWeighting: currentSession.dynamicWeighting,
+            },
+          );
 
           const assessorParams = {
             messages,
@@ -229,7 +253,8 @@ To get started, could you tell me a bit about your business? For example, how ma
             messagesCount: assessorParams.messages.length,
             threadId: assessorParams.threadId,
             qualifierData: assessorParams.qualifier,
-            lastMessage: assessorParams.messages[assessorParams.messages.length - 1],
+            lastMessage:
+              assessorParams.messages[assessorParams.messages.length - 1],
           });
 
           const result = await agentsApi.assessor(assessorParams);
@@ -237,10 +262,14 @@ To get started, could you tell me a bit about your business? For example, how ma
           // Update Redux state with assessment results
           const updates: Partial<AgentState> = {};
           // Merge new responses with existing ones for progressive updates
-          const existingAssessorResponses = currentSession.assessor?.collected_responses || {};
+          const existingAssessorResponses =
+            currentSession.assessor?.collected_responses || {};
           const newAssessorResponses = result.assessmentData || {};
           updates.assessor = {
-            collected_responses: { ...existingAssessorResponses, ...newAssessorResponses },
+            collected_responses: {
+              ...existingAssessorResponses,
+              ...newAssessorResponses,
+            },
             currentQuestionId: result.currentQuestionId,
             assessment_complete: result.isComplete,
           };
@@ -279,13 +308,6 @@ To get started, could you tell me a bit about your business? For example, how ma
             throw new Error('No thread ID available for analyzer');
           }
 
-          console.log(`🧠 [Orchestrator] Calling analyzer with assessment data:`, {
-            hasQualifier: !!currentSession.qualifier,
-            hasAssessment: !!currentSession.assessor,
-            qualifierResponses: currentSession.qualifier?.collected_responses,
-            assessmentResponses: currentSession.assessor?.collected_responses,
-          });
-
           const analyzerParams = {
             messages,
             threadId: currentSession.threadId,
@@ -293,41 +315,42 @@ To get started, could you tell me a bit about your business? For example, how ma
             assessmentData: currentSession.assessor?.collected_responses, // Pass assessment responses
           };
 
-          console.log(`📤 [Orchestrator] EXACT ANALYZER PARAMS:`, {
-            messagesCount: analyzerParams.messages.length,
-            threadId: analyzerParams.threadId,
-            hasQualifierData: !!analyzerParams.qualifier,
-            hasAssessmentData: !!analyzerParams.assessmentData,
-            lastMessage: analyzerParams.messages[analyzerParams.messages.length - 1],
-          });
-
           const result = await agentsApi.analyzer(analyzerParams);
 
-          console.log(`📥 [Orchestrator] Analyzer response:`, {
-            responseLength: result.response.length,
-            isComplete: result.isComplete,
-            hasAnalysisData: !!result.analysisData,
-            hasTokenUsage: !!result.tokenUsage,
-          });
-
           // PRODUCTION DEBUG: Log the exact analysis data structure
-          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Raw analysisData:', result.analysisData);
-          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Scoring data:', result.analysisData?.scoring);
-          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Strategy data:', result.analysisData?.strategy_recommendation);
-          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Roadmap data:', result.analysisData?.roadmap);
+          console.log(
+            '🔍 [Orchestrator] PRODUCTION DEBUG - Raw analysisData:',
+            result.analysisData,
+          );
+          console.log(
+            '🔍 [Orchestrator] PRODUCTION DEBUG - Scoring data:',
+            result.analysisData?.scoring,
+          );
+          console.log(
+            '🔍 [Orchestrator] PRODUCTION DEBUG - Strategy data:',
+            result.analysisData?.strategy_recommendation,
+          );
+          console.log(
+            '🔍 [Orchestrator] PRODUCTION DEBUG - Roadmap data:',
+            result.analysisData?.roadmap,
+          );
 
           // Update Redux state with analysis results
           const updates: Partial<AgentState> = {};
           updates.analyzer = {
             scoring: result.analysisData?.scoring || {},
-            strategy_recommendation: result.analysisData?.strategy_recommendation || {},
+            strategy_recommendation:
+              result.analysisData?.strategy_recommendation || {},
             roadmap: result.analysisData?.roadmap || {},
             concerns_analysis: result.analysisData?.concerns_analysis || {},
             analysis_complete: result.isComplete,
           };
 
           // PRODUCTION DEBUG: Log what we're storing in Redux
-          console.log('🔍 [Orchestrator] PRODUCTION DEBUG - Updates to store:', updates.analyzer);
+          console.log(
+            '🔍 [Orchestrator] PRODUCTION DEBUG - Updates to store:',
+            updates.analyzer,
+          );
 
           // Handle completion when analysis is complete (temporary solution)
           if (result.isComplete) {
@@ -340,7 +363,9 @@ To get started, could you tell me a bit about your business? For example, how ma
 
             updates.currentAgent = 'analyzer'; // Stay on analyzer since we're showing temp report
             updates.phase = 'complete';
-            console.log(`🎯 [Orchestrator] ANALYSIS COMPLETE: Showing temporary assessment report`);
+            console.log(
+              `🎯 [Orchestrator] ANALYSIS COMPLETE: Showing temporary assessment report`,
+            );
             // Note: Beautiful.ai integration will be added later to replace this
           }
 
