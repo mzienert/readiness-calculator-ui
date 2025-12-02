@@ -47,14 +47,6 @@ function PureChatHeader({
           <TooltipContent>New Chat</TooltipContent>
         </Tooltip>
       )}
-
-      {!isReadonly && (
-        <VisibilitySelector
-          chatId={chatId}
-          selectedVisibilityType={selectedVisibilityType}
-          className="order-1 md:order-2"
-        />
-      )}
     </header>
   );
 }
