@@ -40,7 +40,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     <Chat
       id={chat.id}
       initialMessages={uiMessages}
-      initialVisibilityType={chat.visibility}
       isReadonly={session?.user?.id !== chat.userId}
       session={session}
     />

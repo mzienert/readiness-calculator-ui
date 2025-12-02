@@ -4,10 +4,8 @@ import { useEffect, useState } from 'react';
 import { ChatHeader } from '@/components/chat-header';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
-import type { VisibilityType } from './visibility-selector';
 import type { Session } from 'next-auth';
 import { useSearchParams } from 'next/navigation';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import type { ChatMessage } from '@/lib/types';
 import { AssessmentProgress } from './assessment-progress';
 import { useOrchestratedChat } from '@/hooks/use-orchestrated-chat';
@@ -16,21 +14,14 @@ import { AssessmentReport } from './ui/assessment-report';
 export function Chat({
   id,
   initialMessages,
-  initialVisibilityType,
   isReadonly,
   session,
 }: {
   id: string;
   initialMessages: ChatMessage[];
-  initialVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
 }) {
-  const { visibilityType } = useChatVisibility({
-    chatId: id,
-    initialVisibilityType,
-  });
-
   const [input, setInput] = useState<string>('');
 
   // Use our custom orchestrated chat hook
@@ -65,7 +56,6 @@ export function Chat({
         <div className="flex flex-col min-w-0 flex-1">
           <ChatHeader
             chatId={id}
-            selectedVisibilityType={initialVisibilityType}
             isReadonly={isReadonly}
           />
 
@@ -94,7 +84,6 @@ export function Chat({
                 messages={messages}
                 setMessages={setMessages}
                 sendMessage={sendMessage}
-                selectedVisibilityType={visibilityType}
               />
             )}
           </div>

@@ -22,7 +22,6 @@ export default async function Page() {
         key={id}
         id={id}
         initialMessages={[]}
-        initialVisibilityType="private"
         isReadonly={false}
         session={session}
       />
