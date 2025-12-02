@@ -21,3 +21,5 @@
 ## Feature Addition
 
 ## Agents
+
+-- determien primary and seconday focus
