@@ -111,12 +111,18 @@ function PromptInputSubmit({
   disabled?: boolean;
   status?: string;
   className?: string;
-  size?: string;
+  size?: 'default' | 'sm' | 'lg' | 'icon';
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button type="submit" disabled={disabled} className={className} {...rest}>
+    <Button
+      type="submit"
+      disabled={disabled}
+      className={className}
+      size={size || 'sm'}
+      {...rest}
+    >
       {children}
-    </button>
+    </Button>
   );
 }
 import type { UseChatHelpers } from '@ai-sdk/react';
@@ -252,7 +258,7 @@ function PureMultimodalInput({
       {messages.length === 0 && <SuggestedActions />}
 
       <PromptInput
-        className="border border-transparent shadow-lg transition-all duration-200 shadow-black/10 hover:border-primary/20 focus-within:border-primary/30 focus-within:shadow-xl focus-within:shadow-primary/20"
+        className=""
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -272,7 +278,7 @@ function PureMultimodalInput({
           maxHeight={48}
           disableAutoResize={true}
           style={{ height: '48px', minHeight: '48px', maxHeight: '48px' }}
-          className="text-sm resize-none py-1 px-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           rows={1}
           autoFocus
         />
@@ -283,7 +289,7 @@ function PureMultimodalInput({
             <PromptInputSubmit
               status={status}
               disabled={!input.trim()}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground size-8"
+              className="rounded-md"
               size="sm"
             >
               Submit

@@ -1,0 +1,15 @@
+- update header with some relevant title text
+- only allow toggle to dark mode
+- fix chat bubbles for light theme
+- dont allow editing of messages
+- take off edit mode for message bubbles
+- progress bar on right should take up the entire height
+- replace 'Chatbot' with 'AI Readiness Calculator'
+- change 'hmm' text to generating answer or thinking...
+- hand off between qualifier and assessor needs to be seamless - so it needs to either elicit a response from the user or do some magic - behind the scenes like pass the context to the next agent
+  the assesor is asking 12 questions but indicating it is going to ask 15, so it - so it is early exiting, need to solve that
+- hand off between assessor and analyzer needs to be seamless
+- hide chat input when reporter is displayed
+  -progress bar is x/100 and reporter is is x/60
+- analyzyer in progress indicator also doesn't show 100% when it is complete on horizontal progress bar
+- page title should be AI Readiness Calculator
