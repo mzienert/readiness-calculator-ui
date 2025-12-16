@@ -53,6 +53,7 @@ interface AgentSectionProps {
   isComplete: boolean;
   progress: number;
   content: React.ReactNode;
+  isLast: boolean;
 }
 
 function AgentSection({
@@ -61,13 +62,14 @@ function AgentSection({
   isComplete,
   progress,
   content,
+  isLast,
 }: AgentSectionProps) {
   const Icon = agent.icon;
 
   return (
-    <div className="relative flex items-start gap-4">
+    <div className="relative flex items-start gap-4 flex-1">
       {/* Progress indicator */}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center h-full">
         <div
           className={cn(
             'w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative z-10',
@@ -81,13 +83,15 @@ function AgentSection({
           <Icon className="size-5" />
         </div>
 
-        {/* Connecting line - positioned absolutely to match parent height */}
-        <div
-          className={cn(
-            'absolute top-12 left-6 w-0.5 bottom-0 transition-all duration-500',
-            isComplete ? 'bg-green-500' : 'bg-muted-foreground/20',
-          )}
-        />
+        {/* Connecting line - connects to next node */}
+        {!isLast && (
+          <div
+            className={cn(
+              'w-0.5 flex-1 transition-all duration-500',
+              isComplete ? 'bg-green-500' : 'bg-muted-foreground/20',
+            )}
+          />
+        )}
       </div>
 
       {/* Content area */}
@@ -347,7 +351,7 @@ export function AssessmentProgress() {
   };
 
   return (
-    <div className="w-80 bg-background border-l p-6 overflow-y-auto">
+    <div className="w-80 h-full bg-background border-l p-6 overflow-y-auto">
       <div className="mb-6">
         <h2 className="text-lg font-semibold">AI Readiness Assessment</h2>
         <p className="text-sm text-muted-foreground">Track your progress</p>
@@ -368,7 +372,7 @@ export function AssessmentProgress() {
         )}
       </div>
 
-      <div className="space-y-0">
+      <div className="flex flex-col justify-evenly h-full">
         {AGENTS.map((agent, index) => {
           const isActive = currentAgent === agent.id;
           const isComplete =
@@ -376,6 +380,7 @@ export function AssessmentProgress() {
             AGENTS.findIndex((a) => a.id === currentAgent) > index;
           const progress = getAgentProgress(agent.id);
           const content = getAgentContent(agent.id);
+          const isLast = index === AGENTS.length - 1;
 
           return (
             <AgentSection
@@ -385,6 +390,7 @@ export function AssessmentProgress() {
               isComplete={isComplete}
               progress={progress}
               content={content}
+              isLast={isLast}
             />
           );
         })}

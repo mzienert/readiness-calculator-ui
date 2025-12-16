@@ -1,7 +1,4 @@
-- update header with some relevant title text
 - only allow toggle to dark mode
-- fix chat bubbles for light theme
-- dont allow editing of messages
 - take off edit mode for message bubbles
 - progress bar on right should take up the entire height
 - replace 'Chatbot' with 'AI Readiness Calculator'
