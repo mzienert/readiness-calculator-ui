@@ -17,6 +17,7 @@ import { analyticsApi } from '@/lib/services/analytics';
 export class AssessmentOrchestrator {
   private dispatch: AppDispatch;
   private getState: () => RootState;
+  private readonly MAX_TRANSITION_DEPTH = 5; // Safety limit to prevent infinite recursion
 
   // TODO: Migrate to OpenAI Assistants API
   // Each agent will become an OpenAI Assistant with its own thread
@@ -70,7 +71,7 @@ This assessment is designed specifically for small and medium-sized businesses i
 
 The process takes about 10-15 minutes and covers 6 key areas:
 • Market Strategy
-• Business Understanding  
+• Business Understanding
 • Workforce & Team
 • Company Culture
 • Technology Usage
@@ -80,18 +81,54 @@ To get started, could you tell me a bit about your business? For example, how ma
   }
 
   /**
+   * Handle seamless transition to next agent
+   * Creates synthetic message and recursively calls next agent
+   */
+  private async transitionToNextAgent(
+    messages: CoreMessage[],
+    userId: string,
+    currentDepth: number,
+  ): Promise<{ response: string; threadId?: string }> {
+    console.log(`🔄 [Orchestrator] Auto-transitioning to next agent (depth: ${currentDepth + 1})`);
+
+    // Create synthetic message to trigger next agent
+    const syntheticMessage: CoreMessage = {
+      role: 'user',
+      content: 'continue', // Placeholder to trigger next agent
+    };
+
+    // Add synthetic message to history
+    const messagesWithTransition = [...messages, syntheticMessage];
+
+    // Recursively process with next agent (depth increases)
+    return await this.processMessage(
+      messagesWithTransition,
+      userId,
+      currentDepth + 1
+    );
+  }
+
+  /**
    * Process a conversation turn and return response (now uses Redux state)
    */
   async processMessage(
     messages: CoreMessage[],
     userId: string,
+    transitionDepth: number = 0,
   ): Promise<{
     response: string;
     threadId?: string;
   }> {
     try {
+      // Guard against infinite recursion
+      if (transitionDepth > this.MAX_TRANSITION_DEPTH) {
+        throw new Error(
+          `Maximum transition depth exceeded (${this.MAX_TRANSITION_DEPTH}). Possible infinite loop.`
+        );
+      }
+
       console.log(`🚨 [Orchestrator] ORCHESTRATOR PROCESSMESSAGE CALLED!!!`);
-      console.log(`🔄 [Orchestrator] Processing message - User: ${userId}, Messages: ${messages.length}`);
+      console.log(`🔄 [Orchestrator] Processing message - Depth: ${transitionDepth}, User: ${userId}, Messages: ${messages.length}`);
       console.log(`📝 [Orchestrator] Latest message: "${messages[messages.length - 1]?.content}"`);
 
       this.dispatch(clearError());
@@ -183,22 +220,34 @@ To get started, could you tell me a bit about your business? For example, how ma
             updates.phase = 'assessing';
             updates.threadId = newThreadId; // Use new thread for assessor
 
-            console.log(`🎯 [Orchestrator] TRANSITION: Qualifier complete, switching to assessor`);
+            console.log(`🎯 [Orchestrator] TRANSITION: Qualifier → Assessor`);
             console.log(`🧠 [Orchestrator] Context prepared for assessor:`, {
               qualifierData: updates.qualifier,
               dynamicWeighting: updates.dynamicWeighting,
               newThreadId: newThreadId,
             });
 
-            // TODO: Add transition message about starting assessment
+            // Dispatch state updates BEFORE transitioning
+            this.dispatch(updateSessionState(updates));
+
+            // Track token usage before transition
+            if (result.tokenUsage) {
+              this.dispatch(addTokenUsage(result.tokenUsage));
+            }
+
+            // Auto-transition to assessor
+            return await this.transitionToNextAgent(
+              messages,
+              userId,
+              transitionDepth
+            );
           }
 
-          // Track token usage if provided
+          // If not complete, return qualifier's response normally
           if (result.tokenUsage) {
             this.dispatch(addTokenUsage(result.tokenUsage));
           }
 
-          // Dispatch updates to Redux
           this.dispatch(updateSessionState(updates));
 
           return {
@@ -256,15 +305,30 @@ To get started, could you tell me a bit about your business? For example, how ma
 
             updates.currentAgent = 'analyzer';
             updates.phase = 'analyzing';
-            // TODO: Add transition message about starting analysis
+
+            console.log(`🎯 [Orchestrator] TRANSITION: Assessor → Analyzer`);
+
+            // Dispatch state updates BEFORE transitioning
+            this.dispatch(updateSessionState(updates));
+
+            // Track token usage before transition
+            if (result.tokenUsage) {
+              this.dispatch(addTokenUsage(result.tokenUsage));
+            }
+
+            // Auto-transition to analyzer
+            return await this.transitionToNextAgent(
+              messages,
+              userId,
+              transitionDepth
+            );
           }
 
-          // Track token usage if provided
+          // If not complete, return assessor's response normally
           if (result.tokenUsage) {
             this.dispatch(addTokenUsage(result.tokenUsage));
           }
 
-          // Dispatch updates to Redux
           this.dispatch(updateSessionState(updates));
 
           return {
@@ -373,8 +437,14 @@ To get started, could you tell me a bit about your business? For example, how ma
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
-      // Error handling will be added to orchestrator slice later
-      console.error('Orchestrator error:', errorMessage);
+
+      console.error(`❌ [Orchestrator] Error at depth ${transitionDepth}:`, errorMessage);
+
+      // If error during transition (depth > 0), log warning
+      if (transitionDepth > 0) {
+        console.warn(`⚠️ [Orchestrator] Error during auto-transition, user may need to retry`);
+      }
+
       throw error;
     }
   }
